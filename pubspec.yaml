@@ -1,0 +1,133 @@
+name: kronk
+description: "A new Flutter project."
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.8.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons:
+  flutter_riverpod:
+  google_fonts:
+  equatable:
+  path_provider:
+  hive_ce:
+  hive_ce_flutter:
+  flutter_bloc:
+  rive:
+  lottie:
+  iconsax:
+  page_transition:
+  dio:
+  flutter_staggered_grid_view:
+  icons_plus:
+  provider:
+  flutter_svg:
+  connectivity_plus:
+  cached_network_image:
+  custom_refresh_indicator:
+  image_picker:
+  permission_handler:
+  crop_your_image:
+  flutter_image_compress:
+  image:
+  url_launcher:
+  jwt_decoder:
+  flutter_launcher_icons:
+  web_socket_channel:
+  google_sign_in:
+  firebase_core:
+  firebase_auth:
+  flutter_cache_manager:
+  flutter_native_splash:
+  tuple:
+  iconify_flutter:
+  in_app_review:
+  sliver_tools:
+  logger:
+  firebase_messaging:
+  loading_animation_widget:
+  jovial_svg:
+  shimmer:
+  transparent_image:
+  visibility_detector:
+  native_video_player:
+  video_player:
+  material_symbols_icons:
+  uuid:
+  gal:
+  mime:
+  smooth_page_indicator:
+  flutter_layout_grid:
+  fl_chart:
+  vector_graphics:
+  animated_flip_counter:
+
+dev_dependencies:
+  build_runner:
+  analyzer:
+  analyzer_plugin:
+  custom_lint:
+  riverpod_lint:
+  vector_graphics_compiler:
+
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints:
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/
+    - assets/fonts/
+    - assets/images/
+    - assets/images/feed/
+    - assets/icons/
+    - assets/icons/app/
+    - assets/icons/bold/
+    - assets/icons/outline/
+    - assets/icons/others/
+    - assets/animations/
+    - assets/translations/
+    # Apply transformer to a folder of SVGs
+    - path: assets/svg/
+      transformers:
+        - package: vector_graphics_compiler
+
+  fonts:
+    - family: KronkIcon
+      fonts:
+        - asset: assets/fonts/KronkIcon.ttf
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path_android: "assets/icons/app/kronk-app-icon.png"
+  image_path_ios: "assets/icons/app/kronk-app-icon.png"
+  adaptive_icon_foreground: "assets/icons/app/kronk-foreground.png"
+  adaptive_icon_background: "assets/icons/app/kronk-background.png"
+  adaptive_icon_monochrome: "assets/icons/app/kronk-foreground-monochrome.png"
+  min_sdk_android: 28
+  remove_alpha_ios: true
+
+flutter_native_splash:
+  color: "#ffffff"
+  color_dark: "#050608"
+  image: "assets/icons/app/android12_image.png"
+  image_dark: "assets/icons/app/android12_image_dark.png"
+  android: true
+  ios: false
+  web: false
+
+  android_12:
+    color: "#ffffff"
+    color_dark: "#050608"
+    image: "assets/icons/app/android12_image.png"
+    image_dark: "assets/icons/app/android12_image_dark.png"
+
