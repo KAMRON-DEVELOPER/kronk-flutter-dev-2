@@ -41,6 +41,7 @@ class TimelineNotifier extends FamilyAsyncNotifier<List<FeedModel>, TimelineType
   Future<List<FeedModel>> _fetchTimeline({required TimelineType timelineType}) async {
     try {
       final List<FeedModel> feeds = await _feedService.fetchTimeline(timelineType: timelineType);
+      myLogger.d('feeds in _fetchTimeline in timelineNotifierProvider: $feeds');
       return feeds.isEmpty ? [] : feeds;
     } catch (error) {
       state = AsyncValue.error(error, StackTrace.current);
@@ -72,22 +73,17 @@ class TimelineNotifier extends FamilyAsyncNotifier<List<FeedModel>, TimelineType
       return;
     }
 
-    myLogger.d('author.avatarUrl: ${author.avatarUrl}, isNotEmpty: ${author.avatarUrl?.isNotEmpty}');
-
     final placeholder = FeedModel(
       id: const Uuid().v4(),
       createdAt: DateTime.now(),
       author: AuthorModel(id: author.id, name: author.name, username: author.username, avatarUrl: author.avatarUrl),
-      body: "What's on your mind?",
+      body: null,
       feedModeEnum: FeedModeEnum.create,
       imageUrls: [],
       imageFiles: [],
       engagement: const EngagementModel(),
     );
 
-    myLogger.d('placeholder.authorAvatarUrl: ${placeholder.author.name}');
-
-    // Update state with the new feed
     state = AsyncValue.data([placeholder, ...state.valueOrNull ?? []]);
   }
 

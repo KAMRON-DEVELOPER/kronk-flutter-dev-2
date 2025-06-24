@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:equatable/equatable.dart';
 import 'package:kronk/constants/enums.dart';
-import 'package:kronk/utility/my_logger.dart';
 
 class EngagementModel extends Equatable {
   final int? comments;
@@ -67,6 +66,7 @@ class FeedModel extends Equatable {
   final FeedVisibility? feedVisibility;
   final CommentingPolicy? commentPolicy;
   final EngagementModel engagement;
+  final String? quoteId;
   final List<File>? imageFiles;
   final File? videoFile;
   final FeedModeEnum feedModeEnum;
@@ -83,6 +83,7 @@ class FeedModel extends Equatable {
     this.feedVisibility,
     this.commentPolicy,
     required this.engagement,
+    this.quoteId,
     this.feedModeEnum = FeedModeEnum.view,
     this.imageFiles,
     this.videoFile,
@@ -96,7 +97,11 @@ class FeedModel extends Equatable {
     return (reposts ?? 0) + (quotes ?? 0);
   }
 
-  bool get repostedOrQuoted => (engagement.reposted ?? false) || (engagement.quoted ?? false);
+  bool? get repostedOrQuoted {
+    if (engagement.reposted == true || engagement.quoted == true) return true;
+    if (engagement.reposted == null && engagement.quoted == null) return null;
+    return null;
+  }
 
   factory FeedModel.fromJson(Map<String, dynamic> json) {
     return FeedModel(
@@ -144,10 +149,6 @@ class FeedModel extends Equatable {
     Object? imageFiles = _sentinel,
     Object? videoFile = _sentinel,
   }) {
-    myLogger.d('id: ${id != _sentinel ? id : this.id}');
-    myLogger.d('body: ${body != _sentinel ? body : this.body}');
-    myLogger.d('author.name: ${author?.name ?? this.author.name}');
-    myLogger.d('author.username: ${author?.username ?? this.author.username}');
     return FeedModel(
       id: id == _sentinel ? this.id : id as String?,
       updatedAt: updatedAt == _sentinel ? this.updatedAt : updatedAt as DateTime?,

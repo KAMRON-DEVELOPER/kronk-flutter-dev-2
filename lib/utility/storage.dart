@@ -1,15 +1,15 @@
 import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:kronk/constants/enums.dart';
-import 'package:kronk/services/api_service/users_service.dart';
-import 'package:kronk/utility/classes.dart';
 import 'package:kronk/constants/my_theme.dart';
-import 'package:tuple/tuple.dart';
 import 'package:kronk/models/navbar_model.dart';
 import 'package:kronk/models/user_model.dart';
-
+import 'package:kronk/services/api_service/users_service.dart';
+import 'package:kronk/utility/classes.dart';
+import 'package:tuple/tuple.dart';
 
 class Storage {
   final Box<NavbarModel?> navbarBox;
@@ -22,7 +22,7 @@ class Storage {
     final List<Tuple3<String, bool, bool>> services = [
       const Tuple3<String, bool, bool>('/feeds', false, false),
       const Tuple3<String, bool, bool>('/search', false, false),
-      const Tuple3<String, bool, bool>('/chats', true, false),
+      const Tuple3<String, bool, bool>('/chats', false, false),
       const Tuple3<String, bool, bool>('/education', false, true),
       const Tuple3<String, bool, bool>('/notes', true, false),
       const Tuple3<String, bool, bool>('/todos', false, true),

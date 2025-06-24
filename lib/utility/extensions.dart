@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kronk/constants/enums.dart';
+import 'package:kronk/constants/kronk_icon.dart';
 
 extension ValidatorExtension on String {
   String? get isValidUsername {
@@ -195,5 +196,14 @@ extension CountNormalizer on int {
 extension TitleCaseWithSpaces on String {
   String toTitleCaseWithSpaces() {
     return split('_').map((word) => word.isEmpty ? '' : '${word[0].toUpperCase()}${word.substring(1)}').join(' ');
+  }
+}
+
+extension IconColorExtension on IconData {
+  Color get appropriateColor {
+    if (this == KronkIcon.repeat6) return Colors.green;
+    if (this == KronkIcon.heartOutline) return Colors.redAccent;
+    if (this == KronkIcon.bookmarkOutline5) return Colors.orangeAccent;
+    return Colors.deepPurpleAccent;
   }
 }

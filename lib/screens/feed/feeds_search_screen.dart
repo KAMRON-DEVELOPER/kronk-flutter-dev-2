@@ -8,6 +8,7 @@ import 'package:kronk/riverpod/general/theme_notifier_provider.dart';
 import 'package:kronk/utility/constants.dart';
 import 'package:kronk/utility/dimensions.dart';
 import 'package:kronk/utility/my_logger.dart';
+import 'package:kronk/widgets/navbar.dart';
 
 final tabIndexProvider = StateProvider<int>((ref) => 0);
 
@@ -99,6 +100,7 @@ class _FeedsSearchScreenState extends ConsumerState<FeedsSearchScreen> with Auto
           },
           body: const TabBarView(children: [PostSearchWidget(), UserSearchWidget()]),
         ),
+        bottomNavigationBar: const Navbar(),
       ),
     );
   }

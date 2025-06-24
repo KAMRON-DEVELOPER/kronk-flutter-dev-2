@@ -25,8 +25,9 @@ class FeedService {
 
       myLogger.i('🚀 response.data in fetchTimeline: ${response.data}  statusCode: ${response.statusCode}');
       final data = response.data;
-      if (data is List) {
-        return data.map((json) => FeedModel.fromJson(json)).toList();
+      myLogger.d("data['feeds'] is List: ${data['feeds'] is List}");
+      if (data['feeds'] is List) {
+        return (data['feeds'] as List).map<FeedModel>((json) => FeedModel.fromJson(json as Map<String, dynamic>)).toList();
       } else {
         return [];
       }
@@ -110,9 +111,10 @@ class FeedService {
 
   /// ************************************************* Feed Engagement ************************************************* ///
 
-  Future<EngagementModel> fetchSetEngagement({String? postId, String? commentId, required EngagementType engagementType}) async {
+  Future<EngagementModel> fetchSetEngagement({String? feedId, String? commentId, required EngagementType engagementType}) async {
     try {
-      Response response = await _dio.post('/engagement/set', queryParameters: {'feed_id': postId, 'comment_id': commentId, 'action': engagementType.name});
+      final queryParameters = {'engagement_type': engagementType.name, if (feedId != null) 'feed_id': feedId, if (commentId != null) 'comment_id': commentId};
+      Response response = await _dio.post('/engagement/set', queryParameters: queryParameters);
       myLogger.i('🚀 response.data in fetchSetEngagementType: ${response.data}  statusCode: ${response.statusCode}');
       if (response.statusCode == 200) return EngagementModel.fromJson(response.data);
       throw Exception('Something happened while setting engagement');
@@ -122,9 +124,10 @@ class FeedService {
     }
   }
 
-  Future<EngagementModel> fetchRemoveEngagement({required String? postId, String? commentId, required EngagementType engagementType}) async {
+  Future<EngagementModel> fetchRemoveEngagement({required String? feedId, String? commentId, required EngagementType engagementType}) async {
     try {
-      Response response = await _dio.post('/engagement/remove', queryParameters: {'feed_id': postId, 'comment_id': commentId, 'action': engagementType.name});
+      final queryParameters = {'engagement_type': engagementType.name, if (feedId != null) 'feed_id': feedId, if (commentId != null) 'comment_id': commentId};
+      Response response = await _dio.post('/engagement/remove', queryParameters: queryParameters);
       myLogger.i('🚀 response.data in fetchRemoveEngagementType: ${response.data}  statusCode: ${response.statusCode}');
       if (response.statusCode == 200) return EngagementModel.fromJson(response.data);
       throw Exception('Something happened while removing engagement');

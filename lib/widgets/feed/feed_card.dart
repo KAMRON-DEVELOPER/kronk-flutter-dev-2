@@ -24,7 +24,6 @@ import 'package:kronk/utility/my_logger.dart';
 import 'package:kronk/widgets/feed/feed_video_error_widget.dart';
 import 'package:kronk/widgets/feed/feed_video_shimmer_widget.dart';
 import 'package:kronk/widgets/feed/video_overlay_widget.dart';
-import 'package:material_symbols_icons/symbols.dart';
 import 'package:mime/mime.dart';
 import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
@@ -45,6 +44,7 @@ class FeedCard extends ConsumerWidget {
     final displayState = ref.watch(feedScreenStyleProvider);
     final Dimensions dimensions = Dimensions.of(context);
     final double margin4 = dimensions.margin4;
+    final double radius1 = dimensions.radius1;
     myLogger.i('FeedCard is building...');
     final bool isFloating = displayState.feedScreenDisplayStyle == FeedScreenStyle.floating;
     return VisibilityDetector(
@@ -67,99 +67,129 @@ class FeedCard extends ConsumerWidget {
               FeedHeaderSection(feed: feed, isRefreshing: isRefreshing, notifier: notifier),
               FeedBodySection(feed: feed, notifier: notifier),
               FeedMediaSection(feed: feed, notifier: notifier, isRefreshing: isRefreshing),
+              if ([FeedModeEnum.create, FeedModeEnum.edit].contains(feed.feedModeEnum))
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    GestureDetector(
+                      onTap: () async {
+                        try {
+                          if (feed.feedModeEnum == FeedModeEnum.create) await notifier.save();
+                          if (feed.feedModeEnum == FeedModeEnum.edit) await notifier.update();
+                        } catch (error) {
+                          myLogger.e('$error');
+
+                          String errorMessage;
+                          if (error is List) {
+                            errorMessage = error.join(', ');
+                          } else if (error is Exception && error.toString().startsWith('Exception: [')) {
+                            // Extract inner list string from Exception string: "Exception: [msg1, msg2]"
+                            errorMessage = error.toString().replaceFirst('Exception: [', '').replaceFirst(']', '');
+                          } else {
+                            errorMessage = error.toString();
+                          }
+
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              backgroundColor: theme.tertiaryBackground,
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius1)),
+                              content: Text(errorMessage, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.redAccent)),
+                            ),
+                          );
+                        }
+                      },
+                      child: Container(
+                        alignment: Alignment.center,
+                        width: 120,
+                        height: 24,
+                        decoration: BoxDecoration(color: theme.secondaryBackground, borderRadius: BorderRadius.circular(8)),
+                        child: Text('feed visibility', style: Theme.of(context).textTheme.bodySmall?.copyWith(height: 0)),
+                      ),
+                    ),
+
+                    GestureDetector(
+                      onTap: () async {
+                        try {
+                          if (feed.feedModeEnum == FeedModeEnum.create) await notifier.save();
+                          if (feed.feedModeEnum == FeedModeEnum.edit) await notifier.update();
+                        } catch (error) {
+                          myLogger.e('$error');
+
+                          String errorMessage;
+                          if (error is List) {
+                            errorMessage = error.join(', ');
+                          } else if (error is Exception && error.toString().startsWith('Exception: [')) {
+                            // Extract inner list string from Exception string: "Exception: [msg1, msg2]"
+                            errorMessage = error.toString().replaceFirst('Exception: [', '').replaceFirst(']', '');
+                          } else {
+                            errorMessage = error.toString();
+                          }
+
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              backgroundColor: theme.tertiaryBackground,
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius1)),
+                              content: Text(errorMessage, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.redAccent)),
+                            ),
+                          );
+                        }
+                      },
+                      child: Container(
+                        alignment: Alignment.center,
+                        width: 140,
+                        height: 24,
+                        decoration: BoxDecoration(color: theme.secondaryBackground, borderRadius: BorderRadius.circular(8)),
+                        child: Text('comment policy', style: Theme.of(context).textTheme.bodySmall?.copyWith(height: 0)),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () async {
+                        try {
+                          if (feed.feedModeEnum == FeedModeEnum.create) await notifier.save();
+                          if (feed.feedModeEnum == FeedModeEnum.edit) await notifier.update();
+                        } catch (error) {
+                          myLogger.e('$error');
+
+                          String errorMessage;
+                          if (error is List) {
+                            errorMessage = error.join(', ');
+                          } else if (error is Exception && error.toString().startsWith('Exception: [')) {
+                            // Extract inner list string from Exception string: "Exception: [msg1, msg2]"
+                            errorMessage = error.toString().replaceFirst('Exception: [', '').replaceFirst(']', '');
+                          } else {
+                            errorMessage = error.toString();
+                          }
+
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              backgroundColor: theme.tertiaryBackground,
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius1)),
+                              content: Text(errorMessage, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.redAccent)),
+                            ),
+                          );
+                        }
+                      },
+                      child: Container(
+                        alignment: Alignment.center,
+                        width: 60,
+                        height: 24,
+                        decoration: BoxDecoration(color: theme.secondaryBackground, borderRadius: BorderRadius.circular(8)),
+                        child: Icon(Icons.schedule_rounded, color: theme.primaryText, size: 22),
+                      ),
+                    ),
+                  ],
+                ),
               FeedActionSection(feed: feed, notifier: notifier),
             ],
           ),
         ),
       ),
-    );
-  }
-}
-
-/// FeedCardMenuButton
-class FeedCardMenuButton extends ConsumerWidget {
-  final FeedModel feed;
-  final FeedCardStateNotifier notifier;
-
-  const FeedCardMenuButton({super.key, required this.feed, required this.notifier});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.watch(themeNotifierProvider);
-    final Dimensions dimensions = Dimensions.of(context);
-    final double radius1 = dimensions.radius1;
-    return GestureDetector(
-      child: Icon(Icons.more_vert_rounded, color: theme.primaryText),
-      onTap: () {
-        if (feed.feedModeEnum == FeedModeEnum.create) return;
-        showModalBottomSheet(
-          context: context,
-          backgroundColor: theme.secondaryBackground,
-          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-          builder: (context) {
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListTile(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  splashColor: Colors.red,
-                  iconColor: theme.primaryText,
-                  titleTextStyle: TextStyle(color: theme.primaryText),
-                  subtitleTextStyle: TextStyle(color: theme.primaryText),
-                  leading: const Icon(Icons.flag_rounded),
-                  title: const Text('Edit'),
-                  // subtitle: const Text('subtitle'),
-                  onTap: () {
-                    notifier.updateField(feed: feed.copyWith(feedModeEnum: FeedModeEnum.edit));
-                    Navigator.pop(context);
-                  },
-                ),
-                ListTile(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  iconColor: theme.primaryText,
-                  titleTextStyle: TextStyle(color: theme.primaryText),
-                  subtitleTextStyle: TextStyle(color: theme.primaryText),
-                  leading: const Icon(Icons.delete_outline_rounded),
-                  title: const Text('Delete'),
-                  // subtitle: const Text('subtitle'),
-                  onTap: () async {
-                    final communityServices = FeedService();
-                    try {
-                      final bool ok = await communityServices.fetchDeleteFeed(feedId: feed.id);
-                      myLogger.d('ok: $ok');
-                      if (ok) {
-                        await ref.read(timelineNotifierProvider(TimelineType.following).notifier).refresh(timelineType: TimelineType.following);
-                      }
-                      if (!context.mounted) return;
-                      Navigator.pop(context);
-                    } catch (error) {
-                      String errorMessage;
-                      if (error is List) {
-                        errorMessage = error.join(', ');
-                      } else if (error is Exception && error.toString().startsWith('Exception: [')) {
-                        // Extract inner list string from Exception string: "Exception: [msg1, msg2]"
-                        errorMessage = error.toString().replaceFirst('Exception: [', '').replaceFirst(']', '');
-                      } else {
-                        errorMessage = error.toString();
-                      }
-
-                      if (!context.mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          backgroundColor: theme.tertiaryBackground,
-                          behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius1)),
-                          content: Text(errorMessage, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.redAccent)),
-                        ),
-                      );
-                    }
-                  },
-                ),
-              ],
-            );
-          },
-        );
-      },
     );
   }
 }
@@ -174,7 +204,6 @@ class FeedBodySection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool isEditable = feed.feedModeEnum == FeedModeEnum.create || feed.feedModeEnum == FeedModeEnum.edit;
-    myLogger.d('isEditable: $isEditable, feed.feedModeEnum: ${feed.feedModeEnum.name}');
 
     if (isEditable) {
       return FeedBodyInputWidget(feed: feed, notifier: notifier);
@@ -225,7 +254,6 @@ class _FeedBodyInputWidgetState extends ConsumerState<FeedBodyInputWidget> {
       maxLines: 6,
       cursorColor: theme.primaryText,
       onChanged: (value) {
-        myLogger.d('onChanged: $value');
         widget.notifier.updateField(feed: widget.feed.copyWith(body: value));
       },
       onEditingComplete: () {
@@ -329,6 +357,94 @@ class FeedHeaderSection extends ConsumerWidget {
   }
 }
 
+/// FeedCardMenuButton
+class FeedCardMenuButton extends ConsumerWidget {
+  final FeedModel feed;
+  final FeedCardStateNotifier notifier;
+
+  const FeedCardMenuButton({super.key, required this.feed, required this.notifier});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeNotifierProvider);
+    final Dimensions dimensions = Dimensions.of(context);
+    final double radius1 = dimensions.radius1;
+    return GestureDetector(
+      child: Icon(Icons.more_vert_rounded, color: theme.primaryText),
+      onTap: () {
+        if (feed.feedModeEnum == FeedModeEnum.create) return;
+        showModalBottomSheet(
+          context: context,
+          backgroundColor: theme.secondaryBackground,
+          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+          builder: (context) {
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  splashColor: Colors.red,
+                  iconColor: theme.primaryText,
+                  titleTextStyle: TextStyle(color: theme.primaryText),
+                  subtitleTextStyle: TextStyle(color: theme.primaryText),
+                  leading: const Icon(Icons.flag_rounded),
+                  title: const Text('Edit'),
+                  // subtitle: const Text('subtitle'),
+                  onTap: () {
+                    notifier.updateField(feed: feed.copyWith(feedModeEnum: FeedModeEnum.edit));
+                    Navigator.pop(context);
+                  },
+                ),
+                ListTile(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  iconColor: theme.primaryText,
+                  titleTextStyle: TextStyle(color: theme.primaryText),
+                  subtitleTextStyle: TextStyle(color: theme.primaryText),
+                  leading: const Icon(Icons.delete_outline_rounded),
+                  title: const Text('Delete'),
+                  // subtitle: const Text('subtitle'),
+                  onTap: () async {
+                    final communityServices = FeedService();
+                    try {
+                      final bool ok = await communityServices.fetchDeleteFeed(feedId: feed.id);
+                      myLogger.d('ok: $ok');
+                      if (ok) {
+                        await ref.read(timelineNotifierProvider(TimelineType.following).notifier).refresh(timelineType: TimelineType.following);
+                      }
+                      if (!context.mounted) return;
+                      Navigator.pop(context);
+                    } catch (error) {
+                      String errorMessage;
+                      if (error is List) {
+                        errorMessage = error.join(', ');
+                      } else if (error is Exception && error.toString().startsWith('Exception: [')) {
+                        // Extract inner list string from Exception string: "Exception: [msg1, msg2]"
+                        errorMessage = error.toString().replaceFirst('Exception: [', '').replaceFirst(']', '');
+                      } else {
+                        errorMessage = error.toString();
+                      }
+
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          backgroundColor: theme.tertiaryBackground,
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius1)),
+                          content: Text(errorMessage, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.redAccent)),
+                        ),
+                      );
+                    }
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
 /// FeedMediaSection
 class FeedMediaSection extends ConsumerWidget {
   final FeedModel feed;
@@ -343,7 +459,7 @@ class FeedMediaSection extends ConsumerWidget {
     // final Dimensions dimensions = Dimensions.of(context);
 
     if (feed.videoFile != null || feed.videoUrl != null) return FeedVideoWidget(feed: feed, isRefreshing: isRefreshing, notifier: notifier);
-    if (feed.imageFiles!.isNotEmpty || feed.imageUrls.isNotEmpty) return FeedImageWidget(feed: feed, isRefreshing: isRefreshing, notifier: notifier);
+    if (feed.imageFiles != null && feed.imageFiles!.isNotEmpty || feed.imageUrls.isNotEmpty) return FeedImageWidget(feed: feed, isRefreshing: isRefreshing, notifier: notifier);
     if (isEditable) return AddMediaWidget(feed: feed, notifier: notifier);
     return const SizedBox.shrink();
   }
@@ -502,7 +618,7 @@ class FeedImageWidget extends ConsumerWidget {
 
     List<StaggeredGridTile> tiles = [];
 
-    myLogger.i('feed.imageUrls.first: ${feed.imageUrls.first}');
+    myLogger.i('feed.imageUrls.first or null: ${feed.imageUrls.isNotEmpty ? feed.imageUrls.first : null}');
     myLogger.d('imageCount: $imageCount');
     myLogger.d('showAddButton: $showAddButton');
     myLogger.d('tiles: ${tiles.length}');
@@ -677,7 +793,8 @@ class FeedActionSection extends ConsumerWidget {
           children: [
             /// Comments
             FeedActionRow(
-              iconData: KronkIcon.messageCircleLeftOutline,
+              iconDataFill: KronkIcon.messageCircle1,
+              iconDataOutline: KronkIcon.messageSquareLeft2,
               count: feed.engagement.comments,
               onTap: () {
                 if (feed.feedModeEnum == FeedModeEnum.create) return;
@@ -751,30 +868,34 @@ class FeedActionSection extends ConsumerWidget {
               },
             ),
 
-            /// Like
+            /// Repost & quote
             FeedActionRow(
-              iconData: Symbols.thumb_up_rounded,
-              fill: (feed.engagement.reposted == true) || (feed.engagement.quoted == true) ? 1.0 : 0,
+              iconDataFill: KronkIcon.repeat6,
+              iconDataOutline: KronkIcon.repeat6,
+              interacted: (feed.engagement.reposted == true) || (feed.engagement.quoted == true),
               count: feed.repostsAndQuotes,
-              onTap: feed.feedModeEnum == FeedModeEnum.create ? null : () async => notifier.handleEngagement(engagementType: EngagementType.likes),
+              onTap: feed.feedModeEnum == FeedModeEnum.create ? null : () async => notifier.handleEngagement(engagementType: EngagementType.reposts),
             ),
 
-            /// Like
+            /// Heart
             FeedActionRow(
-              iconData: KronkIcon.heartOutline,
-              fill: feed.engagement.liked == true ? 1.0 : 0,
+              iconDataFill: KronkIcon.heartFill,
+              iconDataOutline: KronkIcon.heartOutline,
+              interacted: feed.engagement.liked ?? false,
               count: feed.engagement.likes,
               onTap: feed.feedModeEnum == FeedModeEnum.create ? null : () async => notifier.handleEngagement(engagementType: EngagementType.likes),
             ),
 
             /// Views
-            FeedActionRow(iconData: KronkIcon.eyeOpen, count: feed.engagement.views),
+            FeedActionRow(iconDataFill: KronkIcon.eyeOpen, iconDataOutline: KronkIcon.eyeOpen, count: feed.engagement.views),
           ],
         ),
 
         /// Bookmark icons
         FeedActionRow(
-          iconData: KronkIcon.bookmarkOutline,
+          iconDataFill: KronkIcon.bookmarkFill5,
+          iconDataOutline: KronkIcon.bookmarkOutline5,
+          interacted: feed.engagement.bookmarked ?? false,
           onTap: feed.feedModeEnum == FeedModeEnum.create ? null : () async => notifier.handleEngagement(engagementType: EngagementType.bookmarks),
         ),
       ],
@@ -784,30 +905,33 @@ class FeedActionSection extends ConsumerWidget {
 
 /// FeedActionRow
 class FeedActionRow extends ConsumerWidget {
-  final IconData iconData;
+  final IconData iconDataFill;
+  final IconData iconDataOutline;
+  final bool interacted;
   final int? count;
-  final double? fill;
   final void Function()? onTap;
 
-  const FeedActionRow({super.key, required this.iconData, this.count, this.fill, this.onTap});
+  const FeedActionRow({super.key, required this.iconDataFill, required this.iconDataOutline, this.interacted = false, this.count, this.onTap});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(themeNotifierProvider);
-    myLogger.d('count: $count');
+
+    final IconData iconToUse = interacted ? iconDataFill : iconDataOutline;
+    final Color color = interacted ? iconDataOutline.appropriateColor : theme.primaryText;
+
     return GestureDetector(
       onTap: onTap,
       child: Row(
         spacing: 4,
         children: [
-          Icon(iconData, fill: fill, size: 24, color: theme.primaryText, weight: 600),
+          Icon(iconToUse, size: 20, color: color, weight: 600),
           if (count != null)
             AnimatedFlipCounter(
+              hideLeadingZeroes: true,
               value: count!.toDouble(),
-              textStyle: TextStyle(color: theme.primaryText, fontSize: 13),
-            )
-          else
-            const SizedBox.shrink(),
+              textStyle: TextStyle(color: color, fontSize: 16, height: 0),
+            ),
         ],
       ),
     );

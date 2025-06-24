@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kronk/constants/my_theme.dart';
 import 'package:kronk/models/navbar_model.dart';
 import 'package:kronk/riverpod/general/navbar_provider.dart';
 import 'package:kronk/riverpod/general/theme_notifier_provider.dart';
-import 'package:kronk/constants/my_theme.dart';
 
 final StateProvider<int> selectedIndexProvider = StateProvider<int>((Ref ref) => 0);
 

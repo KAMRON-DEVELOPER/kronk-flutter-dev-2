@@ -25,9 +25,6 @@ class FeedCardStateNotifier extends AutoDisposeFamilyNotifier<FeedModel, FeedMod
       if (_viewTimer != null && _viewTimer!.isActive) _viewTimer?.cancel();
     });
 
-    final FeedModel? stateOrNullInBuild = stateOrNull;
-    myLogger.d('stateOrNull.body: ${stateOrNullInBuild?.body}');
-
     return initialFeed;
   }
 
@@ -48,23 +45,29 @@ class FeedCardStateNotifier extends AutoDisposeFamilyNotifier<FeedModel, FeedMod
 
     myLogger.d('SAVE');
     myLogger.d('state.body: ${state.body}');
+    myLogger.d('state.state.author.name: ${state.author.name}');
     myLogger.d('state.imageFiles.length: ${state.imageFiles?.length}');
     myLogger.d('state.state.videoFile?.path: ${state.videoFile?.path}');
-    myLogger.d('state.state.author.name: ${state.author.name}');
 
     try {
       final feed = state;
       final hasImages = feed.imageFiles?.isNotEmpty ?? false;
       final hasVideo = feed.videoFile != null;
 
-      final Map<String, dynamic> mediaMap = {};
+      Map<String, dynamic> map = {
+        'body': feed.body,
+        if (feed.feedVisibility != null) 'feed_visibility': feed.feedVisibility?.name,
+        if (feed.commentPolicy != null) 'commenting_policy': feed.commentPolicy?.name,
+        if (feed.scheduledAt != null) 'scheduled_at': feed.scheduledAt,
+      };
+
       if (hasImages || hasVideo) {
         if (hasVideo) {
-          mediaMap['video_file'] = await MultipartFile.fromFile(feed.videoFile!.path, filename: feed.videoFile!.path.split('/').last);
+          map['video_file'] = await MultipartFile.fromFile(feed.videoFile!.path, filename: feed.videoFile!.path.split('/').last);
         }
 
         if (hasImages) {
-          mediaMap['image_files'] = await Future.wait(
+          map['image_files'] = await Future.wait(
             feed.imageFiles!.map((image) async {
               return await MultipartFile.fromFile(image.path, filename: image.path.split('/').last);
             }),
@@ -72,8 +75,8 @@ class FeedCardStateNotifier extends AutoDisposeFamilyNotifier<FeedModel, FeedMod
         }
       }
 
-      final map = {'body': feed.body, 'feed_visibility': feed.feedVisibility?.name, 'commenting_policy': feed.commentPolicy?.name, 'scheduled_at': feed.scheduledAt};
-      Response jsonResponse = await service.fetchCreateFeed(formData: FormData.fromMap({'schm': map, 'media': mediaMap}));
+      myLogger.d('map: $map');
+      Response jsonResponse = await service.fetchCreateFeed(formData: FormData.fromMap(map));
       myLogger.d('jsonResponse.data: ${jsonResponse.data}, statusCode: ${jsonResponse.statusCode}');
 
       // final Response _ = await service.fetchUpdateFeedMedia(feedId: feedId, formData: FormData.fromMap(mediaMap));
@@ -143,7 +146,7 @@ class FeedCardStateNotifier extends AutoDisposeFamilyNotifier<FeedModel, FeedMod
 
     if (isVisibleEnough) {
       _viewTimer ??= Timer(const Duration(seconds: 2), () async {
-        final EngagementModel engagement = await feedService.fetchSetEngagement(postId: state.id, engagementType: EngagementType.views);
+        final EngagementModel engagement = await feedService.fetchSetEngagement(feedId: state.id, engagementType: EngagementType.views);
         state = state.copyWith(engagement: engagement);
       });
     } else {
@@ -155,15 +158,19 @@ class FeedCardStateNotifier extends AutoDisposeFamilyNotifier<FeedModel, FeedMod
   Future<void> handleEngagement({required EngagementType engagementType}) async {
     final FeedService feedService = FeedService();
     try {
-      final bool isSetInteraction = (engagementType == EngagementType.likes && state.engagement.liked != true);
+      final bool isSetInteraction = switch (engagementType) {
+        EngagementType.likes => state.engagement.liked != true,
+        EngagementType.bookmarks => state.engagement.bookmarked != true,
+        EngagementType.reposts => state.engagement.reposted != true,
+        EngagementType.quotes => state.engagement.quoted != true,
+        EngagementType.views => state.engagement.viewed != true,
+      };
 
-      if (isSetInteraction) {
-        final EngagementModel engagement = await feedService.fetchSetEngagement(postId: state.id, engagementType: engagementType);
-        state = state.copyWith(engagement: engagement);
-      } else {
-        final EngagementModel engagement = await feedService.fetchRemoveEngagement(postId: state.id, engagementType: engagementType);
-        state = state.copyWith(engagement: engagement);
-      }
+      final EngagementModel engagement = isSetInteraction
+          ? await feedService.fetchSetEngagement(feedId: state.id, engagementType: engagementType)
+          : await feedService.fetchRemoveEngagement(feedId: state.id, engagementType: engagementType);
+
+      state = state.copyWith(engagement: engagement);
     } catch (error, _) {
       myLogger.e('catch in handleEngagement: ${error.toString()}');
     }

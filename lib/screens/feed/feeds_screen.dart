@@ -44,10 +44,7 @@ class FeedsScreen extends ConsumerWidget {
             builder: (context) => IconButton(icon: const Icon(Icons.menu_rounded), onPressed: () => Scaffold.of(context).openDrawer()),
           ),
 
-          actions: [
-            IconButton(onPressed: () => Navigator.of(context).pushNamed('/search'), icon: const Icon(Icons.search_rounded)),
-            IconButton(onPressed: () => showFeedScreenSettingsDialog(context, ref), icon: const Icon(Icons.display_settings_rounded)),
-          ],
+          actions: [IconButton(onPressed: () => showFeedScreenSettingsDialog(context, ref), icon: const Icon(Icons.display_settings_rounded))],
           bottom: PreferredSize(
             preferredSize: const Size(100, 50.2),
             child: Container(
