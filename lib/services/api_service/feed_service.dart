@@ -91,6 +91,24 @@ class FeedService {
     }
   }
 
+  Future<List<FeedModel>> fetchComments({required String feedId, int start = 0, int end = 10}) async {
+    try {
+      final response = await _dio.get('/comments', queryParameters: {'feed_id': feedId, 'start': start, 'end': end});
+
+      myLogger.i('🚀 response.data in fetchComments: ${response.data}  statusCode: ${response.statusCode}');
+      final data = response.data;
+      myLogger.d("data['feeds'] is List: ${data['feeds'] is List}");
+      if (data['feeds'] is List) {
+        return (data['feeds'] as List).map<FeedModel>((json) => FeedModel.fromJson(json as Map<String, dynamic>)).toList();
+      } else {
+        return [];
+      }
+    } catch (error) {
+      myLogger.w('🌋 catch in fetchComments: ${error.toString()}');
+      rethrow;
+    }
+  }
+
   /// ************************************************* Feed Search ************************************************* ///
 
   Future<List<FeedSearchResultModel>> fetchFeedSearch({required Map<String, String> queryParameters}) async {
@@ -109,7 +127,7 @@ class FeedService {
     }
   }
 
-  /// ************************************************* Feed Engagement ************************************************* ///
+  /// ************************************************* Engagement ************************************************* ///
 
   Future<EngagementModel> fetchSetEngagement({String? feedId, String? commentId, required EngagementType engagementType}) async {
     try {

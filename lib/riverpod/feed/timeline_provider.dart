@@ -130,7 +130,7 @@ class FeedNotificationStateNotifier extends AutoDisposeAsyncNotifier<List<String
         throw NoValidTokenException('No valid access token');
       }
 
-      final url = '${constants.websocketEndpoint}/feeds/timeline/home';
+      final url = '${constants.websocketEndpoint}/feeds/timeline';
       _channel = IOWebSocketChannel.connect(Uri.parse(url), headers: {'Authorization': 'Bearer $accessToken'});
 
       // Listen for messages

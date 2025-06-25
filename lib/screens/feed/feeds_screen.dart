@@ -58,8 +58,8 @@ class FeedsScreen extends ConsumerWidget {
                 child: TabBar(
                   padding: EdgeInsets.all(padding4 / 1.5),
                   tabs: [
-                    Tab(height: tabHeight1, text: 'For You'),
-                    Tab(height: tabHeight1, text: 'Global'),
+                    Tab(height: tabHeight1, text: 'discover'),
+                    Tab(height: tabHeight1, text: 'following'),
                   ],
                 ),
               ),
@@ -79,8 +79,8 @@ class FeedsScreen extends ConsumerWidget {
 
             const TabBarView(
               children: [
-                TimelineTab(timelineType: TimelineType.following, showNotificationBubble: true),
                 TimelineTab(timelineType: TimelineType.discover),
+                TimelineTab(timelineType: TimelineType.following),
               ],
             ),
           ],
@@ -113,9 +113,8 @@ class FeedsScreen extends ConsumerWidget {
 /// TimelineTab
 class TimelineTab extends ConsumerStatefulWidget {
   final TimelineType timelineType;
-  final bool showNotificationBubble;
 
-  const TimelineTab({super.key, required this.timelineType, this.showNotificationBubble = false});
+  const TimelineTab({super.key, required this.timelineType});
 
   @override
   ConsumerState<TimelineTab> createState() => _TimelineTabState();
@@ -155,24 +154,22 @@ class _TimelineTabState extends ConsumerState<TimelineTab> with AutomaticKeepAli
     final AsyncValue<List<FeedModel>> feeds = ref.watch(timelineNotifierProvider(widget.timelineType));
 
     final double radius1 = dimensions.radius1;
-    if (widget.showNotificationBubble) {
-      ref.listen(feedNotificationStateProvider, (_, next) {
-        next.whenOrNull(
-          error: (error, stackTrace) {
-            if (error is NoValidTokenException) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  backgroundColor: theme.tertiaryBackground,
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius1)),
-                  content: Text('You token is expired or not authenticated.', style: Theme.of(context).textTheme.labelSmall),
-                ),
-              );
-            }
-          },
-        );
-      });
-    }
+    ref.listen(feedNotificationStateProvider, (_, next) {
+      next.whenOrNull(
+        error: (error, stackTrace) {
+          if (error is NoValidTokenException) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                backgroundColor: theme.tertiaryBackground,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius1)),
+                content: Text('You token is expired or not authenticated.', style: Theme.of(context).textTheme.labelSmall),
+              ),
+            );
+          }
+        },
+      );
+    });
 
     ref.listen(timelineNotifierProvider(widget.timelineType), (_, next) {
       next.whenOrNull(
@@ -210,7 +207,7 @@ class _TimelineTabState extends ConsumerState<TimelineTab> with AutomaticKeepAli
         ),
 
         /// Notification bubble
-        if (widget.showNotificationBubble) FeedNotificationWidget(scrollController: _scrollController, refreshKey: _refreshKey),
+        FeedNotificationWidget(scrollController: _scrollController, refreshKey: _refreshKey),
       ],
     );
   }

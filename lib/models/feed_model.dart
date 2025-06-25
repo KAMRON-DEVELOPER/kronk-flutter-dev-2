@@ -67,6 +67,7 @@ class FeedModel extends Equatable {
   final CommentingPolicy? commentPolicy;
   final EngagementModel engagement;
   final String? quoteId;
+  final String? parentId;
   final List<File>? imageFiles;
   final File? videoFile;
   final FeedModeEnum feedModeEnum;
@@ -84,6 +85,7 @@ class FeedModel extends Equatable {
     this.commentPolicy,
     required this.engagement,
     this.quoteId,
+    this.parentId,
     this.feedModeEnum = FeedModeEnum.view,
     this.imageFiles,
     this.videoFile,
@@ -115,6 +117,8 @@ class FeedModel extends Equatable {
       scheduledAt: json['scheduled_at'],
       feedVisibility: FeedVisibility.values.byName(json['feed_visibility']),
       commentPolicy: CommentingPolicy.values.byName(json['comment_policy']),
+      quoteId: json['quote_id'],
+      parentId: json['parent_id'],
       engagement: EngagementModel.fromJson(json['engagement']),
     );
   }
@@ -144,6 +148,8 @@ class FeedModel extends Equatable {
     Object? scheduledAt = _sentinel,
     Object? feedVisibility = _sentinel,
     Object? commentPolicy = _sentinel,
+    Object? quoteId = _sentinel,
+    Object? parentId = _sentinel,
     EngagementModel? engagement,
     Object? feedModeEnum = _sentinel,
     Object? imageFiles = _sentinel,
@@ -160,6 +166,8 @@ class FeedModel extends Equatable {
       scheduledAt: scheduledAt == _sentinel ? this.scheduledAt : scheduledAt as String?,
       feedVisibility: feedVisibility == _sentinel ? this.feedVisibility : feedVisibility as FeedVisibility,
       commentPolicy: commentPolicy == _sentinel ? this.commentPolicy : commentPolicy as CommentingPolicy,
+      quoteId: quoteId == _sentinel ? this.quoteId : quoteId as String?,
+      parentId: parentId == _sentinel ? this.parentId : parentId as String?,
       engagement: engagement ?? this.engagement,
       feedModeEnum: feedModeEnum == _sentinel ? this.feedModeEnum : feedModeEnum as FeedModeEnum,
       imageFiles: imageFiles == _sentinel ? this.imageFiles : imageFiles as List<File>,
