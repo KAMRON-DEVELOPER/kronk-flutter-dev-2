@@ -7,9 +7,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kronk/constants/enums.dart';
 import 'package:kronk/models/user_model.dart';
+import 'package:kronk/services/api_service/users_service.dart';
 import 'package:kronk/utility/my_logger.dart';
 import 'package:kronk/utility/storage.dart';
-import 'package:kronk/services/api_service/users_service.dart';
 
 /// profileStateProvider
 final profileStateProvider = StateNotifierProvider<ProfileStateNotifier, ProfileStateEnum>((ref) => ProfileStateNotifier());
@@ -71,19 +71,17 @@ class ProfileNotifier extends AsyncNotifier<UserModel?> {
     log('🔨 statusCode: $statusCode');
 
     if (statusCode == 204) {
-      final GoogleSignIn googleSignIn = GoogleSignIn();
+      final GoogleSignIn googleSignIn = GoogleSignIn.instance;
       final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
       User? firebaseUser = firebaseAuth.currentUser;
 
       try {
-        final GoogleSignInAccount? googleSignInAccount = await googleSignIn.signIn();
+        final GoogleSignInAccount googleSignInAccount = await googleSignIn.authenticate();
 
-        if (googleSignInAccount != null) {
-          final GoogleSignInAuthentication googleAuth = await googleSignInAccount.authentication;
-          AuthCredential authCredential = GoogleAuthProvider.credential(idToken: googleAuth.idToken, accessToken: googleAuth.accessToken);
+        final GoogleSignInAuthentication googleAuth = googleSignInAccount.authentication;
+        AuthCredential authCredential = GoogleAuthProvider.credential(idToken: googleAuth.idToken);
 
-          await firebaseUser?.reauthenticateWithCredential(authCredential);
-        }
+        await firebaseUser?.reauthenticateWithCredential(authCredential);
       } catch (e) {
         log('💀 Error during user deletion: $e');
         return null;
@@ -96,10 +94,10 @@ class ProfileNotifier extends AsyncNotifier<UserModel?> {
   }
 
   Future<void> logoutUser() async {
-    final GoogleSignIn googleSignIn = GoogleSignIn();
+    final GoogleSignIn googleSignIn = GoogleSignIn.instance;
     final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
-    GoogleSignInAccount? googleSignInAccount = await googleSignIn.signOut();
+    await googleSignIn.signOut();
     await firebaseAuth.signOut();
-    log('🔨 googleSignInAccount in logoutUser: $googleSignInAccount');
+    log('🔨 googleSignInAccount in logoutUser');
   }
 }

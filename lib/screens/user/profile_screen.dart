@@ -1,14 +1,15 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:kronk/constants/my_theme.dart';
 import 'package:kronk/models/user_model.dart';
+import 'package:kronk/riverpod/general/theme_notifier_provider.dart';
 import 'package:kronk/riverpod/profile/user_provider.dart';
 import 'package:kronk/utility/constants.dart';
 import 'package:kronk/utility/dimensions.dart';
 import 'package:kronk/utility/my_logger.dart';
-import 'package:kronk/constants/my_theme.dart';
-import 'package:kronk/riverpod/general/theme_notifier_provider.dart';
 import 'package:kronk/widgets/navbar.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -28,7 +29,7 @@ class ProfileScreen extends ConsumerWidget {
           actions: [
             IconButton(
               icon: Icon(Icons.settings, color: activeTheme.primaryText),
-              onPressed: () => Navigator.pushNamed(context, '/settings'),
+              onPressed: () => context.push('/settings'),
             ),
           ],
         ),
@@ -329,8 +330,8 @@ class ProfileSkeletonWidget extends ConsumerWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            ElevatedButton(onPressed: () => Navigator.pushNamed(context, '/auth/login'), child: const Text('Sign In')),
-            ElevatedButton(onPressed: () => Navigator.pushNamed(context, '/auth/register'), child: const Text('Sign Up')),
+            ElevatedButton(onPressed: () => context.push('/auth/login'), child: const Text('Sign In')),
+            ElevatedButton(onPressed: () => context.push('/auth/register'), child: const Text('Sign Up')),
           ],
         ),
       ],

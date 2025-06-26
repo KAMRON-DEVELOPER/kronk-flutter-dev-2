@@ -91,9 +91,9 @@ class FeedService {
     }
   }
 
-  Future<List<FeedModel>> fetchComments({required String feedId, int start = 0, int end = 10}) async {
+  Future<List<FeedModel>> fetchComments({required String? parentId, int start = 0, int end = 10}) async {
     try {
-      final response = await _dio.get('/comments', queryParameters: {'feed_id': feedId, 'start': start, 'end': end});
+      final response = await _dio.get('/comments', queryParameters: {'feed_id': parentId, 'start': start, 'end': end});
 
       myLogger.i('🚀 response.data in fetchComments: ${response.data}  statusCode: ${response.statusCode}');
       final data = response.data;

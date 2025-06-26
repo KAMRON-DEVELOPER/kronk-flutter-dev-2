@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kronk/constants/enums.dart';
 import 'package:kronk/models/feed_model.dart';
 import 'package:kronk/riverpod/feed/feed_screen_style_provider.dart';
@@ -14,6 +15,8 @@ import 'package:kronk/utility/my_logger.dart';
 import 'package:kronk/widgets/feed/feed_card.dart';
 import 'package:kronk/widgets/feed/feed_notification_widget.dart';
 import 'package:kronk/widgets/navbar.dart';
+
+final tabIndexProvider = StateProvider<int>((ref) => 0);
 
 /// FeedsScreen
 class FeedsScreen extends ConsumerWidget {
@@ -35,76 +38,91 @@ class FeedsScreen extends ConsumerWidget {
     final double tabHeight1 = dimensions.tabHeight1;
     return DefaultTabController(
       length: 2,
-      child: Scaffold(
-        resizeToAvoidBottomInset: false,
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          title: const Text('Feeds'),
-          leading: Builder(
-            builder: (context) => IconButton(icon: const Icon(Icons.menu_rounded), onPressed: () => Scaffold.of(context).openDrawer()),
-          ),
-
-          actions: [IconButton(onPressed: () => showFeedScreenSettingsDialog(context, ref), icon: const Icon(Icons.display_settings_rounded))],
-          bottom: PreferredSize(
-            preferredSize: const Size(100, 50.2),
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              decoration: BoxDecoration(
-                border: Border(bottom: BorderSide(color: theme.outline, width: 1)),
+      child: Builder(
+        builder: (context) {
+          final tabController = DefaultTabController.of(context);
+          tabController.addListener(() {
+            ref.read(tabIndexProvider.notifier).state = tabController.index;
+          });
+          return Scaffold(
+            resizeToAvoidBottomInset: false,
+            backgroundColor: Colors.transparent,
+            appBar: AppBar(
+              title: const Text('Feeds'),
+              leading: Builder(
+                builder: (context) => IconButton(icon: const Icon(Icons.menu_rounded), onPressed: () => Scaffold.of(context).openDrawer()),
               ),
-              child: Container(
-                margin: EdgeInsets.symmetric(horizontal: margin3),
-                decoration: BoxDecoration(color: theme.secondaryBackground, borderRadius: BorderRadius.circular(radius1)),
-                child: TabBar(
-                  padding: EdgeInsets.all(padding4 / 1.5),
-                  tabs: [
-                    Tab(height: tabHeight1, text: 'discover'),
-                    Tab(height: tabHeight1, text: 'following'),
+
+              actions: [IconButton(onPressed: () => showFeedScreenSettingsDialog(context, ref), icon: const Icon(Icons.display_settings_rounded))],
+              bottom: PreferredSize(
+                preferredSize: const Size(100, 50.2),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  decoration: BoxDecoration(
+                    border: Border(bottom: BorderSide(color: theme.outline, width: 1)),
+                  ),
+                  child: Container(
+                    margin: EdgeInsets.symmetric(horizontal: margin3),
+                    decoration: BoxDecoration(color: theme.secondaryBackground, borderRadius: BorderRadius.circular(radius1)),
+                    child: TabBar(
+                      padding: EdgeInsets.all(padding4 / 1.5),
+                      tabs: [
+                        Tab(height: tabHeight1, text: 'discover'),
+                        Tab(height: tabHeight1, text: 'following'),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            body: Stack(
+              children: [
+                /// Static background images
+                if (isFloating)
+                  Positioned.fill(
+                    child: Opacity(
+                      opacity: 0.4,
+                      child: Image.asset(
+                        displayState.backgroundImagePath,
+                        fit: BoxFit.cover,
+                        cacheHeight: screenHeight.cacheSize(context),
+                        cacheWidth: screenWidth.cacheSize(context),
+                      ),
+                    ),
+                  ),
+
+                const TabBarView(
+                  children: [
+                    TimelineTab(timelineType: TimelineType.discover),
+                    TimelineTab(timelineType: TimelineType.following),
                   ],
                 ),
-              ),
-            ),
-          ),
-        ),
-        body: Stack(
-          children: [
-            /// Static background images
-            if (isFloating)
-              Positioned.fill(
-                child: Opacity(
-                  opacity: 0.4,
-                  child: Image.asset(displayState.backgroundImagePath, fit: BoxFit.cover, cacheHeight: screenHeight.cacheSize(context), cacheWidth: screenWidth.cacheSize(context)),
-                ),
-              ),
-
-            const TabBarView(
-              children: [
-                TimelineTab(timelineType: TimelineType.discover),
-                TimelineTab(timelineType: TimelineType.following),
               ],
             ),
-          ],
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () async {
-            try {
-              await ref.read(timelineNotifierProvider(TimelineType.following).notifier).createFeed();
-            } catch (error) {
-              if (!context.mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  backgroundColor: theme.tertiaryBackground,
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius1)),
-                  content: Text('Failed to create feed: $error', style: Theme.of(context).textTheme.labelSmall),
-                ),
-              );
-            }
-          },
-          child: const Icon(Icons.add_rounded),
-        ),
-        bottomNavigationBar: const Navbar(),
-        drawer: const CustomDrawer(),
+            floatingActionButton: FloatingActionButton(
+              onPressed: () async {
+                try {
+                  final currentIndex = ref.read(tabIndexProvider);
+                  final currentTimeline = currentIndex == 0 ? TimelineType.discover : TimelineType.following;
+                  ref.read(timelineNotifierProvider(currentTimeline).notifier).createFeed();
+                } catch (error) {
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      backgroundColor: theme.tertiaryBackground,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius1)),
+                      content: Text('Failed to create feed: $error', style: Theme.of(context).textTheme.labelSmall),
+                    ),
+                  );
+                }
+              },
+              child: const Icon(Icons.add_rounded),
+            ),
+            bottomNavigationBar: const Navbar(),
+            drawer: const CustomDrawer(),
+          );
+        },
       ),
     );
   }
@@ -178,7 +196,7 @@ class _TimelineTabState extends ConsumerState<TimelineTab> with AutomaticKeepAli
             myLogger.e('DioException error.error: ${error.error}');
             myLogger.e('DioException error.message: ${error.message}');
             myLogger.e('DioException error.type: ${error.type}');
-            Navigator.pushNamedAndRemoveUntil(context, '/auth', (route) => false);
+            context.go('/auth');
           }
         },
       );

@@ -21,7 +21,6 @@ dependencies:
   rive:
   lottie:
   iconsax:
-  page_transition:
   dio:
   flutter_staggered_grid_view:
   icons_plus:
@@ -66,6 +65,7 @@ dependencies:
   fl_chart:
   vector_graphics:
   animated_flip_counter:
+  go_router:
 
 dev_dependencies:
   build_runner:

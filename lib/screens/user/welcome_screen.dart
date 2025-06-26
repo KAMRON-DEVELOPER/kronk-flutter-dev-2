@@ -2,12 +2,12 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kronk/utility/dimensions.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kronk/constants/my_theme.dart';
-import 'package:rive/rive.dart';
-import 'package:kronk/riverpod/general/theme_notifier_provider.dart';
-
 import 'package:kronk/riverpod/general/connectivity_notifier_provider.dart';
+import 'package:kronk/riverpod/general/theme_notifier_provider.dart';
+import 'package:kronk/utility/dimensions.dart';
+import 'package:rive/rive.dart';
 
 class WelcomeScreen extends ConsumerWidget {
   const WelcomeScreen({super.key});
@@ -38,7 +38,7 @@ class WelcomeScreen extends ConsumerWidget {
               ),
             );
           }
-          Navigator.pushNamed(context, '/auth');
+          context.push('/auth');
         },
         loading: () {},
         error: (Object err, StackTrace stack) {},
@@ -78,7 +78,7 @@ class WelcomeScreen extends ConsumerWidget {
                 ),
                 SizedBox(height: margin4),
                 TextButton(
-                  onPressed: () => Navigator.pushNamed(context, '/settings'),
+                  onPressed: () => context.push('/settings'),
                   child: Text('Set up later', style: Theme.of(context).textTheme.displaySmall?.copyWith(color: theme.secondaryText)),
                 ),
                 SizedBox(height: margin3),

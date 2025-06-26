@@ -3,15 +3,15 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kronk/utility/dimensions.dart';
-import 'package:kronk/utility/extensions.dart';
-import 'package:kronk/constants/my_theme.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kronk/bloc/authentication/authentication_bloc.dart';
 import 'package:kronk/bloc/authentication/authentication_event.dart';
 import 'package:kronk/bloc/authentication/authentication_state.dart';
-import 'package:kronk/riverpod/general/theme_notifier_provider.dart';
-
+import 'package:kronk/constants/my_theme.dart';
 import 'package:kronk/riverpod/general/connectivity_notifier_provider.dart';
+import 'package:kronk/riverpod/general/theme_notifier_provider.dart';
+import 'package:kronk/utility/dimensions.dart';
+import 'package:kronk/utility/extensions.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 class RequestForgotPasswordScreen extends ConsumerStatefulWidget {
@@ -61,7 +61,7 @@ class _RequestForgotPasswordScreenState extends ConsumerState<RequestForgotPassw
           );
           await Future.delayed(const Duration(seconds: 4), () {});
           if (!context.mounted) return;
-          Navigator.pushNamedAndRemoveUntil(context, '/auth/forgot_password', (Route<dynamic> route) => false);
+          context.go('/auth/forgot_password');
         } else if (state is AuthFailure) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

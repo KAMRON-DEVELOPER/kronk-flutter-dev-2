@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kronk/constants/my_theme.dart';
 import 'package:kronk/models/navbar_model.dart';
 import 'package:kronk/riverpod/general/navbar_provider.dart';
@@ -30,7 +31,7 @@ class Navbar extends ConsumerWidget {
             onTap: () {
               if (isActive) return;
               ref.read(selectedIndexProvider.notifier).state = index;
-              Navigator.popAndPushNamed(context, enabledNavbarItems.elementAt(index).route);
+              context.go(enabledNavbarItems[index].route);
             },
             child: Icon(navbarModel.getIconData(isActive: isActive), color: isActive ? theme.primaryText : theme.secondaryText, size: 32),
           );

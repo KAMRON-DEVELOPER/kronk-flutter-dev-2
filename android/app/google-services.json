@@ -7,17 +7,17 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:196822526321:android:0518953c9229c348062ed0",
+        "mobilesdk_app_id": "1:196822526321:android:cef5de8b70650ecf062ed0",
         "android_client_info": {
-          "package_name": "com.kronk.kronk"
+          "package_name": "uz.kronk.kronk"
         }
       },
       "oauth_client": [
         {
-          "client_id": "196822526321-vu2h22h3tdh50d1knuaug5iat9hv95ka.apps.googleusercontent.com",
+          "client_id": "196822526321-s71akjq1nv6d14rlo7f2gnpf30oidg2v.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.kronk.kronk",
+            "package_name": "uz.kronk.kronk",
             "certificate_hash": "2dc22479010e6373ae492f70ebb08fa4fb59256d"
           }
         }
@@ -31,65 +31,8 @@
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "196822526321-i8s3am9hia75vm43toae8kcld7k62ftm.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "kronk.com.kronk"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:196822526321:android:84d196365467d7df062ed0",
-        "android_client_info": {
-          "package_name": "kronk.com.kronk"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyBQedJdSWHzR_Zdq2m40v2wofHmE-SRsxg"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "196822526321-i8s3am9hia75vm43toae8kcld7k62ftm.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "kronk.com.kronk"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:196822526321:android:cef5de8b70650ecf062ed0",
-        "android_client_info": {
-          "package_name": "uz.kronk.kronk"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyBQedJdSWHzR_Zdq2m40v2wofHmE-SRsxg"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "196822526321-i8s3am9hia75vm43toae8kcld7k62ftm.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "kronk.com.kronk"
-              }
+              "client_id": "196822526321-b98dqp6vpvup7dhiltjpjgbs4g0ohj5p.apps.googleusercontent.com",
+              "client_type": 3
             }
           ]
         }

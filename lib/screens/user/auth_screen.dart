@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:icons_plus/icons_plus.dart';
+import 'package:kronk/constants/my_theme.dart';
 import 'package:kronk/utility/dimensions.dart';
 import 'package:kronk/utility/extensions.dart';
 import 'package:kronk/utility/my_logger.dart';
-import 'package:kronk/constants/my_theme.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+
 import '../../bloc/authentication/authentication_bloc.dart';
 import '../../bloc/authentication/authentication_event.dart';
 import '../../bloc/authentication/authentication_state.dart';
@@ -93,7 +95,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           );
           await Future.delayed(const Duration(seconds: 4));
           if (!context.mounted) return;
-          Navigator.pushNamedAndRemoveUntil(context, '/settings', (Route<dynamic> route) => false);
+          context.go('/settings');
         } else if (state is RegisterSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -105,7 +107,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           );
           await Future.delayed(const Duration(seconds: 4));
           if (!context.mounted) return;
-          Navigator.pushNamedAndRemoveUntil(context, '/auth/verify', (Route<dynamic> route) => false);
+          context.go('/auth/verify');
         } else if (state is GoogleAuthSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -116,7 +118,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             ),
           );
           if (!context.mounted) return;
-          Navigator.pushNamedAndRemoveUntil(context, '/settings', (Route<dynamic> route) => false);
+          context.go('/settings');
         } else if (state is AuthFailure) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -226,7 +228,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   if (isLoginMode) SizedBox(height: margin2),
                   if (isLoginMode)
                     GestureDetector(
-                      onTap: () => Navigator.pushNamed(context, '/auth/request_forgot_password'),
+                      onTap: () => context.push('/auth/request_forgot_password'),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [Text('Forgot password?', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: theme.secondaryText, height: 0))],

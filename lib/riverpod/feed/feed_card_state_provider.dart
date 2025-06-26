@@ -79,8 +79,20 @@ class FeedCardStateNotifier extends AutoDisposeFamilyNotifier<FeedModel, FeedMod
       Response jsonResponse = await service.fetchCreateFeed(formData: FormData.fromMap(map));
       myLogger.d('jsonResponse.data: ${jsonResponse.data}, statusCode: ${jsonResponse.statusCode}');
 
-      // final Response _ = await service.fetchUpdateFeedMedia(feedId: feedId, formData: FormData.fromMap(mediaMap));
-      // await ref.read(timelineNotifierProvider(TimelineType.home).notifier).refresh(timelineType: TimelineType.home);
+      final Map<String, dynamic> data = jsonResponse.data;
+
+      final updatedFeed = state.copyWith(
+        id: data['id'],
+        createdAt: DateTime.fromMillisecondsSinceEpoch((data['created_at'] * 1000).toInt()),
+        updatedAt: DateTime.fromMillisecondsSinceEpoch((data['updated_at'] * 1000).toInt()),
+        body: data['body'],
+        author: AuthorModel.fromJson(data['author']),
+        feedVisibility: FeedVisibility.values.byName(data['feed_visibility']),
+        commentPolicy: CommentingPolicy.values.byName(data['comment_policy']),
+        feedModeEnum: FeedModeEnum.view,
+      );
+
+      state = updatedFeed;
     } catch (error) {
       myLogger.e('error: $error');
       rethrow;

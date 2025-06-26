@@ -6,6 +6,7 @@ import 'package:kronk/models/user_model.dart';
 import 'package:kronk/services/api_service/users_service.dart';
 import 'package:kronk/utility/my_logger.dart';
 import 'package:kronk/utility/storage.dart';
+
 import 'authentication_event.dart';
 import 'authentication_state.dart';
 
@@ -130,21 +131,15 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
     emit(AuthLoading());
 
     try {
-      // Check if the user is already signed in
       User? firebaseUser = firebaseAuth.currentUser;
 
-      // If the user is not signed in, initiate Google Sign-In
       if (firebaseUser == null) {
         myLogger.i('🤡 firebaseUser is null and we need to authenticate it.');
-        final GoogleSignInAccount? googleSignInAccount = await GoogleSignIn().signIn();
 
-        if (googleSignInAccount == null) {
-          emit(const AuthFailure(failureMessage: '🤡 Google sign-in canceled.'));
-          return;
-        }
+        final GoogleSignInAccount googleSignInAccount = await GoogleSignIn.instance.authenticate();
 
-        final GoogleSignInAuthentication googleSignInAuthentication = await googleSignInAccount.authentication;
-        final OAuthCredential oAuthCredential = GoogleAuthProvider.credential(idToken: googleSignInAuthentication.idToken, accessToken: googleSignInAuthentication.accessToken);
+        final GoogleSignInAuthentication googleSignInAuthentication = googleSignInAccount.authentication;
+        final OAuthCredential oAuthCredential = GoogleAuthProvider.credential(idToken: googleSignInAuthentication.idToken);
 
         // Sign in to Firebase with Google credentials
         final UserCredential userCredential = await firebaseAuth.signInWithCredential(oAuthCredential);
@@ -156,10 +151,8 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
         }
       }
 
-      // Get the Firebase user ID token
       String? firebaseUserIdToken = await firebaseUser.getIdToken();
 
-      // Call your API service for social authentication
       Response? response = await _authApiService.fetchGoogleAuth(firebaseUserIdToken: firebaseUserIdToken);
       if (response.statusCode! < 400) {
         myLogger.i('🚀 social auth is success!: response.data: ${response.data}, runtimeType: ${response.data.runtimeType}');

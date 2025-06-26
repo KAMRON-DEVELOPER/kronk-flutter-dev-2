@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
+import 'package:kronk/constants/my_theme.dart';
 import 'package:kronk/models/navbar_model.dart';
 import 'package:kronk/models/statistics_model.dart';
 import 'package:kronk/riverpod/general/navbar_provider.dart';
 import 'package:kronk/riverpod/general/theme_notifier_provider.dart';
 import 'package:kronk/riverpod/settings/settings_statistics.dart';
-import 'package:kronk/utility/extensions.dart';
-import 'package:kronk/widgets/settings/stats_bar_chart.dart';
 import 'package:kronk/utility/dimensions.dart';
+import 'package:kronk/utility/extensions.dart';
 import 'package:kronk/utility/my_logger.dart';
-import 'package:kronk/utility/url_launches.dart';
 import 'package:kronk/utility/storage.dart';
+import 'package:kronk/utility/url_launches.dart';
 import 'package:kronk/widgets/profile/custom_painters.dart';
 import 'package:kronk/widgets/settings/custom_toggle.dart';
-import 'package:kronk/constants/my_theme.dart';
+import 'package:kronk/widgets/settings/stats_bar_chart.dart';
 import 'package:rive/rive.dart' hide LinearGradient;
 
 class SettingsScreen extends ConsumerWidget {
@@ -425,12 +426,12 @@ class BackButtonWidget extends ConsumerWidget {
       onPressed: () {
         myLogger.i('isAnyServiceEnabled: $isAnyServiceEnabled');
         if (!isAnyServiceEnabled) {
-          Navigator.pushReplacementNamed(context, '/welcome');
+          context.go('/welcome');
         } else {
           final Storage storage = Storage();
           storage.setSettingsAll({'isDoneSettings': true});
           String firstRoute = storage.getRoute();
-          Navigator.pushReplacementNamed(context, firstRoute);
+          context.go(firstRoute);
         }
       },
       icon: Icon(Icons.arrow_back_rounded, color: theme.primaryText, size: iconSize1),

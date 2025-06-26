@@ -63,8 +63,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '196822526321',
     projectId: 'kronk-dev-2',
     storageBucket: 'kronk-dev-2.firebasestorage.app',
-    androidClientId: '196822526321-476m8mq7e4fdai67mhgje7uuhog4d8gg.apps.googleusercontent.com',
-    iosClientId: '196822526321-t6flcjqit6aq7qr18h8s6ckfiflj6buo.apps.googleusercontent.com',
+    androidClientId: '196822526321-s71akjq1nv6d14rlo7f2gnpf30oidg2v.apps.googleusercontent.com',
     iosBundleId: 'uz.kronk.kronk',
   );
 

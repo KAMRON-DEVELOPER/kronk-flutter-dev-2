@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:kronk/constants/my_theme.dart';
 import 'package:kronk/riverpod/general/theme_notifier_provider.dart';
+import 'package:kronk/utility/constants.dart';
 import 'package:kronk/utility/dimensions.dart';
+import 'package:kronk/utility/my_logger.dart';
 import 'package:kronk/utility/routes.dart';
 import 'package:kronk/utility/setup.dart';
-import 'package:kronk/constants/my_theme.dart';
 
 void main() async {
   String initialRoute = await setup();
+
+  await GoogleSignIn.instance.initialize(clientId: constants.clientId, serverClientId: constants.serverClientId);
 
   assert(() {
     debugInvertOversizedImages = true;
@@ -35,11 +41,13 @@ class MyApp extends ConsumerWidget {
     final double textSize3 = dimensions.textSize3;
     // final double textSize4 = dimensions.textSize4;
     final double padding2 = dimensions.padding2;
-    return MaterialApp(
+
+    myLogger.d('initialRoute: $initialRoute');
+
+    return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: 'Kronk',
-      initialRoute: initialRoute,
-      onGenerateRoute: (RouteSettings settings) => routes(settings, context),
+      routerConfig: GoRouter(initialLocation: initialRoute, routes: routes, debugLogDiagnostics: true, restorationScopeId: 'my_app'),
 
       theme: ThemeData(
         splashFactory: NoSplash.splashFactory,

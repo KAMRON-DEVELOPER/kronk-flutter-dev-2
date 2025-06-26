@@ -1,9 +1,11 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class DatePicker extends StatefulWidget {
   final Function(DateTime?) onDatePicked;
+
   const DatePicker({super.key, required this.onDatePicked});
 
   @override
@@ -88,10 +90,7 @@ class _DatePickerState extends State<DatePicker> {
             return Center(
               child: Text(
                 '${index + 1}',
-                style: TextStyle(
-                  fontSize: selectedDate.day - 1 == index ? 24 : 16,
-                  color: selectedDate.day - 1 == index ? Colors.black : Colors.grey,
-                ),
+                style: TextStyle(fontSize: selectedDate.day - 1 == index ? 24 : 16, color: selectedDate.day - 1 == index ? Colors.black : Colors.grey),
               ),
             );
           },
@@ -120,10 +119,7 @@ class _DatePickerState extends State<DatePicker> {
             return Center(
               child: Text(
                 '${index + 1}',
-                style: TextStyle(
-                  fontSize: selectedDate.month - 1 == index ? 24 : 16,
-                  color: selectedDate.month - 1 == index ? Colors.black : Colors.grey,
-                ),
+                style: TextStyle(fontSize: selectedDate.month - 1 == index ? 24 : 16, color: selectedDate.month - 1 == index ? Colors.black : Colors.grey),
               ),
             );
           },
@@ -165,10 +161,7 @@ class _DatePickerState extends State<DatePicker> {
   }
 }
 
-void showCustomDateSelector({
-  required BuildContext context,
-  required Function(DateTime?) onDateSelected,
-}) {
+void showCustomDateSelector({required BuildContext context, required Function(DateTime?) onDateSelected}) {
   showGeneralDialog(
     context: context,
     barrierColor: Colors.black54,
@@ -184,13 +177,11 @@ void showCustomDateSelector({
             backgroundColor: Colors.greenAccent.withValues(alpha: 0.2),
             // clipBehavior: Clip.antiAlias,
             insetPadding: const EdgeInsets.all(8),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16.0),
-            ),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
             child: DatePicker(
               onDatePicked: (pickedDate) {
                 onDateSelected(pickedDate);
-                Navigator.of(context).pop();
+                context.pop();
               },
             ),
           ),

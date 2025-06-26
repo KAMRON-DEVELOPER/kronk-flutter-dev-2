@@ -5,6 +5,7 @@ import 'package:animated_flip_counter/animated_flip_counter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:kronk/constants/enums.dart';
 import 'package:kronk/constants/kronk_icon.dart';
@@ -392,7 +393,7 @@ class FeedCardMenuButton extends ConsumerWidget {
                   // subtitle: const Text('subtitle'),
                   onTap: () {
                     notifier.updateField(feed: feed.copyWith(feedModeEnum: FeedModeEnum.edit));
-                    Navigator.pop(context);
+                    context.pop();
                   },
                 ),
                 ListTile(
@@ -412,7 +413,7 @@ class FeedCardMenuButton extends ConsumerWidget {
                         await ref.read(timelineNotifierProvider(TimelineType.following).notifier).refresh(timelineType: TimelineType.following);
                       }
                       if (!context.mounted) return;
-                      Navigator.pop(context);
+                      context.pop();
                     } catch (error) {
                       String errorMessage;
                       if (error is List) {
@@ -775,10 +776,10 @@ class FeedActionSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.watch(themeNotifierProvider);
+    final _ = ref.watch(themeNotifierProvider);
     final Dimensions dimensions = Dimensions.of(context);
     final double margin2 = dimensions.margin2;
-    final double radius1 = dimensions.radius1;
+    final double _ = dimensions.radius1;
 
     myLogger.d(
       'comments: ${feed.engagement.comments}, repostsAndQuotes: ${feed.repostsAndQuotes}, likes: ${feed.engagement.likes}, views: ${feed.engagement.views}, bookmarks: ${feed.engagement.bookmarks}',
@@ -796,76 +797,7 @@ class FeedActionSection extends ConsumerWidget {
               iconDataFill: KronkIcon.messageCircle1,
               iconDataOutline: KronkIcon.messageSquareLeft2,
               count: feed.engagement.comments,
-              onTap: () {
-                if (feed.feedModeEnum == FeedModeEnum.create) return;
-                showModalBottomSheet(
-                  context: context,
-                  backgroundColor: theme.secondaryBackground,
-                  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-                  builder: (context) {
-                    return Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        ListTile(
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          splashColor: Colors.red,
-                          iconColor: theme.primaryText,
-                          titleTextStyle: TextStyle(color: theme.primaryText),
-                          subtitleTextStyle: TextStyle(color: theme.primaryText),
-                          leading: const Icon(Icons.flag_rounded),
-                          title: const Text('Edit'),
-                          // subtitle: const Text('subtitle'),
-                          onTap: () {
-                            notifier.updateField(feed: feed.copyWith(feedModeEnum: FeedModeEnum.edit));
-                            Navigator.pop(context);
-                          },
-                        ),
-                        ListTile(
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          iconColor: theme.primaryText,
-                          titleTextStyle: TextStyle(color: theme.primaryText),
-                          subtitleTextStyle: TextStyle(color: theme.primaryText),
-                          leading: const Icon(Icons.delete_outline_rounded),
-                          title: const Text('Delete'),
-                          // subtitle: const Text('subtitle'),
-                          onTap: () async {
-                            final communityServices = FeedService();
-                            try {
-                              final bool ok = await communityServices.fetchDeleteFeed(feedId: feed.id);
-                              myLogger.d('ok: $ok');
-                              if (ok) {
-                                await ref.read(timelineNotifierProvider(TimelineType.following).notifier).refresh(timelineType: TimelineType.following);
-                              }
-                              if (!context.mounted) return;
-                              Navigator.pop(context);
-                            } catch (error) {
-                              String errorMessage;
-                              if (error is List) {
-                                errorMessage = error.join(', ');
-                              } else if (error is Exception && error.toString().startsWith('Exception: [')) {
-                                // Extract inner list string from Exception string: "Exception: [msg1, msg2]"
-                                errorMessage = error.toString().replaceFirst('Exception: [', '').replaceFirst(']', '');
-                              } else {
-                                errorMessage = error.toString();
-                              }
-
-                              if (!context.mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  backgroundColor: theme.tertiaryBackground,
-                                  behavior: SnackBarBehavior.floating,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius1)),
-                                  content: Text(errorMessage, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.redAccent)),
-                                ),
-                              );
-                            }
-                          },
-                        ),
-                      ],
-                    );
-                  },
-                );
-              },
+              onTap: () => context.push('/feeds/feed', extra: feed),
             ),
 
             /// Repost & quote
