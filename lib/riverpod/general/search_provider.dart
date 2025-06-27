@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kronk/models/feed_model.dart';
 import 'package:kronk/models/user_model.dart';
 import 'package:kronk/services/api_service/feed_service.dart';
-import 'package:kronk/services/api_service/users_service.dart';
+import 'package:kronk/services/api_service/user_service.dart';
 
 final searchQueryStateProvider = StateProvider<String>((ref) => '');
 

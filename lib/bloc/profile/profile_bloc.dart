@@ -5,7 +5,7 @@
 //import 'package:google_sign_in/google_sign_in.dart';
 //import 'package:kronk/models/user_model.dart';
 //import 'package:logger/logger.dart';
-//import '../../services/users_service.dart';
+//import '../../services/user_service.dart';
 //import '../../utility/storage.dart';
 //import 'authentication_event.dart';
 //import 'authentication_state.dart';

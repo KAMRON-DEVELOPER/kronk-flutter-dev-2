@@ -7,7 +7,7 @@ import 'package:kronk/constants/enums.dart';
 import 'package:kronk/constants/my_theme.dart';
 import 'package:kronk/models/navbar_model.dart';
 import 'package:kronk/models/user_model.dart';
-import 'package:kronk/services/api_service/users_service.dart';
+import 'package:kronk/services/api_service/user_service.dart';
 import 'package:kronk/utility/classes.dart';
 import 'package:tuple/tuple.dart';
 

@@ -127,7 +127,7 @@ class AppRouter {
       ),
       GoRoute(
         path: '/chats',
-        pageBuilder: (context, state) => SlidePageTransition(key: state.pageKey, child: const ChatScreen()),
+        pageBuilder: (context, state) => SlidePageTransition(key: state.pageKey, child: const ChatsScreen()),
       ),
       GoRoute(
         path: '/education',
