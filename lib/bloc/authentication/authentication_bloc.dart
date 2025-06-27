@@ -136,6 +136,13 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
       if (firebaseUser == null) {
         myLogger.i('🤡 firebaseUser is null and we need to authenticate it.');
 
+        final bool supportsAuthenticate = GoogleSignIn.instance.supportsAuthenticate();
+        if (!supportsAuthenticate) {
+          myLogger.w('🥶 Google Sign-In not supported on this platform');
+          emit(const AuthFailure(failureMessage: 'Google Sign-In not supported'));
+          return;
+        }
+
         final GoogleSignInAccount googleSignInAccount = await GoogleSignIn.instance.authenticate();
 
         final GoogleSignInAuthentication googleSignInAuthentication = googleSignInAccount.authentication;
@@ -165,6 +172,10 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
       }
       myLogger.w('🎃 social auth is failed!');
       emit(const AuthFailure(failureMessage: '🥶 Server error occurred while social auth.'));
+    } on GoogleSignInException catch (e) {
+      myLogger.e('GoogleSignInException e.details: ${e.details}');
+      myLogger.e('GoogleSignInException e.code: ${e.code}');
+      myLogger.e('GoogleSignInException e.description: ${e.description}');
     } catch (e) {
       myLogger.w('🥶 Google Sign-In Error: $e');
       emit(AuthFailure(failureMessage: '🥶 Google Sign-In Error: $e'));

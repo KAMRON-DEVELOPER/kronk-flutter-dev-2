@@ -3,6 +3,7 @@ import 'package:kronk/utility/constants.dart';
 import 'package:kronk/utility/my_logger.dart';
 import 'package:kronk/utility/storage.dart';
 import 'package:tuple/tuple.dart';
+
 import '../../models/user_model.dart';
 import '../../utility/interceptors.dart';
 
@@ -185,14 +186,15 @@ class UserService {
     }
   }
 
-  Future<List<UserSearchModel>> fetchUserSearch({required Map<String, String> queryParameters}) async {
+  Future<List<UserSearchModel>> fetchUserSearch({required String query}) async {
     try {
       _dio.interceptors.add(AccessTokenInterceptor());
-      Response response = await _dio.get('/search', queryParameters: queryParameters);
-      myLogger.i('🚀 response.data in fetchCreatePost: ${response.data}  statusCode: ${response.statusCode}');
+      Response response = await _dio.get('/search', queryParameters: {'query': query});
+      myLogger.i('🚀 response.data in fetchUserSearch: ${response.data}  statusCode: ${response.statusCode}');
       final data = response.data;
       if (data is List) {
-        return data.map((json) => UserSearchModel.fromJson(json)).toList();
+        final List<UserSearchModel> userSearchResults = data.map((json) => UserSearchModel.fromJson(json)).toList();
+        return userSearchResults;
       } else {
         return [];
       }

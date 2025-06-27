@@ -125,7 +125,7 @@ class CommentNotifier extends FamilyAsyncNotifier<List<FeedModel>, String?> {
   Future<List<FeedModel>> _fetchComments({required String? parentId}) async {
     try {
       final List<FeedModel> feeds = await _feedService.fetchComments(parentId: parentId);
-      myLogger.d('feeds in _fetchTimeline in timelineNotifierProvider: $feeds');
+      myLogger.d('feeds in _fetchComments in commentNotifierProvider: $feeds');
       return feeds.isEmpty ? [] : feeds;
     } catch (error) {
       state = AsyncValue.error(error, StackTrace.current);

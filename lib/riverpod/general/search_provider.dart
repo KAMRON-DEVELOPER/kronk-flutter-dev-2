@@ -22,13 +22,13 @@ class UserSearchNotifier extends AsyncNotifier<List<UserSearchModel>> {
     return [];
   }
 
-  Future<List<UserSearchModel>> fetchSearchQueryResult() async {
+  Future<void> fetchSearchQueryResult() async {
     final String searchQuery = ref.watch(searchQueryStateProvider);
-    if (searchQuery.trim().isEmpty) return [];
+    if (searchQuery.trim().isEmpty) return;
 
     if (await _checkConnectivityAndAuth()) {
-      final List<UserSearchModel> userSearchResultList = await _userService.fetchUserSearch(queryParameters: {'query': searchQuery});
-      return userSearchResultList;
+      final List<UserSearchModel> userSearchResultList = await _userService.fetchUserSearch(query: searchQuery);
+      state = AsyncData(userSearchResultList);
     } else {
       throw Exception('You are not authenticated or you are disconnected from the internet.');
     }
@@ -81,12 +81,12 @@ class PostSearchNotifier extends AsyncNotifier<List<FeedSearchResultModel>> {
     return [];
   }
 
-  Future<List<FeedSearchResultModel>> fetchSearchQueryResult() async {
+  Future<void> fetchSearchQueryResult() async {
     final String searchQuery = ref.watch(searchQueryStateProvider);
-    if (searchQuery.trim().isEmpty) return [];
+    if (searchQuery.trim().isEmpty) return;
     if (await _checkConnectivityAndAuth()) {
-      final List<FeedSearchResultModel> postSearchResultList = await _feedService.fetchFeedSearch(queryParameters: {'query': searchQuery});
-      return postSearchResultList;
+      final List<FeedSearchResultModel> postSearchResultList = await _feedService.fetchFeedSearch(query: searchQuery);
+      state = AsyncData(postSearchResultList);
     } else {
       throw Exception('You are not authenticated or you are disconnected from the internet.');
     }

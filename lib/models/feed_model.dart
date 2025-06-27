@@ -196,23 +196,21 @@ class FeedModel extends Equatable {
 
 class FeedSearchResultModel {
   final String id;
-  final String body;
-  final String authorId;
-  final String videoUrl;
   final String createdAt;
   final String updatedAt;
-  final String feedVisibility;
-  final String commentMode;
+  final String body;
+  final String authorId;
+  final FeedVisibility feedVisibility;
+  final CommentingPolicy commentingPolicy;
 
   const FeedSearchResultModel({
     required this.id,
     required this.body,
     required this.authorId,
-    required this.videoUrl,
     required this.createdAt,
     required this.updatedAt,
     required this.feedVisibility,
-    required this.commentMode,
+    required this.commentingPolicy,
   });
 
   factory FeedSearchResultModel.fromJson(Map<String, dynamic> json) {
@@ -220,11 +218,10 @@ class FeedSearchResultModel {
       id: json['id'],
       body: json['body'],
       authorId: json['author_id'],
-      videoUrl: json['video_url'],
       createdAt: json['created_at'],
       updatedAt: json['updated_at'],
-      feedVisibility: json['feed_visibility'],
-      commentMode: json['comment_mode'],
+      feedVisibility: FeedVisibility.values.byName(json['feed_visibility']),
+      commentingPolicy: CommentingPolicy.values.byName(json['comment_policy']),
     );
   }
 
@@ -235,18 +232,17 @@ class FeedSearchResultModel {
     String? videoUrl,
     String? createdAt,
     String? updatedAt,
-    String? feedVisibility,
-    String? commentMode,
+    FeedVisibility? feedVisibility,
+    CommentingPolicy? commentingPolicy,
   }) {
     return FeedSearchResultModel(
       id: id ?? this.id,
       body: body ?? this.body,
       authorId: authorId ?? this.authorId,
-      videoUrl: videoUrl ?? this.videoUrl,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       feedVisibility: feedVisibility ?? this.feedVisibility,
-      commentMode: commentMode ?? this.commentMode,
+      commentingPolicy: commentingPolicy ?? this.commentingPolicy,
     );
   }
 }

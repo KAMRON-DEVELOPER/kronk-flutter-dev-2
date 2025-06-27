@@ -111,9 +111,9 @@ class FeedService {
 
   /// ************************************************* Feed Search ************************************************* ///
 
-  Future<List<FeedSearchResultModel>> fetchFeedSearch({required Map<String, String> queryParameters}) async {
+  Future<List<FeedSearchResultModel>> fetchFeedSearch({required String query}) async {
     try {
-      Response response = await _dio.get('/search', queryParameters: queryParameters);
+      Response response = await _dio.get('/search', queryParameters: {'query': query});
       myLogger.i('🚀 response.data in fetchFeedSearch: ${response.data}  statusCode: ${response.statusCode}');
       final data = response.data;
       if (data is List) {

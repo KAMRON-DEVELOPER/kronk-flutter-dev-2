@@ -192,12 +192,13 @@ class UserSearchModel {
   final String id;
   final String createdAt;
   final String updatedAt;
+  final String name;
   final String username;
   final String email;
   final String password;
-  final String role;
-  final String status;
-  final String followPolicy;
+  final UserRole role;
+  final UserStatus status;
+  final FollowPolicy followPolicy;
   final int followersCount;
   final int followingsCount;
   final bool isFollowing;
@@ -206,6 +207,7 @@ class UserSearchModel {
     required this.id,
     required this.createdAt,
     required this.updatedAt,
+    required this.name,
     required this.username,
     required this.email,
     required this.password,
@@ -222,12 +224,13 @@ class UserSearchModel {
       id: json['id'] as String,
       createdAt: json['created_at'] as String,
       updatedAt: json['updated_at'] as String,
+      name: json['name'] as String,
       username: json['username'] as String,
       email: json['email'] as String,
       password: json['password'] as String,
-      role: json['role'] as String,
-      status: json['status'] as String,
-      followPolicy: json['follow_policy'] as String,
+      role: UserRole.values.byName(json['role']),
+      status: UserStatus.values.byName(json['status']),
+      followPolicy: FollowPolicy.values.byName(json['follow_policy']),
       followersCount: int.parse(json['followers_count'].toString()),
       followingsCount: int.parse(json['followings_count'].toString()),
       isFollowing: json['is_following'] as bool,
@@ -255,12 +258,13 @@ class UserSearchModel {
     String? id,
     String? createdAt,
     String? updatedAt,
+    String? name,
     String? username,
     String? email,
     String? password,
-    String? role,
-    String? status,
-    String? followPolicy,
+    UserRole? role,
+    UserStatus? status,
+    FollowPolicy? followPolicy,
     int? followersCount,
     int? followingsCount,
     bool? isFollowing,
@@ -269,6 +273,7 @@ class UserSearchModel {
       id: id ?? this.id,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      name: name ?? this.name,
       username: username ?? this.username,
       email: email ?? this.email,
       password: password ?? this.password,

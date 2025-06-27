@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,26 +9,32 @@ import 'package:kronk/riverpod/general/theme_notifier_provider.dart';
 import 'package:kronk/utility/constants.dart';
 import 'package:kronk/utility/dimensions.dart';
 import 'package:kronk/utility/my_logger.dart';
-import 'package:kronk/utility/routes.dart';
+import 'package:kronk/utility/router.dart';
 import 'package:kronk/utility/setup.dart';
 
 void main() async {
-  String initialRoute = await setup();
+  String initialLocation = await setup();
 
-  await GoogleSignIn.instance.initialize(clientId: constants.clientId, serverClientId: constants.serverClientId);
+  if (kIsWeb) {
+    await GoogleSignIn.instance.initialize(clientId: constants.clientId, serverClientId: constants.serverClientId);
+  } else {
+    await GoogleSignIn.instance.initialize(serverClientId: constants.serverClientId);
+  }
 
   assert(() {
     debugInvertOversizedImages = true;
     return true;
   }());
 
-  runApp(ProviderScope(child: MyApp(initialRoute: initialRoute)));
+  final GoRouter router = AppRouter(initialLocation: initialLocation).router;
+
+  runApp(ProviderScope(child: MyApp(router: router)));
 }
 
 class MyApp extends ConsumerWidget {
-  final String initialRoute;
+  final GoRouter router;
 
-  const MyApp({super.key, required this.initialRoute});
+  const MyApp({super.key, required this.router});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -42,12 +49,14 @@ class MyApp extends ConsumerWidget {
     // final double textSize4 = dimensions.textSize4;
     final double padding2 = dimensions.padding2;
 
-    myLogger.d('initialRoute: $initialRoute');
+    myLogger.d('MyApp is building');
 
     return MaterialApp.router(
-      debugShowCheckedModeBanner: false,
       title: 'Kronk',
-      routerConfig: GoRouter(initialLocation: initialRoute, routes: routes, debugLogDiagnostics: true, restorationScopeId: 'my_app'),
+      debugShowCheckedModeBanner: false,
+      routerDelegate: router.routerDelegate,
+      routeInformationParser: router.routeInformationParser,
+      routeInformationProvider: router.routeInformationProvider,
 
       theme: ThemeData(
         splashFactory: NoSplash.splashFactory,

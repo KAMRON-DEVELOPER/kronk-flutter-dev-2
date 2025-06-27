@@ -12,29 +12,25 @@ import 'package:kronk/widgets/navbar.dart';
 
 final tabIndexProvider = StateProvider<int>((ref) => 0);
 
-class FeedsSearchScreen extends ConsumerStatefulWidget {
-  const FeedsSearchScreen({super.key});
+class SearchScreen extends ConsumerStatefulWidget {
+  const SearchScreen({super.key});
 
   @override
-  ConsumerState<FeedsSearchScreen> createState() => _FeedsSearchScreenState();
+  ConsumerState<SearchScreen> createState() => _SearchScreenState();
 }
 
-class _FeedsSearchScreenState extends ConsumerState<FeedsSearchScreen> with AutomaticKeepAliveClientMixin<FeedsSearchScreen> {
+class _SearchScreenState extends ConsumerState<SearchScreen> with AutomaticKeepAliveClientMixin<SearchScreen> {
   late final TextEditingController searchController;
-  late final PageController pageController;
-  String selectedType = 'posts';
 
   @override
   void initState() {
     super.initState();
     searchController = TextEditingController();
-    pageController = PageController();
   }
 
   @override
   void dispose() {
     searchController.dispose();
-    pageController.dispose();
     super.dispose();
   }
 
@@ -45,6 +41,7 @@ class _FeedsSearchScreenState extends ConsumerState<FeedsSearchScreen> with Auto
   Widget build(BuildContext context) {
     super.build(context);
     final activeTheme = ref.watch(themeNotifierProvider);
+    final tabIndex = ref.watch(tabIndexProvider);
     final dimensions = Dimensions.of(context);
 
     // final double screenWidth = dimensions.screenWidth;
@@ -64,14 +61,16 @@ class _FeedsSearchScreenState extends ConsumerState<FeedsSearchScreen> with Auto
                   shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
                   controller: searchController,
                   onChanged: (value) {
+                    myLogger.w('onChanged value: $value, tabIndex: $tabIndex');
                     ref.read(searchQueryStateProvider.notifier).state = value;
-                  },
-                  onSubmitted: (value) {
-                    myLogger.w('value: $value');
-                    ref.read(searchQueryStateProvider.notifier).state = value.trim();
-
-                    ref.read(postSearchNotifierProvider.notifier).fetchSearchQueryResult();
-                    ref.read(userSearchNotifierProvider.notifier).fetchSearchQueryResult();
+                    switch (tabIndex) {
+                      case 0:
+                        ref.read(postSearchNotifierProvider.notifier).fetchSearchQueryResult();
+                        break;
+                      case 1:
+                        ref.read(userSearchNotifierProvider.notifier).fetchSearchQueryResult();
+                        break;
+                    }
                   },
                   hintText: 'Search Kronk',
                   textStyle: WidgetStateProperty.all(const TextStyle(fontSize: 20)),
@@ -87,10 +86,15 @@ class _FeedsSearchScreenState extends ConsumerState<FeedsSearchScreen> with Auto
                     margin: EdgeInsets.symmetric(horizontal: globalMargin2),
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(color: activeTheme.tertiaryBackground, borderRadius: BorderRadius.circular(12)),
-                    child: const TabBar(
+                    child: TabBar(
+                      onTap: (int tabIndex) {
+                        ref.read(tabIndexProvider.notifier).state = tabIndex;
+                        ref.read(searchQueryStateProvider.notifier).state = '';
+                        searchController.text = '';
+                      },
                       tabs: [
-                        Tab(height: 32, text: 'Posts'),
-                        Tab(height: 32, text: 'Users'),
+                        const Tab(height: 32, text: 'Posts'),
+                        const Tab(height: 32, text: 'Users'),
                       ],
                     ),
                   ),
@@ -107,20 +111,16 @@ class _FeedsSearchScreenState extends ConsumerState<FeedsSearchScreen> with Auto
 }
 
 /// Post Search -----------------------------------------------------------
-class PostSearchWidget extends ConsumerStatefulWidget {
+class PostSearchWidget extends ConsumerWidget {
   const PostSearchWidget({super.key});
 
   @override
-  ConsumerState<PostSearchWidget> createState() => _PostSearchWidgetState();
-}
-
-class _PostSearchWidgetState extends ConsumerState<PostSearchWidget> {
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final dimensions = Dimensions.of(context);
     final AsyncValue<List<FeedSearchResultModel>> postSearchAsync = ref.watch(postSearchNotifierProvider);
 
     final double globalMargin2 = dimensions.margin2;
+    myLogger.d('PostSearchWidget is building');
     return postSearchAsync.when(
       data: (List<FeedSearchResultModel> postSearchResultList) {
         if (postSearchResultList.isEmpty) return const Center(child: Text('No results found.'));
@@ -154,21 +154,17 @@ class _PostSearchWidgetState extends ConsumerState<PostSearchWidget> {
 }
 
 /// User Search -----------------------------------------------------------
-class UserSearchWidget extends ConsumerStatefulWidget {
+class UserSearchWidget extends ConsumerWidget {
   const UserSearchWidget({super.key});
 
   @override
-  ConsumerState<UserSearchWidget> createState() => _UserSearchWidgetState();
-}
-
-class _UserSearchWidgetState extends ConsumerState<UserSearchWidget> {
-  @override
-  Widget build(BuildContext context) {
-    final activeTheme = ref.watch(themeNotifierProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeNotifierProvider);
     final dimensions = Dimensions.of(context);
     final userSearchAsync = ref.watch(userSearchNotifierProvider);
 
     final double globalMargin2 = dimensions.margin2;
+    myLogger.d('UserSearchWidget is building');
     return userSearchAsync.when(
       data: (List<UserSearchModel> userSearchResultList) {
         if (userSearchResultList.isEmpty) {
@@ -182,32 +178,27 @@ class _UserSearchWidgetState extends ConsumerState<UserSearchWidget> {
             final user = userSearchResultList.elementAt(index);
             return Card(
               margin: const EdgeInsets.only(bottom: 10),
-              color: activeTheme.primaryBackground,
+              color: theme.primaryBackground,
               child: ListTile(
                 leading: CircleAvatar(
                   radius: 30,
                   backgroundImage: CachedNetworkImageProvider('${constants.bucketEndpoint}/defaults/default-avatar.jpg', maxHeight: 60, maxWidth: 60),
                 ),
-                title: Text(user.username, style: TextStyle(fontSize: 16, color: activeTheme.primaryText)),
+                title: Text(user.username, style: TextStyle(fontSize: 12, color: theme.primaryText)),
                 subtitle: Row(
                   spacing: 8,
                   children: [
-                    Text('${user.followingsCount} followings', style: TextStyle(fontSize: 12, color: activeTheme.primaryText.withAlpha(128))),
-                    Text('${user.followersCount} followers', style: TextStyle(fontSize: 12, color: activeTheme.primaryText.withAlpha(128))),
+                    Text('${user.followingsCount} followings', style: TextStyle(fontSize: 8, color: theme.primaryText)),
+                    Text('${user.followersCount} followers', style: TextStyle(fontSize: 8, color: theme.secondaryText)),
                   ],
                 ),
                 trailing: ElevatedButton(
-                  onPressed: () async {
-                    ref.read(userSearchNotifierProvider.notifier).toggleFollow(userId: user.id);
-                  },
+                  onPressed: () => ref.read(userSearchNotifierProvider.notifier).toggleFollow(userId: user.id),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: 'following' == 'follow' ? activeTheme.primaryText : activeTheme.secondaryText,
+                    backgroundColor: user.isFollowing ? theme.secondaryText : theme.secondaryBackground,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: Text(
-                    'Following or Follow', // user.isFollowing ? 'Following' : 'Follow',
-                    style: TextStyle(color: 'following' == 'follow' ? activeTheme.primaryText : activeTheme.primaryText.withAlpha(128), fontSize: 15),
-                  ),
+                  child: Text(user.isFollowing ? 'Following' : 'Follow', style: TextStyle(color: user.isFollowing ? theme.primaryText : theme.secondaryText, fontSize: 12)),
                 ),
               ),
             );
