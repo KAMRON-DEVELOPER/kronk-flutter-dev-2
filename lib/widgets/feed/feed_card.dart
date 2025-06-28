@@ -47,7 +47,7 @@ class FeedCard extends ConsumerWidget {
     final double margin4 = dimensions.margin4;
     final double radius1 = dimensions.radius1;
     myLogger.i('FeedCard is building...');
-    final bool isFloating = displayState.feedScreenDisplayStyle == FeedScreenStyle.floating;
+    final bool isFloating = displayState.feedScreenDisplayStyle == ScreenStyle.floating;
     return VisibilityDetector(
       key: ValueKey('1-${feed.id}'),
       onVisibilityChanged: (info) async => await notifier.onVisibilityChanged(info: info),

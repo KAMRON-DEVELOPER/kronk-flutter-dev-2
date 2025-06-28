@@ -1,10 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:kronk/constants/enums.dart';
-
-import 'package:kronk/utility/storage.dart';
-
 import 'package:kronk/utility/classes.dart';
+import 'package:kronk/utility/storage.dart';
 
 final feedScreenStyleProvider = NotifierProvider<FeedScreenStyleNotifier, FeedScreenDisplayState>(() => FeedScreenStyleNotifier());
 
@@ -14,7 +11,7 @@ class FeedScreenStyleNotifier extends Notifier<FeedScreenDisplayState> {
   @override
   FeedScreenDisplayState build() => _storage.getFeedScreenDisplayStyle();
 
-  Future<void> updateFeedScreenStyle({FeedScreenStyle? feedScreenStyle, double? cardOpacity, double? cardBorderRadius, String? backgroundImagePath}) async {
+  Future<void> updateFeedScreenStyle({ScreenStyle? feedScreenStyle, double? cardOpacity, double? cardBorderRadius, String? backgroundImagePath}) async {
     final newState = state.copyWith(
       feedScreenDisplayStyle: feedScreenStyle,
       cardOpacity: cardOpacity,

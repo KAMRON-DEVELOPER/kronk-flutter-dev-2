@@ -8,7 +8,6 @@ import 'package:kronk/constants/my_theme.dart';
 import 'package:kronk/riverpod/general/theme_notifier_provider.dart';
 import 'package:kronk/utility/constants.dart';
 import 'package:kronk/utility/dimensions.dart';
-import 'package:kronk/utility/my_logger.dart';
 import 'package:kronk/utility/router.dart';
 import 'package:kronk/utility/setup.dart';
 
@@ -38,19 +37,13 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final MyTheme theme = ref.watch(themeNotifierProvider);
     final Dimensions dimensions = Dimensions.of(context);
-
+    final MyTheme theme = ref.watch(themeNotifierProvider);
     final double globalMargin2 = dimensions.margin2;
-    // final double textSize1 = dimensions.textSize1;
     final double textSize2 = dimensions.textSize2;
     final double bodyMedium = dimensions.bodyMedium;
     final double textSize3 = dimensions.textSize3;
-    // final double textSize4 = dimensions.textSize4;
     final double padding2 = dimensions.padding2;
-
-    myLogger.d('MyApp is building');
-
     return MaterialApp.router(
       title: 'Kronk',
       debugShowCheckedModeBanner: false,

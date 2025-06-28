@@ -23,7 +23,7 @@ class FeedScreen extends ConsumerWidget {
     final Dimensions dimensions = Dimensions.of(context);
     final MyTheme theme = ref.watch(themeNotifierProvider);
     final FeedScreenDisplayState displayState = ref.watch(feedScreenStyleProvider);
-    final bool isFloating = displayState.feedScreenDisplayStyle == FeedScreenStyle.floating;
+    final bool isFloating = displayState.feedScreenDisplayStyle == ScreenStyle.floating;
 
     final double margin2 = dimensions.margin2;
     final double margin3 = dimensions.margin3;
@@ -100,7 +100,7 @@ class CommentListWidget extends ConsumerWidget {
     final Dimensions dimensions = Dimensions.of(context);
     final double margin3 = dimensions.margin3;
     final FeedScreenDisplayState displayState = ref.watch(feedScreenStyleProvider);
-    final bool isFloating = displayState.feedScreenDisplayStyle == FeedScreenStyle.floating;
+    final bool isFloating = displayState.feedScreenDisplayStyle == ScreenStyle.floating;
 
     myLogger.i('CommentListWidget is building...');
 

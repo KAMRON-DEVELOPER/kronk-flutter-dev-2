@@ -18,42 +18,16 @@ import 'package:kronk/screens/user/settings_screen.dart';
 import 'package:kronk/screens/user/todos_screen.dart';
 import 'package:kronk/screens/user/verify_screen.dart';
 import 'package:kronk/screens/user/welcome_screen.dart';
-import 'package:kronk/utility/my_logger.dart';
 
-// final _rootNavigatorKey = GlobalKey<NavigatorState>();
-// final _sectionNavigatorKey = GlobalKey<NavigatorState>();
-
-class MyNavigatorObserver extends NavigatorObserver {
-  @override
-  void didPush(Route route, Route? previousRoute) {
-    myLogger.i('didPush, route: ${route.settings.name}, previousRoute: ${previousRoute?.settings.name}');
-    super.didPush(route, previousRoute);
-  }
-
-  @override
-  void didPop(Route route, Route? previousRoute) {
-    myLogger.i('didPop, route: ${route.settings.name}, previousRoute: ${previousRoute?.settings.name}');
-    super.didPop(route, previousRoute);
-  }
-
-  @override
-  void didReplace({Route? newRoute, Route? oldRoute}) {
-    myLogger.i('didReplace, newRoute: ${newRoute?.settings.name}, oldRoute: ${oldRoute?.settings.name}');
-    super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
-  }
-
-  @override
-  void didChangeTop(Route topRoute, Route? previousTopRoute) {
-    myLogger.i('didChangeTop, topRoute: ${topRoute.settings.name}, previousTopRoute: ${previousTopRoute?.settings.name}');
-    super.didChangeTop(topRoute, previousTopRoute);
-  }
-
-  @override
-  void didRemove(Route route, Route? previousRoute) {
-    myLogger.i('didRemove, route: ${route.settings.name}, previousRoute: ${previousRoute?.settings.name}');
-    super.didRemove(route, previousRoute);
-  }
-}
+final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: '_rootNavigatorKey');
+final _feedsNavigatorKey = GlobalKey<NavigatorState>(debugLabel: '_feedsNavigatorKey');
+final _searchNavigatorKey = GlobalKey<NavigatorState>(debugLabel: '_searchNavigatorKey');
+final _chatsNavigatorKey = GlobalKey<NavigatorState>(debugLabel: '_chatsNavigatorKey');
+final _profileNavigatorKey = GlobalKey<NavigatorState>(debugLabel: '_profileNavigatorKey');
+final _todosNavigatorKey = GlobalKey<NavigatorState>(debugLabel: '_todosNavigatorKey');
+final _educationNavigatorKey = GlobalKey<NavigatorState>(debugLabel: '_educationNavigatorKey');
+final _notesNavigatorKey = GlobalKey<NavigatorState>(debugLabel: '_notesNavigatorKey');
+final _entertainmentNavigatorKey = GlobalKey<NavigatorState>(debugLabel: '_entertainmentNavigatorKey');
 
 class AppRouter {
   final String initialLocation;
@@ -62,10 +36,9 @@ class AppRouter {
 
   GoRouter get router => GoRouter(
     debugLogDiagnostics: true,
-    observers: [MyNavigatorObserver()],
-    // navigatorKey: _rootNavigatorKey,
+    navigatorKey: _rootNavigatorKey,
     initialLocation: initialLocation,
-    routes: [
+    routes: <RouteBase>[
       GoRoute(
         path: '/welcome',
         pageBuilder: (context, state) => FadeTransitionPage(key: state.pageKey, child: const WelcomeScreen()),
@@ -106,48 +79,92 @@ class AppRouter {
           ),
         ],
       ),
-      GoRoute(
-        path: '/feeds',
-        pageBuilder: (context, state) => SlidePageTransition(key: state.pageKey, child: const FeedsScreen()),
-        routes: [
-          GoRoute(
-            path: 'feed',
-            pageBuilder: (context, state) {
-              final feed = state.extra as FeedModel;
-              return SlidePageTransition(
-                child: FeedScreen(key: state.pageKey, feed: feed),
-              );
-            },
+      StatefulShellRoute.indexedStack(
+        branches: <StatefulShellBranch>[
+          StatefulShellBranch(
+            navigatorKey: _feedsNavigatorKey,
+            routes: [
+              GoRoute(
+                path: '/feeds',
+                pageBuilder: (context, state) => SlidePageTransition(key: state.pageKey, child: const FeedsScreen()),
+                routes: [
+                  GoRoute(
+                    path: 'feed',
+                    pageBuilder: (context, state) {
+                      final feed = state.extra as FeedModel;
+                      return SlidePageTransition(
+                        child: FeedScreen(key: state.pageKey, feed: feed),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            navigatorKey: _searchNavigatorKey,
+            routes: [
+              GoRoute(
+                path: '/search',
+                pageBuilder: (context, state) => SlidePageTransition(key: state.pageKey, child: const SearchScreen()),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            navigatorKey: _chatsNavigatorKey,
+            routes: [
+              GoRoute(
+                path: '/chats',
+                pageBuilder: (context, state) => SlidePageTransition(key: state.pageKey, child: const ChatsScreen()),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            navigatorKey: _educationNavigatorKey,
+            routes: [
+              GoRoute(
+                path: '/education',
+                pageBuilder: (context, state) => SlidePageTransition(key: state.pageKey, child: const EducationScreen()),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            navigatorKey: _notesNavigatorKey,
+            routes: [
+              GoRoute(
+                path: '/notes',
+                pageBuilder: (context, state) => SlidePageTransition(key: state.pageKey, child: const NotesScreen()),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            navigatorKey: _todosNavigatorKey,
+            routes: [
+              GoRoute(
+                path: '/todos',
+                pageBuilder: (context, state) => SlidePageTransition(key: state.pageKey, child: const TodosScreen()),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            navigatorKey: _entertainmentNavigatorKey,
+            routes: [
+              GoRoute(
+                path: '/entertainment',
+                pageBuilder: (context, state) => SlidePageTransition(key: state.pageKey, child: const PlayerScreen()),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            navigatorKey: _profileNavigatorKey,
+            routes: [
+              GoRoute(
+                path: '/profile',
+                pageBuilder: (context, state) => SlidePageTransition(key: state.pageKey, child: const ProfileScreen()),
+              ),
+            ],
           ),
         ],
-      ),
-      GoRoute(
-        path: '/search',
-        pageBuilder: (context, state) => SlidePageTransition(key: state.pageKey, child: const SearchScreen()),
-      ),
-      GoRoute(
-        path: '/chats',
-        pageBuilder: (context, state) => SlidePageTransition(key: state.pageKey, child: const ChatsScreen()),
-      ),
-      GoRoute(
-        path: '/education',
-        pageBuilder: (context, state) => SlidePageTransition(key: state.pageKey, child: const EducationScreen()),
-      ),
-      GoRoute(
-        path: '/notes',
-        pageBuilder: (context, state) => SlidePageTransition(key: state.pageKey, child: const NotesScreen()),
-      ),
-      GoRoute(
-        path: '/todos',
-        pageBuilder: (context, state) => SlidePageTransition(key: state.pageKey, child: const TodosScreen()),
-      ),
-      GoRoute(
-        path: '/entertainment',
-        pageBuilder: (context, state) => SlidePageTransition(key: state.pageKey, child: const PlayerScreen()),
-      ),
-      GoRoute(
-        path: '/profile',
-        pageBuilder: (context, state) => SlidePageTransition(key: state.pageKey, child: const ProfileScreen()),
       ),
     ],
     errorPageBuilder: (context, state) => const MaterialPage(child: Center(child: Text('Error'))),

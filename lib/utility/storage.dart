@@ -35,11 +35,11 @@ class Storage {
       const Tuple3<String, bool, bool>('/marketplace', false, true),
       const Tuple3<String, bool, bool>('/profile', false, false),
     ];
-    final List<NavbarModel> defaultServices = services.map((Tuple3<String, bool, bool> s) => NavbarModel(route: s.item1, isUpcoming: s.item2, isPending: s.item3)).toList();
+    final List<NavbarModel> defaultServices = services
+        .map((Tuple3<String, bool, bool> service) => NavbarModel(route: service.item1, isUpcoming: service.item2, isPending: service.item3))
+        .toList();
 
-    if (navbarBox.isEmpty) {
-      await navbarBox.addAll(defaultServices);
-    }
+    if (navbarBox.isEmpty) await navbarBox.addAll(defaultServices);
   }
 
   List<NavbarModel> getNavbarItems() => navbarBox.values.whereType<NavbarModel>().toList();
@@ -53,10 +53,6 @@ class Storage {
     await navbarBox.clear();
     await navbarBox.addAll(navbarItems);
   }
-
-  UserModel? getUser() => userBox.get('user');
-
-  Future<void> setUserAsync({required UserModel user}) async => await userBox.put('user', user);
 
   String getRoute() => navbarBox.values.whereType<NavbarModel>().where((NavbarModel navbarItem) => navbarItem.isEnabled).toList().first.route;
 
@@ -79,6 +75,10 @@ class Storage {
 
     return getRoute();
   }
+
+  UserModel? getUser() => userBox.get('user');
+
+  Future<void> setUserAsync({required UserModel user}) async => await userBox.put('user', user);
 
   Future<String?> getAccessTokenAsync() async {
     String? accessToken = await settingsBox.get('access_token');
@@ -133,13 +133,10 @@ class Storage {
   Future<bool> _isExpired(String expirationKey) async {
     final String? expirationDate = await settingsBox.get(expirationKey);
 
-    if (expirationDate != null) {
-      final DateTime? parsedDate = DateTime.tryParse(expirationDate);
-      if (parsedDate != null) {
-        return parsedDate.isBefore(DateTime.now());
-      }
-    }
-    return true;
+    if (expirationDate == null) return true;
+    final DateTime? parsedDate = DateTime.tryParse(expirationDate);
+    if (parsedDate == null) return true;
+    return parsedDate.isBefore(DateTime.now());
   }
 
   dynamic getSettings({required String key, dynamic defaultValue}) => settingsBox.get(key, defaultValue: defaultValue);
@@ -159,13 +156,13 @@ class Storage {
   Future<void> deleteAsyncSettingsAll({required List<String> keys}) async => await settingsBox.deleteAll(keys);
 
   FeedScreenDisplayState getFeedScreenDisplayStyle() {
-    final String feedScreenDisplayStyleName = settingsBox.get('feedScreenDisplayStyle', defaultValue: FeedScreenStyle.floating.name);
+    final String feedScreenDisplayStyleName = settingsBox.get('feedScreenDisplayStyle', defaultValue: ScreenStyle.floating.name);
     final String feedScreenBackgroundImagePath = settingsBox.get('feedScreenBackgroundImagePath', defaultValue: 'assets/images/feed/feed_bg1.jpeg');
     final double feedScreenCardOpacity = settingsBox.get('feedScreenCardOpacity', defaultValue: 1.0);
     final double feedScreenCardBorderRadius = settingsBox.get('feedScreenCardBorderRadius', defaultValue: 12.0);
 
     return FeedScreenDisplayState(
-      feedScreenDisplayStyle: FeedScreenStyle.values.firstWhere((style) => style.name == feedScreenDisplayStyleName, orElse: () => FeedScreenStyle.floating),
+      feedScreenDisplayStyle: ScreenStyle.values.firstWhere((style) => style.name == feedScreenDisplayStyleName, orElse: () => ScreenStyle.floating),
       backgroundImagePath: feedScreenBackgroundImagePath,
       cardOpacity: feedScreenCardOpacity,
       cardBorderRadius: feedScreenCardBorderRadius,
@@ -178,6 +175,31 @@ class Storage {
       'feedScreenCardOpacity': feedScreenDisplayState.cardOpacity,
       'feedScreenCardBorderRadius': feedScreenDisplayState.cardBorderRadius,
       'feedScreenBackgroundImagePath': feedScreenDisplayState.backgroundImagePath,
+    };
+
+    await settingsBox.putAll(entries);
+  }
+
+  ChatsScreenDisplayState getChatsScreenDisplayStyle() {
+    final String screenStyle = settingsBox.get('chatsScreenDisplayStyle', defaultValue: ScreenStyle.floating.name);
+    final String backgroundImagePath = settingsBox.get('chatsScreenBackgroundImagePath', defaultValue: 'assets/images/feed/feed_bg1.jpeg');
+    final double tileOpacity = settingsBox.get('chatsScreenTileOpacity', defaultValue: 1.0);
+    final double tileBorderRadius = settingsBox.get('chatsScreeTileBorderRadius', defaultValue: 12.0);
+
+    return ChatsScreenDisplayState(
+      screenStyle: ScreenStyle.values.byName(screenStyle),
+      backgroundImagePath: backgroundImagePath,
+      tileOpacity: tileOpacity,
+      tileBorderRadius: tileBorderRadius,
+    );
+  }
+
+  Future<void> setChatsScreenDisplayStyleAsync({required ChatsScreenDisplayState chatsScreenDisplayState}) async {
+    final entries = {
+      'chatsScreenDisplayStyle': chatsScreenDisplayState.screenStyle.name,
+      'chatsScreenTileOpacity': chatsScreenDisplayState.tileOpacity,
+      'chatsScreenTileBorderRadius': chatsScreenDisplayState.tileBorderRadius,
+      'chatsScreenBackgroundImagePath': chatsScreenDisplayState.backgroundImagePath,
     };
 
     await settingsBox.putAll(entries);

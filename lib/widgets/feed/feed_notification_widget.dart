@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kronk/riverpod/feed/feed_notification_provider.dart';
 import 'package:kronk/riverpod/general/theme_notifier_provider.dart';
-import 'package:kronk/riverpod/feed/timeline_provider.dart';
 import 'package:kronk/utility/constants.dart';
 import 'package:kronk/utility/dimensions.dart';
 
@@ -13,7 +13,7 @@ class FeedNotificationWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final notificationState = ref.watch(feedNotificationStateProvider);
+    final notificationState = ref.watch(feedNotificationNotifierProvider);
     final scrollPosition = ref.watch(scrollPositionProvider);
     final activeTheme = ref.watch(themeNotifierProvider);
     final dimensions = Dimensions.of(context);
@@ -48,7 +48,7 @@ class FeedNotificationWidget extends ConsumerWidget {
                 // Trigger refresh after scroll completes
                 Future.delayed(const Duration(milliseconds: 500), () {
                   refreshKey.currentState?.show();
-                  ref.read(feedNotificationStateProvider.notifier).clearNotifications();
+                  ref.read(feedNotificationNotifierProvider.notifier).clearNotifications();
                 });
               },
               child: AnimatedContainer(

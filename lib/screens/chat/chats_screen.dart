@@ -4,12 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kronk/constants/enums.dart';
 import 'package:kronk/models/chat_tile_model.dart';
 import 'package:kronk/riverpod/chat/chats_provider.dart';
+import 'package:kronk/riverpod/chat/chats_ws_provider.dart';
 import 'package:kronk/riverpod/feed/feed_screen_style_provider.dart';
 import 'package:kronk/riverpod/general/theme_notifier_provider.dart';
 import 'package:kronk/screens/feed/feeds_screen.dart';
 import 'package:kronk/utility/classes.dart';
 import 'package:kronk/utility/dimensions.dart';
 import 'package:kronk/utility/extensions.dart';
+import 'package:kronk/utility/my_logger.dart';
 import 'package:kronk/widgets/navbar.dart';
 
 class ChatsScreen extends ConsumerWidget {
@@ -18,12 +20,27 @@ class ChatsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final FeedScreenDisplayState displayState = ref.watch(feedScreenStyleProvider);
-    final bool isFloating = displayState.feedScreenDisplayStyle == FeedScreenStyle.floating;
+    final bool isFloating = displayState.feedScreenDisplayStyle == ScreenStyle.floating;
     final Dimensions dimensions = Dimensions.of(context);
 
     final double screenWidth = dimensions.screenWidth;
     final double appBarHeight = 56; // Title
     final screenHeight = dimensions.screenHeight - MediaQuery.of(context).padding.top - appBarHeight - kBottomNavigationBarHeight;
+
+    final AsyncValue<String> chats = ref.watch(chatsWSNotifierProvider);
+
+    chats.when(
+      data: (data) {
+        myLogger.d('data: $data type: ${data.runtimeType}');
+      },
+      error: (error, stackTrace) {
+        myLogger.d('data: $error type: ${error.runtimeType}');
+      },
+      loading: () {
+        myLogger.d('loading');
+      },
+    );
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: Colors.transparent,
@@ -101,7 +118,7 @@ class ChatTileListWidget extends ConsumerWidget {
     final Dimensions dimensions = Dimensions.of(context);
     final double margin3 = dimensions.margin3;
     final FeedScreenDisplayState displayState = ref.watch(feedScreenStyleProvider);
-    final bool isFloating = displayState.feedScreenDisplayStyle == FeedScreenStyle.floating;
+    final bool isFloating = displayState.feedScreenDisplayStyle == ScreenStyle.floating;
     return CustomScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
       slivers: [

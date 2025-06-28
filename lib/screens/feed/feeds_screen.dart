@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kronk/constants/enums.dart';
 import 'package:kronk/models/feed_model.dart';
+import 'package:kronk/riverpod/feed/feed_notification_provider.dart';
 import 'package:kronk/riverpod/feed/feed_screen_style_provider.dart';
 import 'package:kronk/riverpod/feed/timeline_provider.dart';
 import 'package:kronk/riverpod/general/theme_notifier_provider.dart';
@@ -26,7 +27,7 @@ class FeedsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(themeNotifierProvider);
     final FeedScreenDisplayState displayState = ref.watch(feedScreenStyleProvider);
-    final bool isFloating = displayState.feedScreenDisplayStyle == FeedScreenStyle.floating;
+    final bool isFloating = displayState.feedScreenDisplayStyle == ScreenStyle.floating;
     final Dimensions dimensions = Dimensions.of(context);
     final double margin3 = dimensions.margin3;
 
@@ -172,7 +173,7 @@ class _TimelineTabState extends ConsumerState<TimelineTab> with AutomaticKeepAli
     final AsyncValue<List<FeedModel>> feeds = ref.watch(timelineNotifierProvider(widget.timelineType));
 
     final double radius1 = dimensions.radius1;
-    ref.listen(feedNotificationStateProvider, (_, next) {
+    ref.listen(feedNotificationNotifierProvider, (_, next) {
       next.whenOrNull(
         error: (error, stackTrace) {
           if (error is NoValidTokenException) {
@@ -244,7 +245,7 @@ class FeedListWidget extends ConsumerWidget {
     final Dimensions dimensions = Dimensions.of(context);
     final double margin3 = dimensions.margin3;
     final FeedScreenDisplayState displayState = ref.watch(feedScreenStyleProvider);
-    final bool isFloating = displayState.feedScreenDisplayStyle == FeedScreenStyle.floating;
+    final bool isFloating = displayState.feedScreenDisplayStyle == ScreenStyle.floating;
 
     myLogger.i('FeedListWidget is building...');
 
@@ -305,7 +306,7 @@ void showFeedScreenSettingsDialog(BuildContext context, WidgetRef ref) {
           final Dimensions dimensions = Dimensions.of(context);
           final theme = ref.watch(themeNotifierProvider);
           final FeedScreenDisplayState displayState = ref.watch(feedScreenStyleProvider);
-          final bool isFloating = displayState.feedScreenDisplayStyle == FeedScreenStyle.floating;
+          final bool isFloating = displayState.feedScreenDisplayStyle == ScreenStyle.floating;
 
           final double feedImageSelectorWidth = dimensions.feedImageSelectorWidth;
           final double width = feedImageSelectorWidth;
@@ -363,7 +364,7 @@ void showFeedScreenSettingsDialog(BuildContext context, WidgetRef ref) {
                     children: [
                       Expanded(
                         child: GestureDetector(
-                          onTap: () => ref.read(feedScreenStyleProvider.notifier).updateFeedScreenStyle(feedScreenStyle: FeedScreenStyle.edgeToEdge),
+                          onTap: () => ref.read(feedScreenStyleProvider.notifier).updateFeedScreenStyle(feedScreenStyle: ScreenStyle.edgeToEdge),
                           child: Container(
                             height: feedImageSelectorWidth,
                             decoration: BoxDecoration(
@@ -380,7 +381,7 @@ void showFeedScreenSettingsDialog(BuildContext context, WidgetRef ref) {
                       const SizedBox(width: 12),
                       Expanded(
                         child: GestureDetector(
-                          onTap: () => ref.read(feedScreenStyleProvider.notifier).updateFeedScreenStyle(feedScreenStyle: FeedScreenStyle.floating),
+                          onTap: () => ref.read(feedScreenStyleProvider.notifier).updateFeedScreenStyle(feedScreenStyle: ScreenStyle.floating),
                           child: Container(
                             height: 100,
                             decoration: BoxDecoration(

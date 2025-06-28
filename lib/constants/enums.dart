@@ -2,7 +2,7 @@ enum ProfileStateEnum { view, edit }
 
 enum TimelineType { following, discover }
 
-enum FeedScreenStyle { edgeToEdge, floating }
+enum ScreenStyle { edgeToEdge, floating }
 
 enum EngagementType { reposts, quotes, likes, views, bookmarks }
 

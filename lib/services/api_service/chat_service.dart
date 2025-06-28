@@ -3,7 +3,6 @@ import 'package:kronk/models/chat_tile_model.dart';
 import 'package:kronk/utility/constants.dart';
 import 'package:kronk/utility/interceptors.dart';
 import 'package:kronk/utility/my_logger.dart';
-import 'package:kronk/utility/storage.dart';
 
 BaseOptions getChatBaseOptions() {
   return BaseOptions(baseUrl: '${constants.apiEndpoint}/chats', contentType: 'application/json', validateStatus: (int? status) => true);
@@ -11,9 +10,8 @@ BaseOptions getChatBaseOptions() {
 
 class ChatService {
   final Dio _dio;
-  final Storage _storage;
 
-  ChatService() : _dio = Dio(getChatBaseOptions())..interceptors.add(AccessTokenInterceptor()), _storage = Storage();
+  ChatService() : _dio = Dio(getChatBaseOptions())..interceptors.add(AccessTokenInterceptor());
 
   Future<List<ChatTileModel>> fetchChatTiles({int start = 0, int end = 10}) async {
     try {
