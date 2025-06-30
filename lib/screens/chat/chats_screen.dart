@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kronk/constants/enums.dart';
 import 'package:kronk/models/chat_tile_model.dart';
 import 'package:kronk/riverpod/chat/chats_provider.dart';
+import 'package:kronk/riverpod/chat/chats_screen_style_provider.dart';
 import 'package:kronk/riverpod/chat/chats_ws_provider.dart';
 import 'package:kronk/riverpod/feed/feed_screen_style_provider.dart';
 import 'package:kronk/riverpod/general/theme_notifier_provider.dart';
@@ -19,8 +20,8 @@ class ChatsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final FeedScreenDisplayState displayState = ref.watch(feedScreenStyleProvider);
-    final bool isFloating = displayState.feedScreenDisplayStyle == ScreenStyle.floating;
+    final ChatsScreenDisplayState displayState = ref.watch(chatsScreenStyleProvider);
+    final bool isFloating = displayState.screenStyle == ScreenStyle.floating;
     final Dimensions dimensions = Dimensions.of(context);
 
     final double screenWidth = dimensions.screenWidth;
@@ -45,11 +46,11 @@ class ChatsScreen extends ConsumerWidget {
       resizeToAvoidBottomInset: false,
       backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: const Text('Feeds'),
+        title: const Text('Chats'),
         leading: Builder(
           builder: (context) => IconButton(icon: const Icon(Icons.menu_rounded), onPressed: () => Scaffold.of(context).openDrawer()),
         ),
-        actions: [IconButton(onPressed: () => showFeedScreenSettingsDialog(context, ref), icon: const Icon(Icons.display_settings_rounded))],
+        actions: [IconButton(onPressed: () => showChatsScreenSettingsDialog(context, ref), icon: const Icon(Icons.display_settings_rounded))],
       ),
       body: Stack(
         children: [
@@ -91,7 +92,7 @@ class _ChatTilesWidgetState extends ConsumerState<ChatTilesWidget> {
       color: theme.primaryText,
       backgroundColor: theme.secondaryBackground,
       // onRefresh: () => ref.refresh(timelineNotifierProvider(widget.timelineType).future),
-      onRefresh: () => ref.refresh(chatTileNotifierProvider.notifier).refresh(),
+      onRefresh: () => ref.watch(chatTileNotifierProvider.notifier).refresh(),
       child: chatTiles.when(
         error: (error, stackTrace) {
           if (error is DioException) return Center(child: Text('${error.message}'));
@@ -117,8 +118,8 @@ class ChatTileListWidget extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final Dimensions dimensions = Dimensions.of(context);
     final double margin3 = dimensions.margin3;
-    final FeedScreenDisplayState displayState = ref.watch(feedScreenStyleProvider);
-    final bool isFloating = displayState.feedScreenDisplayStyle == ScreenStyle.floating;
+    final ChatsScreenDisplayState displayState = ref.watch(chatsScreenStyleProvider);
+    final bool isFloating = displayState.screenStyle == ScreenStyle.floating;
     return CustomScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
       slivers: [
@@ -129,8 +130,8 @@ class ChatTileListWidget extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('No feeds yet. 🦄', style: Theme.of(context).textTheme.bodyLarge),
-                  Text('You can add the first!', style: Theme.of(context).textTheme.displaySmall),
+                  Text('No chats yet. 💬', style: Theme.of(context).textTheme.bodyLarge),
+                  Text('Find people to chat.', style: Theme.of(context).textTheme.displaySmall),
                 ],
               ),
             ),
@@ -166,4 +167,156 @@ class ChatTile extends ConsumerWidget {
       subtitle: Text('@${initialChatTile.participant.username}', style: TextStyle(fontSize: 8, color: theme.secondaryText)),
     );
   }
+}
+
+void showChatsScreenSettingsDialog(BuildContext context, WidgetRef ref) {
+  const List<String> backgroundImages = [
+    'feed_bg1.jpeg',
+    'feed_bg2.jpeg',
+    'feed_bg3.jpeg',
+    'feed_bg4.jpeg',
+    'feed_bg6.jpeg',
+    'feed_bg7.jpeg',
+    'feed_bg8.jpeg',
+    'feed_bg9.jpeg',
+    'feed_bg10.jpeg',
+    'feed_bg11.jpeg',
+    'feed_bg12.jpeg',
+    'feed_bg13.jpeg',
+    'feed_bg14.jpeg',
+  ];
+
+  showDialog(
+    context: context,
+    builder: (context) {
+      return Consumer(
+        builder: (context, ref, child) {
+          final Dimensions dimensions = Dimensions.of(context);
+          final theme = ref.watch(themeNotifierProvider);
+          final ChatsScreenDisplayState displayState = ref.watch(chatsScreenStyleProvider);
+          final bool isFloating = displayState.screenStyle == ScreenStyle.floating;
+
+          final double feedImageSelectorWidth = dimensions.feedImageSelectorWidth;
+          final double width = feedImageSelectorWidth;
+          final double height = 16 / 9 * width;
+          final double iconSize2 = dimensions.iconSize2;
+          final double padding2 = dimensions.padding2;
+          final double padding3 = dimensions.padding3;
+          final double radius2 = dimensions.radius2;
+          return Dialog(
+            backgroundColor: theme.tertiaryBackground,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(padding2)),
+            child: Padding(
+              padding: EdgeInsets.all(padding3),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                spacing: padding2,
+                children: [
+                  /// Background image list
+                  SizedBox(
+                    height: height,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: backgroundImages.length,
+                      itemBuilder: (context, index) {
+                        final String imageName = 'assets/images/feed/${backgroundImages.elementAt(index)}';
+                        return Stack(
+                          alignment: Alignment.bottomCenter,
+                          children: [
+                            /// Images list
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(radius2),
+                              child: GestureDetector(
+                                onTap: () => ref.read(chatsScreenStyleProvider.notifier).updateChatsScreenStyle(backgroundImagePath: imageName),
+                                child: Image.asset(imageName, height: height, width: width, cacheHeight: height.cacheSize(context), cacheWidth: width.cacheSize(context)),
+                              ),
+                            ),
+
+                            /// Selected background image indicator
+                            if (displayState.backgroundImagePath == imageName)
+                              Positioned(
+                                bottom: 8,
+                                child: Icon(Icons.check_circle_rounded, color: theme.secondaryText, size: iconSize2),
+                              ),
+                          ],
+                        );
+                      },
+                      separatorBuilder: (context, index) => SizedBox(width: padding3),
+                    ),
+                  ),
+
+                  /// Toggle button
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () => ref.read(feedScreenStyleProvider.notifier).updateFeedScreenStyle(screenStyle: ScreenStyle.edgeToEdge),
+                          child: Container(
+                            height: feedImageSelectorWidth,
+                            decoration: BoxDecoration(
+                              color: theme.secondaryBackground,
+                              borderRadius: BorderRadius.circular(radius2),
+                              border: Border.all(color: isFloating ? theme.secondaryBackground : theme.primaryText),
+                            ),
+                            child: Center(
+                              child: Text('Edge-to-edge', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: isFloating ? theme.secondaryText : theme.primaryText)),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () => ref.read(feedScreenStyleProvider.notifier).updateFeedScreenStyle(screenStyle: ScreenStyle.floating),
+                          child: Container(
+                            height: 100,
+                            decoration: BoxDecoration(
+                              color: theme.secondaryBackground,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: isFloating ? theme.primaryText : theme.secondaryBackground),
+                            ),
+                            child: Center(
+                              child: Text('Floating', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: isFloating ? theme.primaryText : theme.secondaryText)),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  /// Slider Rounded Corner
+                  Slider(
+                    value: displayState.tileBorderRadius,
+                    min: 0,
+                    max: 22,
+                    activeColor: theme.primaryText,
+                    inactiveColor: theme.primaryText.withValues(alpha: 0.2),
+                    thumbColor: theme.primaryText,
+                    label: 'Card radius',
+                    // divisions: 22,
+                    onChanged: (double newRadius) => ref.read(feedScreenStyleProvider.notifier).updateFeedScreenStyle(cardBorderRadius: newRadius),
+                  ),
+
+                  /// Slider opacity
+                  Slider(
+                    value: displayState.tileOpacity,
+                    min: 0,
+                    max: 1,
+                    activeColor: theme.primaryText,
+                    inactiveColor: theme.primaryText.withValues(alpha: 0.2),
+                    thumbColor: theme.primaryText,
+                    label: 'Card opacity',
+                    // divisions: 10,
+                    onChanged: (double newOpacity) => ref.read(feedScreenStyleProvider.notifier).updateFeedScreenStyle(cardOpacity: newOpacity),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    },
+  );
 }

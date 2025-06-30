@@ -111,13 +111,14 @@ class FeedService {
 
   /// ************************************************* Feed Search ************************************************* ///
 
-  Future<List<FeedSearchResultModel>> fetchFeedSearch({required String query}) async {
+  Future<List<FeedModel>> fetchFeedSearch({required String query}) async {
     try {
       Response response = await _dio.get('/search', queryParameters: {'query': query});
       myLogger.i('🚀 response.data in fetchFeedSearch: ${response.data}  statusCode: ${response.statusCode}');
       final data = response.data;
-      if (data is List) {
-        return data.map((json) => FeedSearchResultModel.fromJson(json)).toList();
+      myLogger.d("data['feeds'] is List: ${data['feeds'] is List}");
+      if (data['feeds'] is List) {
+        return (data['feeds'] as List).map<FeedModel>((json) => FeedModel.fromJson(json as Map<String, dynamic>)).toList();
       } else {
         return [];
       }

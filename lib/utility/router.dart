@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kronk/bloc/authentication/authentication_bloc.dart';
 import 'package:kronk/models/feed_model.dart';
+import 'package:kronk/models/user_model.dart';
+import 'package:kronk/screens/chat/chat_screen.dart';
 import 'package:kronk/screens/chat/chats_screen.dart';
 import 'package:kronk/screens/education/education_screen.dart';
 import 'package:kronk/screens/feed/feed_screen.dart';
@@ -80,6 +82,7 @@ class AppRouter {
         ],
       ),
       StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) => navigationShell,
         branches: <StatefulShellBranch>[
           StatefulShellBranch(
             navigatorKey: _feedsNavigatorKey,
@@ -116,6 +119,17 @@ class AppRouter {
               GoRoute(
                 path: '/chats',
                 pageBuilder: (context, state) => SlidePageTransition(key: state.pageKey, child: const ChatsScreen()),
+                routes: [
+                  GoRoute(
+                    path: 'chat',
+                    pageBuilder: (context, state) {
+                      final participant = state.extra as UserSearchModel;
+                      return SlidePageTransition(
+                        child: ChatScreen(key: state.pageKey, participant: participant),
+                      );
+                    },
+                  ),
+                ],
               ),
             ],
           ),

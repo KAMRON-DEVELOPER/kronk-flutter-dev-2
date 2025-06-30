@@ -137,7 +137,7 @@ IconData getNavbarIconByName({required String route, required bool isActive}) {
     case '/entertainment':
       return isActive ? KronkIcon.playerFill : KronkIcon.playerOutline;
     case '/profile':
-      return isActive ? KronkIcon.profileFill : KronkIcon.profileFill;
+      return isActive ? KronkIcon.profileFill : KronkIcon.profileOutline;
 
     default:
       return Icons.error_outline_rounded;

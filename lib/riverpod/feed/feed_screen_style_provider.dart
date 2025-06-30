@@ -11,17 +11,12 @@ class FeedScreenStyleNotifier extends Notifier<FeedScreenDisplayState> {
   @override
   FeedScreenDisplayState build() => _storage.getFeedScreenDisplayStyle();
 
-  Future<void> updateFeedScreenStyle({ScreenStyle? feedScreenStyle, double? cardOpacity, double? cardBorderRadius, String? backgroundImagePath}) async {
-    final newState = state.copyWith(
-      feedScreenDisplayStyle: feedScreenStyle,
-      cardOpacity: cardOpacity,
-      cardBorderRadius: cardBorderRadius,
-      backgroundImagePath: backgroundImagePath,
-    );
+  Future<void> updateFeedScreenStyle({ScreenStyle? screenStyle, double? cardOpacity, double? cardBorderRadius, String? backgroundImagePath}) async {
+    final newState = state.copyWith(screenStyle: screenStyle, cardOpacity: cardOpacity, cardBorderRadius: cardBorderRadius, backgroundImagePath: backgroundImagePath);
     state = newState;
 
     await _storage.setSettingsAllAsync({
-      'feedScreenDisplayStyle': newState.feedScreenDisplayStyle.name,
+      'feedScreenDisplayStyle': newState.screenStyle.name,
       'feedScreenBackgroundImagePath': newState.backgroundImagePath,
       'feedScreenCardOpacity': newState.cardOpacity,
       'feedScreenCardBorderRadius': newState.cardBorderRadius,

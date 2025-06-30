@@ -27,14 +27,13 @@ class FeedsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(themeNotifierProvider);
     final FeedScreenDisplayState displayState = ref.watch(feedScreenStyleProvider);
-    final bool isFloating = displayState.feedScreenDisplayStyle == ScreenStyle.floating;
+    final bool isFloating = displayState.screenStyle == ScreenStyle.floating;
     final Dimensions dimensions = Dimensions.of(context);
     final double margin3 = dimensions.margin3;
 
     final double screenWidth = dimensions.screenWidth;
     final double appBarHeight = 56 + 50.2; // Title + tab bar heights
     final screenHeight = dimensions.screenHeight - MediaQuery.of(context).padding.top - appBarHeight - kBottomNavigationBarHeight;
-    final double padding4 = dimensions.padding4;
     final double radius1 = dimensions.radius1;
     final double tabHeight1 = dimensions.tabHeight1;
     return DefaultTabController(
@@ -64,9 +63,9 @@ class FeedsScreen extends ConsumerWidget {
                   ),
                   child: Container(
                     margin: EdgeInsets.symmetric(horizontal: margin3),
+                    padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(color: theme.secondaryBackground, borderRadius: BorderRadius.circular(radius1)),
                     child: TabBar(
-                      padding: EdgeInsets.all(padding4 / 1.5),
                       tabs: [
                         Tab(height: tabHeight1, text: 'discover'),
                         Tab(height: tabHeight1, text: 'following'),
@@ -245,7 +244,7 @@ class FeedListWidget extends ConsumerWidget {
     final Dimensions dimensions = Dimensions.of(context);
     final double margin3 = dimensions.margin3;
     final FeedScreenDisplayState displayState = ref.watch(feedScreenStyleProvider);
-    final bool isFloating = displayState.feedScreenDisplayStyle == ScreenStyle.floating;
+    final bool isFloating = displayState.screenStyle == ScreenStyle.floating;
 
     myLogger.i('FeedListWidget is building...');
 
@@ -306,7 +305,7 @@ void showFeedScreenSettingsDialog(BuildContext context, WidgetRef ref) {
           final Dimensions dimensions = Dimensions.of(context);
           final theme = ref.watch(themeNotifierProvider);
           final FeedScreenDisplayState displayState = ref.watch(feedScreenStyleProvider);
-          final bool isFloating = displayState.feedScreenDisplayStyle == ScreenStyle.floating;
+          final bool isFloating = displayState.screenStyle == ScreenStyle.floating;
 
           final double feedImageSelectorWidth = dimensions.feedImageSelectorWidth;
           final double width = feedImageSelectorWidth;
@@ -364,7 +363,7 @@ void showFeedScreenSettingsDialog(BuildContext context, WidgetRef ref) {
                     children: [
                       Expanded(
                         child: GestureDetector(
-                          onTap: () => ref.read(feedScreenStyleProvider.notifier).updateFeedScreenStyle(feedScreenStyle: ScreenStyle.edgeToEdge),
+                          onTap: () => ref.read(feedScreenStyleProvider.notifier).updateFeedScreenStyle(screenStyle: ScreenStyle.edgeToEdge),
                           child: Container(
                             height: feedImageSelectorWidth,
                             decoration: BoxDecoration(
@@ -381,7 +380,7 @@ void showFeedScreenSettingsDialog(BuildContext context, WidgetRef ref) {
                       const SizedBox(width: 12),
                       Expanded(
                         child: GestureDetector(
-                          onTap: () => ref.read(feedScreenStyleProvider.notifier).updateFeedScreenStyle(feedScreenStyle: ScreenStyle.floating),
+                          onTap: () => ref.read(feedScreenStyleProvider.notifier).updateFeedScreenStyle(screenStyle: ScreenStyle.floating),
                           child: Container(
                             height: 100,
                             decoration: BoxDecoration(

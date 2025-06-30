@@ -106,7 +106,7 @@ class Dimensions {
     final textSize3 = screenWidth / 20;
     final textSize4 = screenWidth / 32;
 
-    final double cornerRadius1 = screenWidth / 30;
+    final double cornerRadius1 = screenWidth / 27;
     final double cornerRadius2 = screenWidth / 32;
     final double cornerRadius3 = screenWidth / 34;
     final double cornerRadius4 = screenWidth / 36;
@@ -123,7 +123,7 @@ class Dimensions {
 
     final feedImageSelectorWidth = screenWidth / 4;
 
-    final tabHeight1 = screenWidth / 14;
+    final tabHeight1 = screenWidth / 12;
 
     return Dimensions(
       context: context,

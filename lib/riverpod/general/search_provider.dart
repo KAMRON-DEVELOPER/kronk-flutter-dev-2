@@ -68,16 +68,16 @@ class UserSearchNotifier extends AsyncNotifier<List<UserSearchModel>> {
   }
 }
 
-// -------------------- POST SEARCH --------------------
+// -------------------- FEED SEARCH --------------------
 
-final postSearchNotifierProvider = AsyncNotifierProvider<PostSearchNotifier, List<FeedSearchResultModel>>(() => PostSearchNotifier());
+final feedSearchNotifierProvider = AsyncNotifierProvider<FeedSearchNotifier, List<FeedModel>>(FeedSearchNotifier.new);
 
-class PostSearchNotifier extends AsyncNotifier<List<FeedSearchResultModel>> {
+class FeedSearchNotifier extends AsyncNotifier<List<FeedModel>> {
   final Connectivity _connectivity = Connectivity();
   final FeedService _feedService = FeedService();
 
   @override
-  FutureOr<List<FeedSearchResultModel>> build() {
+  FutureOr<List<FeedModel>> build() {
     return [];
   }
 
@@ -85,8 +85,8 @@ class PostSearchNotifier extends AsyncNotifier<List<FeedSearchResultModel>> {
     final String searchQuery = ref.watch(searchQueryStateProvider);
     if (searchQuery.trim().isEmpty) return;
     if (await _checkConnectivityAndAuth()) {
-      final List<FeedSearchResultModel> postSearchResultList = await _feedService.fetchFeedSearch(query: searchQuery);
-      state = AsyncData(postSearchResultList);
+      final List<FeedModel> feedSearchResultList = await _feedService.fetchFeedSearch(query: searchQuery);
+      state = AsyncData(feedSearchResultList);
     } else {
       throw Exception('You are not authenticated or you are disconnected from the internet.');
     }

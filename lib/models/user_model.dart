@@ -194,6 +194,7 @@ class UserSearchModel {
   final String updatedAt;
   final String name;
   final String username;
+  final String? avatarUrl;
   final String email;
   final String password;
   final UserRole role;
@@ -209,6 +210,7 @@ class UserSearchModel {
     required this.updatedAt,
     required this.name,
     required this.username,
+    required this.avatarUrl,
     required this.email,
     required this.password,
     required this.role,
@@ -226,6 +228,7 @@ class UserSearchModel {
       updatedAt: json['updated_at'] as String,
       name: json['name'] as String,
       username: json['username'] as String,
+      avatarUrl: json['avatar_url'],
       email: json['email'] as String,
       password: json['password'] as String,
       role: UserRole.values.byName(json['role']),
@@ -260,6 +263,7 @@ class UserSearchModel {
     String? updatedAt,
     String? name,
     String? username,
+    String? avatarUrl,
     String? email,
     String? password,
     UserRole? role,
@@ -275,6 +279,7 @@ class UserSearchModel {
       updatedAt: updatedAt ?? this.updatedAt,
       name: name ?? this.name,
       username: username ?? this.username,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
       email: email ?? this.email,
       password: password ?? this.password,
       role: role ?? this.role,

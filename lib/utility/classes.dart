@@ -47,16 +47,16 @@ class VideoOverlayState {
 }
 
 class FeedScreenDisplayState {
-  final ScreenStyle feedScreenDisplayStyle;
+  final ScreenStyle screenStyle;
   final double cardOpacity;
   final double cardBorderRadius;
   final String backgroundImagePath;
 
-  FeedScreenDisplayState({required this.feedScreenDisplayStyle, required this.cardOpacity, required this.cardBorderRadius, required this.backgroundImagePath});
+  FeedScreenDisplayState({required this.screenStyle, required this.cardOpacity, required this.cardBorderRadius, required this.backgroundImagePath});
 
-  FeedScreenDisplayState copyWith({ScreenStyle? feedScreenDisplayStyle, double? cardOpacity, double? cardBorderRadius, String? backgroundImagePath}) {
+  FeedScreenDisplayState copyWith({ScreenStyle? screenStyle, double? cardOpacity, double? cardBorderRadius, String? backgroundImagePath}) {
     return FeedScreenDisplayState(
-      feedScreenDisplayStyle: feedScreenDisplayStyle ?? this.feedScreenDisplayStyle,
+      screenStyle: screenStyle ?? this.screenStyle,
       cardOpacity: cardOpacity ?? this.cardOpacity,
       cardBorderRadius: cardBorderRadius ?? this.cardBorderRadius,
       backgroundImagePath: backgroundImagePath ?? this.backgroundImagePath,
@@ -71,7 +71,7 @@ class FeedScreenDisplayState {
     String? backgroundImagePath,
   }) {
     return FeedScreenDisplayState(
-      feedScreenDisplayStyle: feedScreenDisplayStyle ?? base.feedScreenDisplayStyle,
+      screenStyle: feedScreenDisplayStyle ?? base.screenStyle,
       cardOpacity: cardOpacity ?? base.cardOpacity,
       cardBorderRadius: cardBorderRadius ?? base.cardBorderRadius,
       backgroundImagePath: backgroundImagePath ?? base.backgroundImagePath,

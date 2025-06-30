@@ -11,15 +11,15 @@ class ChatsScreenStyleNotifier extends Notifier<ChatsScreenDisplayState> {
   @override
   ChatsScreenDisplayState build() => _storage.getChatsScreenDisplayStyle();
 
-  Future<void> updateFeedScreenStyle({ScreenStyle? screenStyle, double? tileOpacity, double? tileBorderRadius, String? backgroundImagePath}) async {
+  Future<void> updateChatsScreenStyle({ScreenStyle? screenStyle, double? tileOpacity, double? tileBorderRadius, String? backgroundImagePath}) async {
     final newState = state.copyWith(screenStyle: screenStyle, tileOpacity: tileOpacity, tileBorderRadius: tileBorderRadius, backgroundImagePath: backgroundImagePath);
     state = newState;
 
     await _storage.setSettingsAllAsync({
       'chatsScreenDisplayStyle': newState.screenStyle.name,
       'chatsScreenBackgroundImagePath': newState.backgroundImagePath,
-      'chatsScreenCardOpacity': newState.tileOpacity,
-      'chatsScreenCardBorderRadius': newState.tileBorderRadius,
+      'chatsScreenTileOpacity': newState.tileOpacity,
+      'chatsScreenTiledBorderRadius': newState.tileBorderRadius,
     });
   }
 }

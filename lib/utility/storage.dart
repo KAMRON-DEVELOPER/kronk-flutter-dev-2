@@ -162,7 +162,7 @@ class Storage {
     final double feedScreenCardBorderRadius = settingsBox.get('feedScreenCardBorderRadius', defaultValue: 12.0);
 
     return FeedScreenDisplayState(
-      feedScreenDisplayStyle: ScreenStyle.values.firstWhere((style) => style.name == feedScreenDisplayStyleName, orElse: () => ScreenStyle.floating),
+      screenStyle: ScreenStyle.values.firstWhere((style) => style.name == feedScreenDisplayStyleName, orElse: () => ScreenStyle.floating),
       backgroundImagePath: feedScreenBackgroundImagePath,
       cardOpacity: feedScreenCardOpacity,
       cardBorderRadius: feedScreenCardBorderRadius,
@@ -171,7 +171,7 @@ class Storage {
 
   Future<void> setFeedScreenDisplayStyleAsync({required FeedScreenDisplayState feedScreenDisplayState}) async {
     final entries = {
-      'feedScreenDisplayStyle': feedScreenDisplayState.feedScreenDisplayStyle.name,
+      'feedScreenDisplayStyle': feedScreenDisplayState.screenStyle.name,
       'feedScreenCardOpacity': feedScreenDisplayState.cardOpacity,
       'feedScreenCardBorderRadius': feedScreenDisplayState.cardBorderRadius,
       'feedScreenBackgroundImagePath': feedScreenDisplayState.backgroundImagePath,

@@ -34,3 +34,5 @@ enum UserRole { admin, regular }
 enum UserStatus { active, inactive }
 
 enum FollowPolicy { autoAccept, manualApproval }
+
+enum ChatEvent { typingStart, typingStop, goesOnline, goesOffline, enterChat, exitChat, createdChat, sentMessage, heartbeatAck }

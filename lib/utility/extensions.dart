@@ -199,6 +199,12 @@ extension TitleCaseWithSpaces on String {
   }
 }
 
+extension CamelCaseConversion on String {
+  String toSnakeCase() {
+    return replaceAllMapped(RegExp(r'([a-z0-9])([A-Z])'), (match) => '${match.group(1)}_${match.group(2)}').toLowerCase();
+  }
+}
+
 extension IconColorExtension on IconData {
   Color get appropriateColor {
     if (this == KronkIcon.repeat6) return Colors.green;
