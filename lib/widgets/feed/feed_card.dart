@@ -57,7 +57,7 @@ class FeedCard extends ConsumerWidget {
         color: theme.primaryBackground.withValues(alpha: displayState.cardOpacity),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(isFloating ? displayState.cardBorderRadius : 0),
-          side: isFloating ? BorderSide(color: theme.outline) : BorderSide.none,
+          side: isFloating ? BorderSide(color: theme.secondaryBackground, width: 0.5) : BorderSide.none,
         ),
         child: Padding(
           padding: EdgeInsets.all(margin4 / 1.4),

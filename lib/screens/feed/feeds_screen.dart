@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:kronk/constants/enums.dart';
 import 'package:kronk/models/feed_model.dart';
 import 'package:kronk/riverpod/feed/feed_notification_provider.dart';
@@ -13,6 +14,7 @@ import 'package:kronk/utility/dimensions.dart';
 import 'package:kronk/utility/exceptions.dart';
 import 'package:kronk/utility/extensions.dart';
 import 'package:kronk/utility/my_logger.dart';
+import 'package:kronk/widgets/custom_appbar.dart';
 import 'package:kronk/widgets/feed/feed_card.dart';
 import 'package:kronk/widgets/feed/feed_notification_widget.dart';
 import 'package:kronk/widgets/navbar.dart';
@@ -29,13 +31,11 @@ class FeedsScreen extends ConsumerWidget {
     final FeedScreenDisplayState displayState = ref.watch(feedScreenStyleProvider);
     final bool isFloating = displayState.screenStyle == ScreenStyle.floating;
     final Dimensions dimensions = Dimensions.of(context);
-    final double margin3 = dimensions.margin3;
 
     final double screenWidth = dimensions.screenWidth;
-    final double appBarHeight = 56 + 50.2; // Title + tab bar heights
+    final double appBarHeight = 48 + 40;
     final screenHeight = dimensions.screenHeight - MediaQuery.of(context).padding.top - appBarHeight - kBottomNavigationBarHeight;
     final double radius1 = dimensions.radius1;
-    final double tabHeight1 = dimensions.tabHeight1;
     return DefaultTabController(
       length: 2,
       child: Builder(
@@ -47,34 +47,7 @@ class FeedsScreen extends ConsumerWidget {
           return Scaffold(
             resizeToAvoidBottomInset: false,
             backgroundColor: Colors.transparent,
-            appBar: AppBar(
-              title: const Text('Feeds'),
-              leading: Builder(
-                builder: (context) => IconButton(icon: const Icon(Icons.menu_rounded), onPressed: () => Scaffold.of(context).openDrawer()),
-              ),
-
-              actions: [IconButton(onPressed: () => showFeedScreenSettingsDialog(context, ref), icon: const Icon(Icons.display_settings_rounded))],
-              bottom: PreferredSize(
-                preferredSize: const Size(100, 50.2),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  decoration: BoxDecoration(
-                    border: Border(bottom: BorderSide(color: theme.outline, width: 1)),
-                  ),
-                  child: Container(
-                    margin: EdgeInsets.symmetric(horizontal: margin3),
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(color: theme.secondaryBackground, borderRadius: BorderRadius.circular(radius1)),
-                    child: TabBar(
-                      tabs: [
-                        Tab(height: tabHeight1, text: 'discover'),
-                        Tab(height: tabHeight1, text: 'following'),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
+            appBar: MainAppBar(titleText: 'Feeds', tabText1: 'discover', tabText2: 'following', onTap: () => showFeedScreenSettingsDialog(context)),
             body: Stack(
               children: [
                 /// Static background images
@@ -123,6 +96,78 @@ class FeedsScreen extends ConsumerWidget {
             drawer: const CustomDrawer(),
           );
         },
+      ),
+    );
+  }
+}
+
+class MainAppBar extends ConsumerWidget implements PreferredSizeWidget {
+  final String titleText;
+  final String tabText1;
+  final String tabText2;
+  final void Function()? onTap;
+
+  const MainAppBar({super.key, required this.titleText, required this.tabText1, required this.tabText2, required this.onTap});
+
+  @override
+  Size get preferredSize => const Size.fromHeight(48 + 40 + 4 + 1);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeNotifierProvider);
+    final Dimensions dimensions = Dimensions.of(context);
+    final double margin3 = dimensions.margin3;
+    final double radius3 = dimensions.radius3;
+    final double textSize3 = dimensions.textSize3;
+    final double tabHeight1 = dimensions.tabHeight1;
+    return CustomAppBar(
+      appBarHeight: 48,
+      bottomHeight: 40,
+      bottomGap: 4,
+      actionsSpacing: 12,
+      appBarPadding: EdgeInsets.only(left: margin3, right: margin3 - 6),
+      bottomPadding: EdgeInsets.only(left: margin3, right: margin3, bottom: 4),
+      leading: Builder(
+        builder: (context) => GestureDetector(
+          onTap: () => Scaffold.of(context).openDrawer(),
+          child: Icon(Icons.menu_rounded, color: theme.primaryText, size: 24),
+        ),
+      ),
+      title: Text(
+        titleText,
+        style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 24, fontWeight: FontWeight.w600),
+      ),
+      actions: [
+        GestureDetector(
+          onTap: () => context.go('/search'),
+          child: Icon(Icons.search_rounded, color: theme.primaryText, size: 24),
+        ),
+        GestureDetector(
+          onTap: onTap,
+          child: Icon(Icons.more_vert_rounded, color: theme.primaryText, size: 24),
+        ),
+      ],
+      bottom: Container(
+        padding: const EdgeInsets.all(2),
+        decoration: BoxDecoration(color: theme.secondaryBackground, borderRadius: BorderRadius.circular(radius3)),
+        child: TabBar(
+          dividerHeight: 0,
+          indicatorSize: TabBarIndicatorSize.tab,
+          indicator: BoxDecoration(color: theme.primaryBackground, borderRadius: BorderRadius.circular(radius3 - 2)),
+          labelColor: theme.primaryText,
+          unselectedLabelColor: theme.secondaryText,
+          labelStyle: GoogleFonts.quicksand(
+            textStyle: TextStyle(fontSize: textSize3, fontWeight: FontWeight.w500),
+          ),
+          unselectedLabelStyle: GoogleFonts.quicksand(
+            textStyle: TextStyle(fontSize: textSize3, fontWeight: FontWeight.w500),
+          ),
+          indicatorAnimation: TabIndicatorAnimation.elastic,
+          tabs: [
+            Tab(height: tabHeight1, text: tabText1),
+            Tab(height: tabHeight1, text: tabText2),
+          ],
+        ),
       ),
     );
   }
@@ -280,21 +325,37 @@ class FeedListWidget extends ConsumerWidget {
   }
 }
 
-void showFeedScreenSettingsDialog(BuildContext context, WidgetRef ref) {
+void showFeedScreenSettingsDialog(BuildContext context) {
   const List<String> backgroundImages = [
-    'feed_bg1.jpeg',
-    'feed_bg2.jpeg',
-    'feed_bg3.jpeg',
-    'feed_bg4.jpeg',
-    'feed_bg6.jpeg',
-    'feed_bg7.jpeg',
-    'feed_bg8.jpeg',
-    'feed_bg9.jpeg',
-    'feed_bg10.jpeg',
-    'feed_bg11.jpeg',
-    'feed_bg12.jpeg',
-    'feed_bg13.jpeg',
-    'feed_bg14.jpeg',
+    '0.jpg',
+    '1.jpg',
+    '2.jpg',
+    '3.jpg',
+    '4.jpg',
+    '5.jpg',
+    '6.jpeg',
+    '7.jpeg',
+    '8.jpeg',
+    '9.jpeg',
+    '10.jpeg',
+    '11.jpeg',
+    '12.jpeg',
+    '13.jpeg',
+    '14.jpeg',
+    '15.jpeg',
+    '16.jpeg',
+    '17.jpeg',
+    '18.jpeg',
+    '19.jpg',
+    '20.jpg',
+    '21.jpg',
+    '22.jpg',
+    '23.jpg',
+    '24.jpg',
+    '25.jpg',
+    '26.jpg',
+    '27.jpg',
+    '28.jpg',
   ];
 
   showDialog(
@@ -331,7 +392,7 @@ void showFeedScreenSettingsDialog(BuildContext context, WidgetRef ref) {
                       scrollDirection: Axis.horizontal,
                       itemCount: backgroundImages.length,
                       itemBuilder: (context, index) {
-                        final String imageName = 'assets/images/feed/${backgroundImages.elementAt(index)}';
+                        final String imageName = 'assets/images/${backgroundImages.elementAt(index)}';
                         return Stack(
                           alignment: Alignment.bottomCenter,
                           children: [

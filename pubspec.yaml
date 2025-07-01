@@ -87,7 +87,6 @@ flutter:
     - assets/
     - assets/fonts/
     - assets/images/
-    - assets/images/feed/
     - assets/icons/
     - assets/icons/app/
     - assets/icons/bold/
@@ -117,17 +116,21 @@ flutter_launcher_icons:
   remove_alpha_ios: true
 
 flutter_native_splash:
-  color: "#ffffff"
-  color_dark: "#050608"
-  image: "assets/icons/app/android12_image.png"
-  image_dark: "assets/icons/app/android12_image_dark.png"
+  color: "#aed7f5"
+  color_dark: "#0C0F15"
+  color_android: "#aed7f5"
+  color_dark_android: "#0C0F15"
+  color_ios: "#aed7f5"
+  color_dark_ios: "#0C0F15"
+  image: "assets/icons/app/android12splash.png"
+  image_dark: "assets/icons/app/android12splash_dark.png"
   android: true
-  ios: false
+  ios: true
   web: false
 
   android_12:
-    color: "#ffffff"
-    color_dark: "#050608"
-    image: "assets/icons/app/android12_image.png"
-    image_dark: "assets/icons/app/android12_image_dark.png"
+    color: "#aed7f5"
+    color_dark: "#0C0F15"
+    image: "assets/icons/app/android12splash.png"
+    image_dark: "assets/icons/app/android12splash_dark.png"
 

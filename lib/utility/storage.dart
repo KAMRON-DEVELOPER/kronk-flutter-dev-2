@@ -19,18 +19,20 @@ class Storage {
   Storage() : navbarBox = Hive.box<NavbarModel>('navbarBox'), userBox = Hive.box<UserModel>('userBox'), settingsBox = Hive.box('settingsBox');
 
   Future<void> initializeNavbar() async {
+    if (navbarBox.isNotEmpty) return;
+
     final List<Tuple3<String, bool, bool>> services = [
       const Tuple3<String, bool, bool>('/feeds', false, false),
       const Tuple3<String, bool, bool>('/search', false, false),
       const Tuple3<String, bool, bool>('/chats', false, false),
       const Tuple3<String, bool, bool>('/education', false, true),
-      const Tuple3<String, bool, bool>('/notes', true, false),
+      const Tuple3<String, bool, bool>('/notes', false, false),
       const Tuple3<String, bool, bool>('/todos', false, true),
       const Tuple3<String, bool, bool>('/video_player', false, true),
       const Tuple3<String, bool, bool>('/music_player', false, true),
       const Tuple3<String, bool, bool>('/cloud_storage', false, true),
-      const Tuple3<String, bool, bool>('/vocabulary', false, true),
-      const Tuple3<String, bool, bool>('/translator', false, true),
+      const Tuple3<String, bool, bool>('/vocabulary', true, false),
+      const Tuple3<String, bool, bool>('/translator', true, false),
       const Tuple3<String, bool, bool>('/jobs', false, true),
       const Tuple3<String, bool, bool>('/marketplace', false, true),
       const Tuple3<String, bool, bool>('/profile', false, false),
@@ -39,10 +41,10 @@ class Storage {
         .map((Tuple3<String, bool, bool> service) => NavbarModel(route: service.item1, isUpcoming: service.item2, isPending: service.item3))
         .toList();
 
-    if (navbarBox.isEmpty) await navbarBox.addAll(defaultServices);
+    await navbarBox.addAll(defaultServices);
   }
 
-  List<NavbarModel> getNavbarItems() => navbarBox.values.whereType<NavbarModel>().toList();
+  List<NavbarModel> getNavbarItems() => navbarBox.values.cast<NavbarModel>().toList();
 
   Future<void> updateNavbarItemOrder({required int oldIndex, required int newIndex}) async {
     List<NavbarModel> navbarItems = getNavbarItems();
@@ -157,7 +159,7 @@ class Storage {
 
   FeedScreenDisplayState getFeedScreenDisplayStyle() {
     final String feedScreenDisplayStyleName = settingsBox.get('feedScreenDisplayStyle', defaultValue: ScreenStyle.floating.name);
-    final String feedScreenBackgroundImagePath = settingsBox.get('feedScreenBackgroundImagePath', defaultValue: 'assets/images/feed/feed_bg1.jpeg');
+    final String feedScreenBackgroundImagePath = settingsBox.get('feedScreenBackgroundImagePath', defaultValue: 'assets/images/28.jpg');
     final double feedScreenCardOpacity = settingsBox.get('feedScreenCardOpacity', defaultValue: 1.0);
     final double feedScreenCardBorderRadius = settingsBox.get('feedScreenCardBorderRadius', defaultValue: 12.0);
 
@@ -182,7 +184,7 @@ class Storage {
 
   ChatsScreenDisplayState getChatsScreenDisplayStyle() {
     final String screenStyle = settingsBox.get('chatsScreenDisplayStyle', defaultValue: ScreenStyle.floating.name);
-    final String backgroundImagePath = settingsBox.get('chatsScreenBackgroundImagePath', defaultValue: 'assets/images/feed/feed_bg1.jpeg');
+    final String backgroundImagePath = settingsBox.get('chatsScreenBackgroundImagePath', defaultValue: 'assets/images/28.jpg');
     final double tileOpacity = settingsBox.get('chatsScreenTileOpacity', defaultValue: 1.0);
     final double tileBorderRadius = settingsBox.get('chatsScreeTileBorderRadius', defaultValue: 12.0);
 

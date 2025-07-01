@@ -39,11 +39,8 @@ class MyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final Dimensions dimensions = Dimensions.of(context);
     final MyTheme theme = ref.watch(themeNotifierProvider);
-    final double globalMargin2 = dimensions.margin2;
     final double textSize2 = dimensions.textSize2;
     final double bodyMedium = dimensions.bodyMedium;
-    final double textSize3 = dimensions.textSize3;
-    final double padding2 = dimensions.padding2;
     return MaterialApp.router(
       title: 'Kronk',
       debugShowCheckedModeBanner: false,
@@ -77,7 +74,7 @@ class MyApp extends ConsumerWidget {
           centerTitle: true,
           titleSpacing: 0,
           titleTextStyle: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 24, fontWeight: FontWeight.w600),
-          actionsPadding: EdgeInsets.only(right: globalMargin2),
+          actionsPadding: const EdgeInsets.all(0),
           iconTheme: IconThemeData(color: theme.primaryText, size: 28),
           scrolledUnderElevation: 0,
           elevation: 0,
@@ -88,22 +85,7 @@ class MyApp extends ConsumerWidget {
           shape: const CircleBorder(),
           iconSize: 36,
         ),
-        tabBarTheme: TabBarThemeData(
-          splashFactory: NoSplash.splashFactory,
-          overlayColor: WidgetStatePropertyAll(theme.tertiaryBackground),
-          indicatorAnimation: TabIndicatorAnimation.linear,
-          dividerHeight: 0,
-          indicatorSize: TabBarIndicatorSize.tab,
-          indicator: BoxDecoration(color: theme.primaryBackground, borderRadius: BorderRadius.circular(padding2)),
-          labelColor: theme.primaryText,
-          unselectedLabelColor: theme.secondaryText,
-          labelStyle: GoogleFonts.quicksand(
-            textStyle: TextStyle(fontSize: textSize3, fontWeight: FontWeight.w600),
-          ),
-          unselectedLabelStyle: GoogleFonts.quicksand(
-            textStyle: TextStyle(fontSize: textSize3, fontWeight: FontWeight.w600),
-          ),
-        ),
+
         progressIndicatorTheme: ProgressIndicatorThemeData(color: theme.primaryText, borderRadius: BorderRadius.circular(8)),
         textSelectionTheme: TextSelectionThemeData(selectionHandleColor: theme.primaryText),
         iconTheme: const IconThemeData(color: Colors.greenAccent),

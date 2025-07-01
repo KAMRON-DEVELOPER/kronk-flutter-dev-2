@@ -26,8 +26,8 @@ class ChatsScreen extends ConsumerWidget {
 
     final double screenWidth = dimensions.screenWidth;
     final double appBarHeight = 56; // Title
+    final double tabHeight1 = dimensions.tabHeight1;
     final screenHeight = dimensions.screenHeight - MediaQuery.of(context).padding.top - appBarHeight - kBottomNavigationBarHeight;
-
     final AsyncValue<String> chats = ref.watch(chatsWSNotifierProvider);
 
     chats.when(
@@ -42,33 +42,29 @@ class ChatsScreen extends ConsumerWidget {
       },
     );
 
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        title: const Text('Chats'),
-        leading: Builder(
-          builder: (context) => IconButton(icon: const Icon(Icons.menu_rounded), onPressed: () => Scaffold.of(context).openDrawer()),
-        ),
-        actions: [IconButton(onPressed: () => showChatsScreenSettingsDialog(context, ref), icon: const Icon(Icons.display_settings_rounded))],
-      ),
-      body: Stack(
-        children: [
-          /// Static background images
-          if (isFloating)
-            Positioned.fill(
-              child: Opacity(
-                opacity: 0.4,
-                child: Image.asset(displayState.backgroundImagePath, fit: BoxFit.cover, cacheHeight: screenHeight.cacheSize(context), cacheWidth: screenWidth.cacheSize(context)),
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        backgroundColor: Colors.transparent,
+        appBar: MainAppBar(titleText: 'Gram', tabText1: 'chats', tabText2: 'groups', onTap: () => showChatsScreenSettingsDialog(context, ref)),
+        body: Stack(
+          children: [
+            /// Static background images
+            if (isFloating)
+              Positioned.fill(
+                child: Opacity(
+                  opacity: 0.4,
+                  child: Image.asset(displayState.backgroundImagePath, fit: BoxFit.cover, cacheHeight: screenHeight.cacheSize(context), cacheWidth: screenWidth.cacheSize(context)),
+                ),
               ),
-            ),
 
-          const ChatTilesWidget(),
-        ],
+            const TabBarView(children: [ChatTilesWidget(), GroupTilesWidget()]),
+          ],
+        ),
+        bottomNavigationBar: const Navbar(),
+        drawer: const CustomDrawer(),
       ),
-      floatingActionButton: FloatingActionButton(onPressed: () {}, child: const Icon(Icons.add_rounded)),
-      bottomNavigationBar: const Navbar(),
-      drawer: const CustomDrawer(),
     );
   }
 }
@@ -169,21 +165,48 @@ class ChatTile extends ConsumerWidget {
   }
 }
 
+class GroupTilesWidget extends StatelessWidget {
+  const GroupTilesWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text('Will be available soon, ⌛', style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 24, fontWeight: FontWeight.bold)),
+    );
+  }
+}
+
 void showChatsScreenSettingsDialog(BuildContext context, WidgetRef ref) {
   const List<String> backgroundImages = [
-    'feed_bg1.jpeg',
-    'feed_bg2.jpeg',
-    'feed_bg3.jpeg',
-    'feed_bg4.jpeg',
-    'feed_bg6.jpeg',
-    'feed_bg7.jpeg',
-    'feed_bg8.jpeg',
-    'feed_bg9.jpeg',
-    'feed_bg10.jpeg',
-    'feed_bg11.jpeg',
-    'feed_bg12.jpeg',
-    'feed_bg13.jpeg',
-    'feed_bg14.jpeg',
+    '0.jpg',
+    '1.jpg',
+    '2.jpg',
+    '3.jpg',
+    '4.jpg',
+    '5.jpg',
+    '6.jpeg',
+    '7.jpeg',
+    '8.jpeg',
+    '9.jpeg',
+    '10.jpeg',
+    '11.jpeg',
+    '12.jpeg',
+    '13.jpeg',
+    '14.jpeg',
+    '15.jpeg',
+    '16.jpeg',
+    '17.jpeg',
+    '18.jpeg',
+    '19.jpg',
+    '20.jpg',
+    '21.jpg',
+    '22.jpg',
+    '23.jpg',
+    '24.jpg',
+    '25.jpg',
+    '26.jpg',
+    '27.jpg',
+    '28.jpg',
   ];
 
   showDialog(
@@ -220,7 +243,7 @@ void showChatsScreenSettingsDialog(BuildContext context, WidgetRef ref) {
                       scrollDirection: Axis.horizontal,
                       itemCount: backgroundImages.length,
                       itemBuilder: (context, index) {
-                        final String imageName = 'assets/images/feed/${backgroundImages.elementAt(index)}';
+                        final String imageName = 'assets/images/${backgroundImages.elementAt(index)}';
                         return Stack(
                           alignment: Alignment.bottomCenter,
                           children: [

@@ -5,6 +5,7 @@ import 'package:kronk/constants/my_theme.dart';
 import 'package:kronk/models/navbar_model.dart';
 import 'package:kronk/riverpod/general/navbar_provider.dart';
 import 'package:kronk/riverpod/general/theme_notifier_provider.dart';
+import 'package:kronk/utility/dimensions.dart';
 
 final StateProvider<int> selectedIndexProvider = StateProvider<int>((Ref ref) => 0);
 
@@ -13,29 +14,57 @@ class Navbar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final Dimensions dimensions = Dimensions.of(context);
     final MyTheme theme = ref.watch(themeNotifierProvider);
-    final List<NavbarModel> enabledNavbarItems = ref.watch(navbarProvider).where((NavbarModel navbarItem) => navbarItem.isEnabled).toList();
+    final List<NavbarModel> items = ref.watch(navbarProvider).where((NavbarModel navbarItem) => navbarItem.isEnabled).toList();
     final int selectedIndex = ref.watch(selectedIndexProvider);
+
+    const double iconSize = 32;
+    const int maxIconsInScreen = 5;
+    final double screenWidth = dimensions.screenWidth;
+
+    // Actual icons we are displaying
+    final int count = items.length;
+
+    // If less than or equal to 5 items, distribute evenly
+    final bool fitsWithoutScroll = count <= maxIconsInScreen;
+    final double itemWidth = fitsWithoutScroll ? screenWidth / count : screenWidth / maxIconsInScreen;
+
     return Container(
       height: 56,
       decoration: BoxDecoration(
         color: theme.primaryBackground,
-        border: Border(top: BorderSide(color: theme.outline, width: 1)),
+        border: Border(top: BorderSide(color: theme.secondaryBackground, width: 0.5)),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: enabledNavbarItems.map((NavbarModel navbarModel) {
-          final int index = enabledNavbarItems.indexOf(navbarModel);
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: count,
+        padding: EdgeInsets.zero,
+        itemBuilder: (context, index) {
+          final item = items.elementAt(index);
           final bool isActive = index == selectedIndex;
-          return GestureDetector(
-            onTap: () {
-              if (isActive) return;
-              ref.read(selectedIndexProvider.notifier).state = index;
-              context.go(enabledNavbarItems[index].route);
-            },
-            child: Icon(navbarModel.getIconData(isActive: isActive), color: isActive ? theme.primaryText : theme.secondaryText, size: 32),
+
+          return SizedBox(
+            width: itemWidth,
+            child: Center(
+              child: IconButton(
+                padding: EdgeInsets.zero,
+                iconSize: iconSize,
+                onPressed: () {
+                  if (!isActive) {
+                    ref.read(selectedIndexProvider.notifier).state = index;
+                    context.go(item.route);
+                  }
+                },
+                icon: Icon(
+                  item.getIconData(isActive: isActive),
+                  color: isActive ? theme.primaryText : theme.secondaryText,
+                  size: iconSize,
+                ),
+              ),
+            ),
           );
-        }).toList(),
+        },
       ),
     );
   }
@@ -46,9 +75,7 @@ String beautifyServiceName(String route, {bool isCapitalize = false}) {
 
   String spaced = cleaned.replaceAll('_', ' ');
 
-  if (isCapitalize && spaced.isNotEmpty) {
-    return spaced[0].toUpperCase() + spaced.substring(1);
-  }
+  if (isCapitalize && spaced.isNotEmpty) return spaced[0].toUpperCase() + spaced.substring(1);
 
   return spaced;
 }
