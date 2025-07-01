@@ -10,7 +10,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
   final EdgeInsets appBarPadding;
   final EdgeInsets bottomPadding;
   final Widget? bottom;
-  final double bottomHeight;
+  final double? bottomHeight;
   final double appBarHeight;
   final double bottomGap;
 
@@ -18,7 +18,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
     super.key,
     this.leading,
     required this.appBarHeight,
-    required this.bottomHeight,
+    this.bottomHeight,
     required this.bottomGap,
     required this.appBarPadding,
     required this.bottomPadding,
@@ -29,7 +29,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
   });
 
   @override
-  Size get preferredSize => Size(double.infinity, bottomHeight + appBarHeight + bottomGap + 2);
+  Size get preferredSize => Size(double.infinity, appBarHeight + (bottomHeight ?? 0) + bottomGap + 2);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

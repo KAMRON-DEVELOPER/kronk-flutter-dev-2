@@ -146,6 +146,10 @@ IconData getNavbarIconByName({required String route, required bool isActive}) {
       return isActive ? KronkIcon.rulerPenFill : KronkIcon.rulerPenOutline;
     case '/notes':
       return isActive ? KronkIcon.note1Fill : KronkIcon.note1Outline;
+    case '/vocabulary':
+      return isActive ? KronkIcon.dictionaryFill1 : KronkIcon.dictionaryOutline1;
+    case '/translator':
+      return isActive ? KronkIcon.translatorFill1 : KronkIcon.translatorOutline1;
     case '/todos':
       return isActive ? KronkIcon.taskFill : KronkIcon.taskOutline;
     case '/entertainment':

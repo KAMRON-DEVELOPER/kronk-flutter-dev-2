@@ -171,7 +171,7 @@ class ServiceSectionWidget extends ConsumerWidget {
         },
         itemBuilder: (context, index) {
           final service = services.elementAt(index);
-          final bool isAvailable = !service.isPending && !service.isUpcoming;
+          final bool isAvailable = !service.isPending;
           return ReorderableDelayedDragStartListener(
             key: ValueKey(service.route),
             index: index,
@@ -230,8 +230,7 @@ class StatisticsSectionWidget extends ConsumerWidget {
     AsyncValue<StatisticsModel> statistics = ref.watch(settingsStatisticsWsStreamProvider);
 
     final double margin2 = dimensions.margin2;
-    final double padding4 = dimensions.padding4;
-    final double padding3 = dimensions.padding3;
+    final double radius4 = dimensions.radius4;
     final double padding2 = dimensions.padding2;
     final double height2 = dimensions.height2;
     final List<String> statNames = ['weekly', 'monthly', 'yearly'];
@@ -261,12 +260,15 @@ class StatisticsSectionWidget extends ConsumerWidget {
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: padding2),
                       child: Container(
-                        decoration: BoxDecoration(color: theme.tertiaryBackground, borderRadius: BorderRadius.circular(12)),
+                        decoration: BoxDecoration(color: theme.primaryBackground, borderRadius: BorderRadius.circular(radius4)),
                         child: TabBar(
-                          padding: EdgeInsets.all(padding4),
+                          padding: const EdgeInsets.all(2),
+                          dividerHeight: 0,
+                          indicatorSize: TabBarIndicatorSize.tab,
+                          indicator: BoxDecoration(color: theme.secondaryBackground, borderRadius: BorderRadius.circular(radius4 - 2)),
                           labelStyle: Theme.of(context).textTheme.labelSmall,
                           unselectedLabelStyle: Theme.of(context).textTheme.labelSmall?.copyWith(color: theme.secondaryText),
-                          indicator: BoxDecoration(color: theme.secondaryBackground, borderRadius: BorderRadius.circular(padding3)),
+                          indicatorAnimation: TabIndicatorAnimation.elastic,
                           tabs: List.generate(3, (index) => Tab(height: 24, text: statNames.elementAt(index))),
                         ),
                       ),

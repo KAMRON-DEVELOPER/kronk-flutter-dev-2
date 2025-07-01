@@ -19,7 +19,7 @@ import 'package:kronk/widgets/feed/feed_card.dart';
 import 'package:kronk/widgets/feed/feed_notification_widget.dart';
 import 'package:kronk/widgets/navbar.dart';
 
-final tabIndexProvider = StateProvider<int>((ref) => 0);
+final feedsScreenTabIndexProvider = StateProvider<int>((ref) => 0);
 
 /// FeedsScreen
 class FeedsScreen extends ConsumerWidget {
@@ -42,7 +42,7 @@ class FeedsScreen extends ConsumerWidget {
         builder: (context) {
           final tabController = DefaultTabController.of(context);
           tabController.addListener(() {
-            ref.read(tabIndexProvider.notifier).state = tabController.index;
+            ref.read(feedsScreenTabIndexProvider.notifier).state = tabController.index;
           });
           return Scaffold(
             resizeToAvoidBottomInset: false,
@@ -75,7 +75,7 @@ class FeedsScreen extends ConsumerWidget {
             floatingActionButton: FloatingActionButton(
               onPressed: () async {
                 try {
-                  final currentIndex = ref.read(tabIndexProvider);
+                  final currentIndex = ref.read(feedsScreenTabIndexProvider);
                   final currentTimeline = currentIndex == 0 ? TimelineType.discover : TimelineType.following;
                   ref.read(timelineNotifierProvider(currentTimeline).notifier).createFeed();
                 } catch (error) {
@@ -154,13 +154,11 @@ class MainAppBar extends ConsumerWidget implements PreferredSizeWidget {
           dividerHeight: 0,
           indicatorSize: TabBarIndicatorSize.tab,
           indicator: BoxDecoration(color: theme.primaryBackground, borderRadius: BorderRadius.circular(radius3 - 2)),
-          labelColor: theme.primaryText,
-          unselectedLabelColor: theme.secondaryText,
           labelStyle: GoogleFonts.quicksand(
-            textStyle: TextStyle(fontSize: textSize3, fontWeight: FontWeight.w500),
+            textStyle: TextStyle(fontSize: textSize3, color: theme.primaryText, fontWeight: FontWeight.w500),
           ),
           unselectedLabelStyle: GoogleFonts.quicksand(
-            textStyle: TextStyle(fontSize: textSize3, fontWeight: FontWeight.w500),
+            textStyle: TextStyle(fontSize: textSize3, color: theme.secondaryText, fontWeight: FontWeight.w500),
           ),
           indicatorAnimation: TabIndicatorAnimation.elastic,
           tabs: [

@@ -26,7 +26,7 @@ class Storage {
       const Tuple3<String, bool, bool>('/search', false, false),
       const Tuple3<String, bool, bool>('/chats', false, false),
       const Tuple3<String, bool, bool>('/education', false, true),
-      const Tuple3<String, bool, bool>('/notes', false, false),
+      const Tuple3<String, bool, bool>('/notes', true, false),
       const Tuple3<String, bool, bool>('/todos', false, true),
       const Tuple3<String, bool, bool>('/video_player', false, true),
       const Tuple3<String, bool, bool>('/music_player', false, true),

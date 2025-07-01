@@ -18,7 +18,9 @@ import 'package:kronk/screens/user/profile_screen.dart';
 import 'package:kronk/screens/user/request_forgot_password_screen.dart';
 import 'package:kronk/screens/user/settings_screen.dart';
 import 'package:kronk/screens/user/todos_screen.dart';
+import 'package:kronk/screens/user/translator_screen.dart';
 import 'package:kronk/screens/user/verify_screen.dart';
+import 'package:kronk/screens/user/vocabularies_screen.dart';
 import 'package:kronk/screens/user/welcome_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: '_rootNavigatorKey');
@@ -30,6 +32,8 @@ final _todosNavigatorKey = GlobalKey<NavigatorState>(debugLabel: '_todosNavigato
 final _educationNavigatorKey = GlobalKey<NavigatorState>(debugLabel: '_educationNavigatorKey');
 final _notesNavigatorKey = GlobalKey<NavigatorState>(debugLabel: '_notesNavigatorKey');
 final _entertainmentNavigatorKey = GlobalKey<NavigatorState>(debugLabel: '_entertainmentNavigatorKey');
+final _vocabulariesNavigatorKey = GlobalKey<NavigatorState>(debugLabel: '_vocabulariesNavigatorKey');
+final _translatorNavigatorKey = GlobalKey<NavigatorState>(debugLabel: '_translatorNavigatorKey');
 
 class AppRouter {
   final String initialLocation;
@@ -169,6 +173,28 @@ class AppRouter {
               ),
             ],
           ),
+
+          ///
+          StatefulShellBranch(
+            navigatorKey: _vocabulariesNavigatorKey,
+            routes: [
+              GoRoute(
+                path: '/vocabulary',
+                pageBuilder: (context, state) => SlidePageTransition(key: state.pageKey, child: const VocabulariesScreen()),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            navigatorKey: _translatorNavigatorKey,
+            routes: [
+              GoRoute(
+                path: '/translator',
+                pageBuilder: (context, state) => SlidePageTransition(key: state.pageKey, child: const TranslatorScreen()),
+              ),
+            ],
+          ),
+
+          ///
           StatefulShellBranch(
             navigatorKey: _profileNavigatorKey,
             routes: [

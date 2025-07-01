@@ -26,7 +26,6 @@ class ChatsScreen extends ConsumerWidget {
 
     final double screenWidth = dimensions.screenWidth;
     final double appBarHeight = 56; // Title
-    final double tabHeight1 = dimensions.tabHeight1;
     final screenHeight = dimensions.screenHeight - MediaQuery.of(context).padding.top - appBarHeight - kBottomNavigationBarHeight;
     final AsyncValue<String> chats = ref.watch(chatsWSNotifierProvider);
 

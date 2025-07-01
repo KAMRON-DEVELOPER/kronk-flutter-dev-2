@@ -6,8 +6,8 @@ import 'package:kronk/utility/dimensions.dart';
 import 'package:kronk/widgets/custom_appbar.dart';
 import 'package:kronk/widgets/navbar.dart';
 
-class VocabulariesScreen extends ConsumerWidget {
-  const VocabulariesScreen({super.key});
+class TranslatorScreen extends ConsumerWidget {
+  const TranslatorScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -29,7 +29,7 @@ class VocabulariesScreen extends ConsumerWidget {
           ),
         ),
         title: Text(
-          'Vocabulary',
+          'Translator(😎)',
           style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 24, fontWeight: FontWeight.w600),
         ),
         actions: [
