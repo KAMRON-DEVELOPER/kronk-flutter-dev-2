@@ -176,6 +176,7 @@ class FeedCardStateNotifier extends AutoDisposeFamilyNotifier<FeedModel, FeedMod
         EngagementType.reposts => state.engagement.reposted != true,
         EngagementType.quotes => state.engagement.quoted != true,
         EngagementType.views => state.engagement.viewed != true,
+        EngagementType.feeds => throw UnimplementedError(),
       };
 
       final EngagementModel engagement = isSetInteraction

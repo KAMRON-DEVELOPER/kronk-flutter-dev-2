@@ -40,6 +40,8 @@ class UserModel extends Equatable {
   final int followersCount;
   @HiveField(19)
   final int followingsCount;
+  @HiveField(20)
+  final bool? isFollowing;
 
   const UserModel({
     required this.id,
@@ -60,6 +62,7 @@ class UserModel extends Equatable {
     required this.followPolicy,
     required this.followersCount,
     required this.followingsCount,
+    this.isFollowing,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -82,6 +85,7 @@ class UserModel extends Equatable {
       followPolicy: FollowPolicy.values.byName(json['follow_policy']),
       followersCount: json['followers_count'],
       followingsCount: json['followings_count'],
+      isFollowing: json['is_following'],
     );
   }
 
@@ -104,6 +108,7 @@ class UserModel extends Equatable {
     FollowPolicy? followPolicy,
     int? followersCount,
     int? followingsCount,
+    bool? isFollowing,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -124,6 +129,7 @@ class UserModel extends Equatable {
       followPolicy: followPolicy ?? this.followPolicy,
       followersCount: followersCount ?? this.followersCount,
       followingsCount: followingsCount ?? this.followersCount,
+      isFollowing: isFollowing ?? this.isFollowing,
     );
   }
 
@@ -186,108 +192,4 @@ class UpdateProfileRequest {
     // 'city': city.toJson(),
     // 'follow_policy': followPolicy.toJson(),
   };
-}
-
-class UserSearchModel {
-  final String id;
-  final String createdAt;
-  final String updatedAt;
-  final String name;
-  final String username;
-  final String? avatarUrl;
-  final String email;
-  final String password;
-  final UserRole role;
-  final UserStatus status;
-  final FollowPolicy followPolicy;
-  final int followersCount;
-  final int followingsCount;
-  final bool isFollowing;
-
-  UserSearchModel({
-    required this.id,
-    required this.createdAt,
-    required this.updatedAt,
-    required this.name,
-    required this.username,
-    required this.avatarUrl,
-    required this.email,
-    required this.password,
-    required this.role,
-    required this.status,
-    required this.followPolicy,
-    required this.followersCount,
-    required this.followingsCount,
-    required this.isFollowing,
-  });
-
-  factory UserSearchModel.fromJson(Map<String, dynamic> json) {
-    return UserSearchModel(
-      id: json['id'] as String,
-      createdAt: json['created_at'] as String,
-      updatedAt: json['updated_at'] as String,
-      name: json['name'] as String,
-      username: json['username'] as String,
-      avatarUrl: json['avatar_url'],
-      email: json['email'] as String,
-      password: json['password'] as String,
-      role: UserRole.values.byName(json['role']),
-      status: UserStatus.values.byName(json['status']),
-      followPolicy: FollowPolicy.values.byName(json['follow_policy']),
-      followersCount: int.parse(json['followers_count'].toString()),
-      followingsCount: int.parse(json['followings_count'].toString()),
-      isFollowing: json['is_following'] as bool,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'created_at': createdAt,
-      'updated_at': updatedAt,
-      'username': username,
-      'email': email,
-      'password': password,
-      'role': role,
-      'status': status,
-      'follow_policy': followPolicy,
-      'followers_count': followersCount.toString(),
-      'followings_count': followingsCount.toString(),
-      'is_following': isFollowing,
-    };
-  }
-
-  UserSearchModel copyWith({
-    String? id,
-    String? createdAt,
-    String? updatedAt,
-    String? name,
-    String? username,
-    String? avatarUrl,
-    String? email,
-    String? password,
-    UserRole? role,
-    UserStatus? status,
-    FollowPolicy? followPolicy,
-    int? followersCount,
-    int? followingsCount,
-    bool? isFollowing,
-  }) {
-    return UserSearchModel(
-      id: id ?? this.id,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-      name: name ?? this.name,
-      username: username ?? this.username,
-      avatarUrl: avatarUrl ?? this.avatarUrl,
-      email: email ?? this.email,
-      password: password ?? this.password,
-      role: role ?? this.role,
-      status: status ?? this.status,
-      followPolicy: followPolicy ?? this.followPolicy,
-      followersCount: followersCount ?? this.followersCount,
-      followingsCount: followingsCount ?? this.followingsCount,
-      isFollowing: isFollowing ?? this.isFollowing,
-    );
-  }
 }

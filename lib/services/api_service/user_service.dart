@@ -1,11 +1,10 @@
 import 'package:dio/dio.dart';
+import 'package:kronk/models/user_model.dart';
 import 'package:kronk/utility/constants.dart';
+import 'package:kronk/utility/interceptors.dart';
 import 'package:kronk/utility/my_logger.dart';
 import 'package:kronk/utility/storage.dart';
 import 'package:tuple/tuple.dart';
-
-import '../../models/user_model.dart';
-import '../../utility/interceptors.dart';
 
 BaseOptions getUsersBaseOptions() {
   return BaseOptions(baseUrl: '${constants.apiEndpoint}/users', contentType: 'application/json', validateStatus: (int? status) => true);
@@ -117,14 +116,14 @@ class UserService {
     }
   }
 
-  Future<Response> fetchGetProfile() async {
+  Future<UserModel> fetchGetProfile() async {
     try {
       _dio.interceptors.add(AccessTokenInterceptor());
       final response = await _dio.get('/profile');
       myLogger.d('1. response.data in fetchProfile: ${response.data} ### statusCode: ${response.statusCode}');
-      return response;
+      return UserModel.fromJson(response.data);
     } catch (error) {
-      myLogger.w('🌋 catch in fetchUserProfile: ${error.toString()}');
+      myLogger.w('catch in fetchUserProfile: ${error.toString()}');
       rethrow;
     }
   }
@@ -186,21 +185,21 @@ class UserService {
     }
   }
 
-  Future<List<UserSearchModel>> fetchUserSearch({required String query}) async {
+  Future<Tuple2<List<UserModel>, int>> fetchUserSearch({required String query, int start = 0, int end = 9}) async {
     try {
       _dio.interceptors.add(AccessTokenInterceptor());
-      Response response = await _dio.get('/search', queryParameters: {'query': query});
+      Response response = await _dio.get('/search', queryParameters: {'query': query, 'offset': start, 'limit': (end + 1) - start});
       myLogger.i('🚀 response.data in fetchUserSearch: ${response.data}  statusCode: ${response.statusCode}');
       final data = response.data;
-      if (data is List) {
-        final List<UserSearchModel> userSearchResults = data.map((json) => UserSearchModel.fromJson(json)).toList();
-        return userSearchResults;
+      if (data['users'] is List) {
+        // if ((data['users'] as List).isEmpty) return const Tuple2([], 0);
+        return Tuple2((data['users'] as List).map<UserModel>((json) => UserModel.fromJson(json as Map<String, dynamic>)).toList(), data['end'] ?? 0);
       } else {
-        return [];
+        return const Tuple2([], 0);
       }
     } catch (error) {
-      myLogger.e('Error in fetchPostSearch: $error');
-      return [];
+      myLogger.e('Error in fetchUserSearch: $error');
+      rethrow;
     }
   }
 

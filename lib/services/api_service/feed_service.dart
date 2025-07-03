@@ -2,8 +2,10 @@ import 'package:dio/dio.dart';
 import 'package:kronk/constants/enums.dart';
 import 'package:kronk/models/feed_model.dart';
 import 'package:kronk/utility/constants.dart';
+import 'package:kronk/utility/extensions.dart';
 import 'package:kronk/utility/interceptors.dart';
 import 'package:kronk/utility/my_logger.dart';
+import 'package:tuple/tuple.dart';
 
 BaseOptions getFeedBaseOptions() {
   return BaseOptions(baseUrl: '${constants.apiEndpoint}/feeds', contentType: 'application/json', validateStatus: (int? status) => true);
@@ -14,7 +16,7 @@ class FeedService {
 
   FeedService() : _dio = Dio(getFeedBaseOptions())..interceptors.add(AccessTokenInterceptor());
 
-  Future<List<FeedModel>> fetchTimeline({required TimelineType timelineType, int start = 0, int end = 10}) async {
+  Future<Tuple2<List<FeedModel>, int>> fetchTimeline({required TimelineType timelineType, int start = 0, int end = 9}) async {
     try {
       final path = switch (timelineType) {
         TimelineType.following => '/timeline/following',
@@ -26,13 +28,14 @@ class FeedService {
       myLogger.i('🚀 response.data in fetchTimeline: ${response.data}  statusCode: ${response.statusCode}');
       final data = response.data;
       myLogger.d("data['feeds'] is List: ${data['feeds'] is List}");
+      myLogger.d("data['end']: ${data['end']}");
       if (data['feeds'] is List) {
-        return (data['feeds'] as List).map<FeedModel>((json) => FeedModel.fromJson(json as Map<String, dynamic>)).toList();
+        return Tuple2((data['feeds'] as List).map<FeedModel>((json) => FeedModel.fromJson(json as Map<String, dynamic>)).toList(), data['end'] ?? 0);
       } else {
-        return [];
+        return const Tuple2([], 0);
       }
     } catch (error) {
-      myLogger.w('🌋 catch in fetchHomeTimeline: ${error.toString()}');
+      myLogger.w('catch in fetchHomeTimeline: ${error.toString()}');
       rethrow;
     }
   }
@@ -91,40 +94,41 @@ class FeedService {
     }
   }
 
-  Future<List<FeedModel>> fetchComments({required String? parentId, int start = 0, int end = 10}) async {
+  Future<Tuple2<List<FeedModel>, int>> fetchComments({required String? parentId, int start = 0, int end = 9}) async {
     try {
       final response = await _dio.get('/comments', queryParameters: {'feed_id': parentId, 'start': start, 'end': end});
 
       myLogger.i('🚀 response.data in fetchComments: ${response.data}  statusCode: ${response.statusCode}');
       final data = response.data;
       myLogger.d("data['feeds'] is List: ${data['feeds'] is List}");
+      myLogger.d("data['end']: ${data['end']}");
       if (data['feeds'] is List) {
-        return (data['feeds'] as List).map<FeedModel>((json) => FeedModel.fromJson(json as Map<String, dynamic>)).toList();
+        return Tuple2((data['feeds'] as List).map<FeedModel>((json) => FeedModel.fromJson(json as Map<String, dynamic>)).toList(), data['end'] ?? end);
       } else {
-        return [];
+        return const Tuple2([], 0);
       }
     } catch (error) {
-      myLogger.w('🌋 catch in fetchComments: ${error.toString()}');
+      myLogger.w('catch in fetchComments: ${error.toString()}');
       rethrow;
     }
   }
 
-  /// ************************************************* Feed Search ************************************************* ///
-
-  Future<List<FeedModel>> fetchFeedSearch({required String query}) async {
+  Future<Tuple2<List<FeedModel>, int>> fetchEngagementFeeds({required EngagementType engagementType, int start = 0, int end = 9}) async {
     try {
-      Response response = await _dio.get('/search', queryParameters: {'query': query});
-      myLogger.i('🚀 response.data in fetchFeedSearch: ${response.data}  statusCode: ${response.statusCode}');
+      final response = await _dio.get('/timeline/user', queryParameters: {'engagement_type': engagementType.name.toSnakeCase(), 'start': start, 'end': end});
+
+      myLogger.i('🚀 response.data in fetchEngagementFeeds: ${response.data}  statusCode: ${response.statusCode}');
       final data = response.data;
       myLogger.d("data['feeds'] is List: ${data['feeds'] is List}");
+      myLogger.d("data['end']: ${data['end']}");
       if (data['feeds'] is List) {
-        return (data['feeds'] as List).map<FeedModel>((json) => FeedModel.fromJson(json as Map<String, dynamic>)).toList();
+        return Tuple2((data['feeds'] as List).map<FeedModel>((json) => FeedModel.fromJson(json as Map<String, dynamic>)).toList(), data['end'] ?? end);
       } else {
-        return [];
+        return const Tuple2([], 0);
       }
     } catch (error) {
-      myLogger.e('Error in fetchFeedSearch: $error');
-      return [];
+      myLogger.w('catch in fetchEngagementFeeds: ${error.toString()}');
+      rethrow;
     }
   }
 
@@ -153,6 +157,26 @@ class FeedService {
     } catch (error) {
       myLogger.w('🌋 catch in fetchRemoveEngagementType: ${error.toString()}');
       throw Exception('catch in fetchRemoveEngagementType: ${error.toString()}');
+    }
+  }
+
+  /// ************************************************* Feed Search ************************************************* ///
+
+  Future<Tuple2<List<FeedModel>, int>> fetchFeedSearch({required String query, int start = 0, int end = 9}) async {
+    try {
+      Response response = await _dio.get('/search', queryParameters: {'query': query, 'offset': start, 'limit': (end + 1) - start});
+      myLogger.i('🚀 response.data in fetchFeedSearch: ${response.data}  statusCode: ${response.statusCode}');
+      final data = response.data;
+      myLogger.d("data['feeds'] is List: ${data['feeds'] is List}");
+      if (data['feeds'] is List) {
+        if ((data['feeds'] as List).isEmpty) return const Tuple2([], 0);
+        return Tuple2((data['feeds'] as List).map<FeedModel>((json) => FeedModel.fromJson(json as Map<String, dynamic>)).toList(), data['end'] ?? 0);
+      } else {
+        return const Tuple2([], 0);
+      }
+    } catch (error) {
+      myLogger.e('Error in fetchFeedSearch: $error');
+      rethrow;
     }
   }
 }

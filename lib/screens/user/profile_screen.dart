@@ -1,340 +1,351 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:kronk/constants/my_theme.dart';
+import 'package:kronk/constants/enums.dart';
+import 'package:kronk/constants/kronk_icon.dart';
+import 'package:kronk/models/feed_model.dart';
 import 'package:kronk/models/user_model.dart';
 import 'package:kronk/riverpod/general/theme_notifier_provider.dart';
+import 'package:kronk/riverpod/profile/engagement_feeds.dart';
 import 'package:kronk/riverpod/profile/user_provider.dart';
+import 'package:kronk/screens/feed/feeds_screen.dart';
 import 'package:kronk/utility/constants.dart';
 import 'package:kronk/utility/dimensions.dart';
+import 'package:kronk/utility/extensions.dart';
 import 'package:kronk/utility/my_logger.dart';
 import 'package:kronk/widgets/navbar.dart';
+import 'package:kronk/widgets/profile/custom_painters.dart';
 
-class ProfileScreen extends ConsumerWidget {
+class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final MyTheme activeTheme = ref.watch(themeNotifierProvider);
-    final AsyncValue<UserModel?> asyncUser = ref.watch(profileProvider);
+  Widget build(BuildContext context) {
     myLogger.d('building profile screen...');
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: activeTheme.primaryBackground.withValues(alpha: 0),
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          automaticallyImplyLeading: false,
-          actions: [
-            IconButton(
-              icon: Icon(Icons.settings, color: activeTheme.primaryText),
-              onPressed: () => context.push('/settings'),
-            ),
-          ],
+    return Scaffold(
+      body: DefaultTabController(
+        length: EngagementType.values.length,
+        child: NestedScrollView(
+          headerSliverBuilder: (context, _) => [const ProfileWidget(), const SliverToBoxAdapter(child: EngagementTabs())],
+          body: TabBarView(children: EngagementType.values.map((EngagementType engagementType) => EngagementTab(engagementType: engagementType)).toList()),
         ),
-        body: asyncUser.when(
-          data: (UserModel? user) {
-            myLogger.d('user: ${user?.username}');
-            return user != null ? ProfileWidget(user: user) : const ProfileSkeletonWidget();
-          },
-          loading: () => const ProfileSkeletonWidget(),
-          error: (Object error, StackTrace _) => Center(
-            child: Text('Error: $error', style: const TextStyle(color: Colors.redAccent)),
-          ),
+      ),
+      bottomNavigationBar: const Navbar(),
+    );
+  }
+}
+
+/// ProfileWidget
+class ProfileWidget extends ConsumerWidget {
+  const ProfileWidget({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final AsyncValue<UserModel> asyncUser = ref.watch(profileNotifierProvider);
+    return asyncUser.when(
+      data: (UserModel user) => ProfileCard(user: user),
+      loading: () => const SliverToBoxAdapter(child: CircularProgressIndicator()),
+      error: (Object error, StackTrace _) => SliverToBoxAdapter(
+        child: Center(
+          child: Text('Error: $error', style: const TextStyle(color: Colors.redAccent)),
         ),
-        bottomNavigationBar: const Navbar(),
       ),
     );
   }
 }
 
-class ProfileWidget extends ConsumerStatefulWidget {
+/// ProfileCard
+class ProfileCard extends ConsumerWidget {
   final UserModel user;
 
-  const ProfileWidget({super.key, required this.user});
+  const ProfileCard({super.key, required this.user});
 
   @override
-  ConsumerState<ProfileWidget> createState() => _ProfileWidgetState();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final Dimensions dimensions = Dimensions.of(context);
+    final theme = ref.watch(themeNotifierProvider);
+    final bool isFollowing = user.isFollowing ?? false;
+    final bool isFollowingNull = user.isFollowing == null;
+    final bannerHeight = 180.0;
+
+    final double screenWidth = dimensions.screenWidth;
+    final double margin3 = dimensions.margin3;
+    return SliverToBoxAdapter(
+      child: Stack(
+        children: [
+          Column(
+            children: [
+              /// Banner 180
+              SizedBox(
+                height: bannerHeight,
+                width: double.infinity,
+                child: Image.network(
+                  '${constants.bucketEndpoint}/defaults/default-banner-island-night.jpg',
+                  width: double.infinity,
+                  height: bannerHeight,
+                  cacheWidth: screenWidth.cacheSize(context),
+                  cacheHeight: bannerHeight.cacheSize(context),
+                  fit: BoxFit.cover,
+                ),
+              ),
+
+              /// Message, edit profile, follow, following 52
+              Container(
+                height: 52,
+                margin: EdgeInsets.symmetric(horizontal: margin3),
+                decoration: BoxDecoration(color: theme.primaryBackground, border: Border.all()),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  spacing: 8,
+                  children: [
+                    /// Message 36
+                    if (!isFollowingNull)
+                      GestureDetector(
+                        onTap: () {
+                          myLogger.d('Edit profile');
+                        },
+                        child: Container(
+                          width: 36,
+                          height: 36,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(color: theme.secondaryBackground, borderRadius: BorderRadius.circular(18)),
+                          child: Icon(KronkIcon.messageCircleLeftOutline, size: 22, color: theme.primaryText),
+                        ),
+                      ),
+
+                    /// Edit profile, Follow, Following 36
+                    GestureDetector(
+                      onTap: () {
+                        myLogger.d('Edit profile');
+                      },
+                      child: Container(
+                        width: 100,
+                        height: 36,
+                        decoration: BoxDecoration(color: theme.secondaryBackground, borderRadius: BorderRadius.circular(18)),
+                        child: Row(
+                          spacing: 4,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            if (!isFollowingNull && !isFollowing) Icon(Icons.add_rounded, size: 18, color: theme.primaryBackground),
+                            Text(
+                              isFollowingNull ? 'Edit Profile' : (isFollowing ? 'Following' : 'Follow'),
+                              style: GoogleFonts.quicksand(color: isFollowing ? theme.primaryText : theme.primaryText, fontSize: 14, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              /// Name, username 59
+              Container(
+                width: double.infinity,
+                height: 59,
+                margin: EdgeInsets.symmetric(horizontal: margin3),
+                decoration: BoxDecoration(color: theme.primaryBackground, border: Border.all()),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${user.name}',
+                      style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 24, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      '@${user.username}',
+                      style: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 16, fontWeight: FontWeight.w600),
+                    ),
+                  ],
+                ),
+              ),
+
+              /// Followers & followings count 39
+              Container(
+                width: double.infinity,
+                height: 39,
+                margin: EdgeInsets.symmetric(horizontal: margin3),
+                decoration: BoxDecoration(color: theme.primaryBackground, border: Border.all()),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  spacing: 16,
+                  children: [
+                    Row(
+                      spacing: 4,
+                      children: [
+                        Text('${user.followersCount}', style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 18)),
+                        Text(
+                          'followers',
+                          style: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 16, fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      spacing: 4,
+                      children: [
+                        Text('${user.followingsCount}', style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 18)),
+                        Text(
+                          'followings',
+                          style: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 16, fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      spacing: 4,
+                      children: [
+                        Text('14', style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 18)),
+                        Text(
+                          'feeds',
+                          style: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 16, fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          /// Avatar
+          Positioned(
+            top: 132,
+            left: margin3 + 4,
+            height: 96,
+            child: CustomPaint(
+              painter: AvatarPainter(borderColor: theme.primaryBackground, borderWidth: 8),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(48),
+                child: Image.network(
+                  '${constants.bucketEndpoint}/${user.avatarUrl ?? 'defaults/default-avatar.jpg'}',
+                  width: 96,
+                  height: 96,
+                  cacheWidth: (96 * 2.75).toInt(),
+                  cacheHeight: (96 * 2.75).toInt(),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
-class _ProfileWidgetState extends ConsumerState<ProfileWidget> with SingleTickerProviderStateMixin {
-  late TabController tabController;
+/// EngagementWidget
+class EngagementTabs extends ConsumerWidget {
+  const EngagementTabs({super.key});
 
   @override
-  void initState() {
-    super.initState();
-    tabController = TabController(length: 4, vsync: this);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final Dimensions dimensions = Dimensions.of(context);
+    final theme = ref.watch(themeNotifierProvider);
+
+    final double margin3 = dimensions.margin3;
+    final double textSize3 = dimensions.textSize3;
+    final double radius3 = dimensions.radius3;
+    final double tabHeight1 = dimensions.tabHeight1;
+    return Container(
+      height: 40,
+      margin: EdgeInsets.symmetric(horizontal: margin3),
+      decoration: BoxDecoration(border: Border.all()),
+      child: TabBar(
+        isScrollable: true,
+        dividerHeight: 0,
+        indicatorSize: TabBarIndicatorSize.tab,
+        indicator: BoxDecoration(color: theme.secondaryBackground, borderRadius: BorderRadius.circular(radius3 - 2)),
+        labelStyle: GoogleFonts.quicksand(
+          textStyle: TextStyle(fontSize: textSize3, color: theme.primaryText, fontWeight: FontWeight.w500),
+        ),
+        unselectedLabelStyle: GoogleFonts.quicksand(
+          textStyle: TextStyle(fontSize: textSize3, color: theme.secondaryText, fontWeight: FontWeight.w500),
+        ),
+        indicatorAnimation: TabIndicatorAnimation.elastic,
+        tabs: EngagementType.values.map((e) => Tab(text: e.name, height: tabHeight1)).toList(),
+      ),
+    );
   }
+}
+
+/// EngagementTabView
+class EngagementTab extends ConsumerStatefulWidget {
+  final EngagementType engagementType;
+
+  const EngagementTab({super.key, required this.engagementType});
 
   @override
-  void dispose() {
-    tabController.dispose();
-    super.dispose();
-  }
+  ConsumerState<EngagementTab> createState() => _EngagementTabState();
+}
+
+class _EngagementTabState extends ConsumerState<EngagementTab> {
+  List<FeedModel> _previousFeeds = [];
 
   @override
   Widget build(BuildContext context) {
-    final MyTheme activeTheme = ref.watch(themeNotifierProvider);
-    final dimensions = Dimensions.of(context);
+    final theme = ref.watch(themeNotifierProvider);
 
-    //final double contentWidth1 = dimensions.contentWidth1;
-    final double contentWidth2 = dimensions.with2;
-    //final double globalMargin1 = dimensions.globalMargin1;
-    //final double buttonHeight1 = dimensions.buttonHeight1;
-    //final double textSize1 = dimensions.textSize1;
-    //final double textSize2 = dimensions.textSize2;
-    final double textSize3 = dimensions.textSize3;
-    final double cornerRadius1 = dimensions.radius1;
-    myLogger.i('3. building profile widgets. username: ${widget.user.username}');
-    return Center(
-      child: RefreshIndicator(
-        onRefresh: () async => ref.read(profileProvider.notifier).fetchProfile(),
-        color: activeTheme.primaryText,
-        backgroundColor: activeTheme.secondaryBackground,
-        child: Column(
-          children: [
-            // profile info
-            Container(
-              width: contentWidth2,
-              decoration: BoxDecoration(color: activeTheme.secondaryBackground, borderRadius: BorderRadius.circular(cornerRadius1)),
-              child: Column(
-                children: [
-                  CircleAvatar(
-                    radius: 48,
-                    child: CachedNetworkImage(
-                      imageUrl: '${constants.bucketEndpoint}/${widget.user.avatarUrl ?? 'defaults/default-avatar.jpg'}',
-                      fit: BoxFit.cover,
-                      width: 96,
-                      height: 96,
-                      memCacheHeight: (96 * 2.75).toInt(),
-                      memCacheWidth: (96 * 2.75).toInt(),
-                      imageBuilder: (context, imageProvider) => Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          image: DecorationImage(image: imageProvider, fit: BoxFit.cover, isAntiAlias: true),
-                        ),
-                      ),
-                      placeholder: (context, url) => CircularProgressIndicator(color: activeTheme.primaryText, strokeWidth: 2),
-                      errorWidget: (context, url, error) => const Icon(Icons.error, size: 98, color: Colors.redAccent),
-                    ),
-                  ),
-                  Text(
-                    widget.user.username,
-                    style: GoogleFonts.quicksand(color: activeTheme.primaryText, fontSize: textSize3 * 0.8, fontWeight: FontWeight.w600),
-                  ),
-                  Text(
-                    widget.user.email,
-                    style: GoogleFonts.quicksand(color: activeTheme.primaryText, fontSize: textSize3 * 0.8, fontWeight: FontWeight.w600),
-                  ),
-                ],
-              ),
-            ),
-
-            // TabBar
-            // TabBar(
-            //   controller: tabController,
-            //   indicator: UnderlineTabIndicator(
-            //     borderSide: BorderSide(width: 4, color: activeTheme.primaryText),
-            //     borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
-            //   ),
-            //   dividerColor: activeTheme.primaryText.withAlpha(128),
-            //   dividerHeight: 0,
-            //   tabs: [
-            //     Tab(icon: Icon(Icons.image_rounded, color: activeTheme.primaryText, size: 32), height: 56),
-            //     Tab(icon: Icon(Icons.bookmark_rounded, color: activeTheme.primaryText, size: 32), height: 56),
-            //     Tab(icon: Icon(Iconsax.message_search_bold, color: activeTheme.primaryText, size: 32), height: 56),
-            //     Tab(icon: Icon(Icons.comment_rounded, color: activeTheme.primaryText, size: 32), height: 56),
-            //   ],
-            // ),
-
-            // TabBarView
-            // Expanded(
-            //   child: TabBarView(
-            //     physics: const BouncingScrollPhysics(),
-            //     controller: tabController,
-            //     children: [const MediaTabWidget(), const BookmarksTabWidget(), const PostsTabWidget(), const CommentsTabWidget()],
-            //   ),
-            // ),
-          ],
-        ),
+    final AsyncValue<List<FeedModel>> asyncFeeds = ref.watch(engagementFeedNotifierProvider(widget.engagementType));
+    return RefreshIndicator(
+      color: theme.primaryText,
+      backgroundColor: theme.secondaryBackground,
+      onRefresh: () => ref.read(engagementFeedNotifierProvider(widget.engagementType).notifier).refresh(engagementType: widget.engagementType),
+      child: asyncFeeds.when(
+        error: (error, stackTrace) {
+          if (error is DioException) return Center(child: Text('${error.message}'));
+          return Center(child: Text('$error'));
+        },
+        loading: () => FeedListWidget(feeds: _previousFeeds, isRefreshing: true),
+        data: (List<FeedModel> feeds) {
+          _previousFeeds = feeds;
+          return FeedListWidget(feeds: feeds);
+        },
       ),
     );
   }
 }
 
-class MediaTabWidget extends ConsumerWidget {
-  const MediaTabWidget({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final MyTheme currentTheme = ref.watch(themeNotifierProvider);
-    //final dimensions = Dimensions.of(context);
-
-    //final double contentWidth1 = dimensions.contentWidth1;
-    //final double contentWidth2 = dimensions.contentWidth2;
-    //final double globalMargin1 = dimensions.globalMargin1;
-    //final double buttonHeight1 = dimensions.buttonHeight1;
-    //final double textSize1 = dimensions.textSize1;
-    //final double textSize2 = dimensions.textSize2;
-    //final double textSize3 = dimensions.textSize3;
-    //final double cornerRadius1 = dimensions.cornerRadius1;
-    myLogger.d('building MediaTabWidget widgets...');
-    return CustomScrollView(
-      physics: const BouncingScrollPhysics(),
-      slivers: [
-        SliverGrid.builder(
-          itemCount: 8,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 0, mainAxisSpacing: 0),
-          itemBuilder: (context, index) {
-            return Container(
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: currentTheme.secondaryBackground,
-                border: Border.all(color: currentTheme.primaryText.withAlpha(64), width: 0.1),
-              ),
-              child: Icon(Icons.image_rounded, color: currentTheme.primaryText, size: 36),
-            );
-          },
-        ),
-      ],
-    );
-  }
-}
-
-class BookmarksTabWidget extends ConsumerWidget {
-  const BookmarksTabWidget({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final MyTheme currentTheme = ref.watch(themeNotifierProvider);
-    //final dimensions = Dimensions.of(context);
-
-    //final double contentWidth1 = dimensions.contentWidth1;
-    //final double contentWidth2 = dimensions.contentWidth2;
-    //final double globalMargin1 = dimensions.globalMargin1;
-    //final double buttonHeight1 = dimensions.buttonHeight1;
-    //final double textSize1 = dimensions.textSize1;
-    //final double textSize2 = dimensions.textSize2;
-    //final double textSize3 = dimensions.textSize3;
-    //final double cornerRadius1 = dimensions.cornerRadius1;
-    myLogger.d('building BookmarksTabWidget widgets...');
-    return CustomScrollView(
-      physics: const BouncingScrollPhysics(),
-      slivers: [
-        SliverGrid.builder(
-          itemCount: 8,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 0, mainAxisSpacing: 0),
-          itemBuilder: (context, index) {
-            return Container(
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: currentTheme.secondaryBackground,
-                border: Border.all(color: currentTheme.primaryText.withAlpha(64), width: 0.1),
-              ),
-              child: Icon(Icons.bookmark_rounded, color: currentTheme.primaryText, size: 36),
-            );
-          },
-        ),
-      ],
-    );
-  }
-}
-
-class PostsTabWidget extends ConsumerWidget {
-  const PostsTabWidget({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final MyTheme currentTheme = ref.watch(themeNotifierProvider);
-    //final dimensions = Dimensions.of(context);
-
-    //final double contentWidth1 = dimensions.contentWidth1;
-    //final double contentWidth2 = dimensions.contentWidth2;
-    //final double globalMargin1 = dimensions.globalMargin1;
-    //final double buttonHeight1 = dimensions.buttonHeight1;
-    //final double textSize1 = dimensions.textSize1;
-    //final double textSize2 = dimensions.textSize2;
-    //final double textSize3 = dimensions.textSize3;
-    //final double cornerRadius1 = dimensions.cornerRadius1;
-    myLogger.d('building PostsTabWidget widgets...');
-    return CustomScrollView(
-      physics: const BouncingScrollPhysics(),
-      slivers: [
-        SliverGrid.builder(
-          itemCount: 8,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 0, mainAxisSpacing: 0),
-          itemBuilder: (context, index) {
-            return Container(
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: currentTheme.secondaryBackground,
-                border: Border.all(color: currentTheme.primaryText.withAlpha(64), width: 0.1),
-              ),
-              child: Icon(Icons.message_rounded, color: currentTheme.primaryText, size: 36),
-            );
-          },
-        ),
-      ],
-    );
-  }
-}
-
-class CommentsTabWidget extends ConsumerWidget {
-  const CommentsTabWidget({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final MyTheme currentTheme = ref.watch(themeNotifierProvider);
-    //final dimensions = Dimensions.of(context);
-
-    //final double contentWidth1 = dimensions.contentWidth1;
-    //final double contentWidth2 = dimensions.contentWidth2;
-    //final double globalMargin1 = dimensions.globalMargin1;
-    //final double buttonHeight1 = dimensions.buttonHeight1;
-    //final double textSize1 = dimensions.textSize1;
-    //final double textSize2 = dimensions.textSize2;
-    //final double textSize3 = dimensions.textSize3;
-    //final double cornerRadius1 = dimensions.cornerRadius1;
-    myLogger.d('building CommentsTabWidget widgets...');
-    return CustomScrollView(
-      physics: const BouncingScrollPhysics(),
-      slivers: [
-        SliverGrid.builder(
-          itemCount: 8,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 0, mainAxisSpacing: 0),
-          itemBuilder: (context, index) {
-            return Container(
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: currentTheme.secondaryBackground,
-                border: Border.all(color: currentTheme.primaryText.withAlpha(64), width: 0.1),
-              ),
-              child: Icon(Icons.comment_rounded, color: currentTheme.primaryText, size: 36),
-            );
-          },
-        ),
-      ],
-    );
-  }
-}
-
-class ProfileSkeletonWidget extends ConsumerWidget {
-  const ProfileSkeletonWidget({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    myLogger.d('building skeleton widgets...');
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            ElevatedButton(onPressed: () => context.push('/auth/login'), child: const Text('Sign In')),
-            ElevatedButton(onPressed: () => context.push('/auth/register'), child: const Text('Sign Up')),
-          ],
-        ),
-      ],
-    );
-  }
-}
+// class EngagementFeedList extends ConsumerWidget {
+//   final List<FeedModel> feeds;
+//   final bool isRefreshing;
+//
+//   const EngagementFeedList({super.key, required this.feeds, this.isRefreshing = false});
+//
+//   @override
+//   Widget build(BuildContext context, WidgetRef ref) {
+//     final Dimensions dimensions = Dimensions.of(context);
+//     final FeedScreenDisplayState displayState = ref.watch(feedsScreenStyleProvider);
+//     final bool isFloating = displayState.screenStyle == ScreenStyle.floating;
+//
+//     final double margin3 = dimensions.margin3;
+//     return Scrollbar(
+//       child: CustomScrollView(
+//         slivers: [
+//           if (feeds.isEmpty && !isRefreshing)
+//             SliverFillRemaining(
+//               child: Center(
+//                 child: Column(
+//                   mainAxisAlignment: MainAxisAlignment.center,
+//                   mainAxisSize: MainAxisSize.min,
+//                   children: [
+//                     Text('No feeds yet. 🦄', style: Theme.of(context).textTheme.bodyLarge),
+//                     Text('You can add the first!', style: Theme.of(context).textTheme.displaySmall),
+//                   ],
+//                 ),
+//               ),
+//             ),
+//
+//           if (feeds.isNotEmpty)
+//             SliverPadding(
+//               padding: EdgeInsets.all(isFloating ? margin3 : 0),
+//               sliver: SliverList.separated(
+//                 itemCount: feeds.length,
+//                 separatorBuilder: (context, index) => SizedBox(height: margin3),
+//                 itemBuilder: (context, index) => FeedCard(key: ValueKey(feeds.elementAt(index).id), initialFeed: feeds.elementAt(index), isRefreshing: isRefreshing),
+//               ),
+//             ),
+//         ],
+//       ),
+//     );
+//   }
+// }

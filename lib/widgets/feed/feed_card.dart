@@ -11,6 +11,7 @@ import 'package:kronk/constants/enums.dart';
 import 'package:kronk/constants/kronk_icon.dart';
 import 'package:kronk/constants/my_theme.dart';
 import 'package:kronk/models/feed_model.dart';
+import 'package:kronk/models/user_model.dart';
 import 'package:kronk/riverpod/feed/feed_card_state_provider.dart';
 import 'package:kronk/riverpod/feed/feed_screen_style_provider.dart';
 import 'package:kronk/riverpod/feed/timeline_provider.dart';
@@ -22,6 +23,7 @@ import 'package:kronk/utility/constants.dart';
 import 'package:kronk/utility/dimensions.dart';
 import 'package:kronk/utility/extensions.dart';
 import 'package:kronk/utility/my_logger.dart';
+import 'package:kronk/utility/storage.dart';
 import 'package:kronk/widgets/feed/feed_video_error_widget.dart';
 import 'package:kronk/widgets/feed/feed_video_shimmer_widget.dart';
 import 'package:kronk/widgets/feed/video_overlay_widget.dart';
@@ -42,7 +44,7 @@ class FeedCard extends ConsumerWidget {
     final FeedCardStateNotifier notifier = ref.read(feedCardStateProvider(initialFeed).notifier);
 
     final theme = ref.watch(themeNotifierProvider);
-    final displayState = ref.watch(feedScreenStyleProvider);
+    final displayState = ref.watch(feedsScreenStyleProvider);
     final Dimensions dimensions = Dimensions.of(context);
     final double margin4 = dimensions.margin4;
     final double radius1 = dimensions.radius1;
@@ -373,7 +375,9 @@ class FeedCardMenuButton extends ConsumerWidget {
     return GestureDetector(
       child: Icon(Icons.more_vert_rounded, color: theme.primaryText),
       onTap: () {
-        if (feed.feedModeEnum == FeedModeEnum.create) return;
+        final Storage storage = Storage();
+        final UserModel? user = storage.getUser();
+        if (feed.feedModeEnum == FeedModeEnum.create && feed.author.id == user?.id) return;
         showModalBottomSheet(
           context: context,
           backgroundColor: theme.secondaryBackground,
@@ -731,7 +735,7 @@ class AddMediaWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(themeNotifierProvider);
-    final displayState = ref.watch(feedScreenStyleProvider);
+    final displayState = ref.watch(feedsScreenStyleProvider);
     return GestureDetector(
       onTap: () async {
         final picker = ImagePicker();
@@ -781,10 +785,6 @@ class FeedActionSection extends ConsumerWidget {
     final double margin2 = dimensions.margin2;
     final double _ = dimensions.radius1;
 
-    myLogger.d(
-      'comments: ${feed.engagement.comments}, repostsAndQuotes: ${feed.repostsAndQuotes}, likes: ${feed.engagement.likes}, views: ${feed.engagement.views}, bookmarks: ${feed.engagement.bookmarks}',
-    );
-    myLogger.d('repostedOrQuoted: ${feed.repostedOrQuoted}, liked: ${feed.engagement.liked}, viewed: ${feed.engagement.viewed}, bookmarked: ${feed.engagement.bookmarked}');
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [

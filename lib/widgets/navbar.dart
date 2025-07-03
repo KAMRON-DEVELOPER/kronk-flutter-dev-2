@@ -8,12 +8,32 @@ import 'package:kronk/riverpod/general/theme_notifier_provider.dart';
 import 'package:kronk/utility/dimensions.dart';
 
 final StateProvider<int> selectedIndexProvider = StateProvider<int>((Ref ref) => 0);
+final StateProvider<double> navbarScrollOffsetProvider = StateProvider<double>((ref) => 0.0);
 
-class Navbar extends ConsumerWidget {
+class Navbar extends ConsumerStatefulWidget {
   const Navbar({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<Navbar> createState() => _NavbarState();
+}
+
+class _NavbarState extends ConsumerState<Navbar> {
+  late ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final Dimensions dimensions = Dimensions.of(context);
     final MyTheme theme = ref.watch(themeNotifierProvider);
     final List<NavbarModel> items = ref.watch(navbarProvider).where((NavbarModel navbarItem) => navbarItem.isEnabled).toList();
@@ -37,6 +57,7 @@ class Navbar extends ConsumerWidget {
         border: Border(top: BorderSide(color: theme.secondaryBackground, width: 0.5)),
       ),
       child: ListView.builder(
+        controller: _scrollController,
         scrollDirection: Axis.horizontal,
         itemCount: count,
         padding: EdgeInsets.zero,

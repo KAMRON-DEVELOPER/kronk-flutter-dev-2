@@ -4,7 +4,7 @@ enum TimelineType { following, discover }
 
 enum ScreenStyle { edgeToEdge, floating }
 
-enum EngagementType { reposts, quotes, likes, views, bookmarks }
+enum EngagementType { feeds, reposts, quotes, likes, views, bookmarks }
 
 enum FeedModeEnum { view, edit, create }
 

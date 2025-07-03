@@ -127,7 +127,7 @@ class AppRouter {
                   GoRoute(
                     path: 'chat',
                     pageBuilder: (context, state) {
-                      final participant = state.extra as UserSearchModel;
+                      final participant = state.extra as UserModel;
                       return SlidePageTransition(
                         child: ChatScreen(key: state.pageKey, participant: participant),
                       );

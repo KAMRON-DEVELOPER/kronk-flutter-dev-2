@@ -13,6 +13,7 @@ import 'package:kronk/utility/classes.dart';
 import 'package:kronk/utility/dimensions.dart';
 import 'package:kronk/utility/extensions.dart';
 import 'package:kronk/utility/my_logger.dart';
+import 'package:kronk/widgets/custom_drawer.dart';
 import 'package:kronk/widgets/navbar.dart';
 
 class ChatsScreen extends ConsumerWidget {
@@ -274,7 +275,7 @@ void showChatsScreenSettingsDialog(BuildContext context, WidgetRef ref) {
                     children: [
                       Expanded(
                         child: GestureDetector(
-                          onTap: () => ref.read(feedScreenStyleProvider.notifier).updateFeedScreenStyle(screenStyle: ScreenStyle.edgeToEdge),
+                          onTap: () => ref.read(feedsScreenStyleProvider.notifier).updateFeedScreenStyle(screenStyle: ScreenStyle.edgeToEdge),
                           child: Container(
                             height: feedImageSelectorWidth,
                             decoration: BoxDecoration(
@@ -291,7 +292,7 @@ void showChatsScreenSettingsDialog(BuildContext context, WidgetRef ref) {
                       const SizedBox(width: 12),
                       Expanded(
                         child: GestureDetector(
-                          onTap: () => ref.read(feedScreenStyleProvider.notifier).updateFeedScreenStyle(screenStyle: ScreenStyle.floating),
+                          onTap: () => ref.read(feedsScreenStyleProvider.notifier).updateFeedScreenStyle(screenStyle: ScreenStyle.floating),
                           child: Container(
                             height: 100,
                             decoration: BoxDecoration(
@@ -318,7 +319,7 @@ void showChatsScreenSettingsDialog(BuildContext context, WidgetRef ref) {
                     thumbColor: theme.primaryText,
                     label: 'Card radius',
                     // divisions: 22,
-                    onChanged: (double newRadius) => ref.read(feedScreenStyleProvider.notifier).updateFeedScreenStyle(cardBorderRadius: newRadius),
+                    onChanged: (double newRadius) => ref.read(feedsScreenStyleProvider.notifier).updateFeedScreenStyle(cardBorderRadius: newRadius),
                   ),
 
                   /// Slider opacity
@@ -331,7 +332,7 @@ void showChatsScreenSettingsDialog(BuildContext context, WidgetRef ref) {
                     thumbColor: theme.primaryText,
                     label: 'Card opacity',
                     // divisions: 10,
-                    onChanged: (double newOpacity) => ref.read(feedScreenStyleProvider.notifier).updateFeedScreenStyle(cardOpacity: newOpacity),
+                    onChanged: (double newOpacity) => ref.read(feedsScreenStyleProvider.notifier).updateFeedScreenStyle(cardOpacity: newOpacity),
                   ),
                 ],
               ),

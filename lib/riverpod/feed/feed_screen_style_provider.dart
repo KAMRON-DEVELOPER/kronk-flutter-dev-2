@@ -3,7 +3,7 @@ import 'package:kronk/constants/enums.dart';
 import 'package:kronk/utility/classes.dart';
 import 'package:kronk/utility/storage.dart';
 
-final feedScreenStyleProvider = NotifierProvider<FeedScreenStyleNotifier, FeedScreenDisplayState>(() => FeedScreenStyleNotifier());
+final feedsScreenStyleProvider = NotifierProvider<FeedScreenStyleNotifier, FeedScreenDisplayState>(() => FeedScreenStyleNotifier());
 
 class FeedScreenStyleNotifier extends Notifier<FeedScreenDisplayState> {
   final Storage _storage = Storage();

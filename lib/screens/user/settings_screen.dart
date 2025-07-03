@@ -334,7 +334,7 @@ class SupportSectionWidget extends ConsumerWidget {
             ),
             ElevatedButton(
               onPressed: () async {
-                await customURLLauncher(isWebsite: true, url: 'https://tirikchilik.uz/kamronbekdev');
+                await customURLLauncher(isWebsite: true, url: 'https://tirikchilik.uz/kamronbek');
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,

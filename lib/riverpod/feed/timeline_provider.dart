@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,11 +17,16 @@ class TimelineNotifier extends FamilyAsyncNotifier<List<FeedModel>, TimelineType
   final FeedService _feedService = FeedService();
   final Connectivity _connectivity = Connectivity();
   final Storage _storage = Storage();
-  int _start = 0;
-  int _end = 10;
+  int _end = 9;
+  int _realEnd = 10;
+  bool _isLoadingMore = false;
 
   @override
   Future<List<FeedModel>> build(TimelineType timelineType) async {
+    _end = 9;
+    _realEnd = 10;
+    _isLoadingMore = false;
+
     try {
       final bool isOnlineAndAuthenticated = await _isOnlineAndAuthenticated();
       if (!isOnlineAndAuthenticated) {
@@ -35,17 +41,21 @@ class TimelineNotifier extends FamilyAsyncNotifier<List<FeedModel>, TimelineType
 
   Future<List<FeedModel>> _fetchTimeline({required TimelineType timelineType}) async {
     try {
-      final List<FeedModel> feeds = await _feedService.fetchTimeline(timelineType: timelineType);
-      myLogger.d('feeds in _fetchTimeline in timelineNotifierProvider: $feeds');
-      return feeds.isEmpty ? [] : feeds;
+      final results = await _feedService.fetchTimeline(timelineType: timelineType);
+      myLogger.d('feeds in _fetchTimeline in timelineNotifierProvider: ${results.item1}');
+      _realEnd = results.item2 - 1;
+      return results.item1.isEmpty ? [] : results.item1;
     } catch (error) {
-      state = AsyncValue.error(error, StackTrace.current);
-      return [];
+      // state = AsyncValue.error(error, StackTrace.current);
+      // return [];
+      rethrow;
     }
   }
 
   Future<List<FeedModel>> refresh({required TimelineType timelineType}) async {
     state = const AsyncValue.loading();
+    _end = 9;
+    _realEnd = 10;
     final Future<List<FeedModel>> feeds = _fetchTimeline(timelineType: timelineType);
     state = await AsyncValue.guard(() => feeds);
     return feeds;
@@ -83,12 +93,24 @@ class TimelineNotifier extends FamilyAsyncNotifier<List<FeedModel>, TimelineType
   }
 
   Future<void> loadMore({required TimelineType timelineType}) async {
-    _start = _end + 1;
-    _end = _start + 10;
+    if (_isLoadingMore || _end >= _realEnd) return;
+    _isLoadingMore = true;
 
-    final newFeeds = await _feedService.fetchTimeline(timelineType: timelineType, start: _start, end: _end);
+    try {
+      final nextStart = _end + 1;
+      int nextEnd = min(_realEnd, _end + 10);
 
-    state = state.whenData((existing) => [...existing, ...newFeeds]);
+      final results = await _feedService.fetchTimeline(timelineType: timelineType, start: nextStart, end: nextEnd);
+
+      if (results.item1.isEmpty) return;
+
+      _end = nextEnd;
+      _realEnd = results.item2 - 1;
+
+      state = AsyncValue.data([...?state.value, ...results.item1]);
+    } finally {
+      _isLoadingMore = false;
+    }
   }
 }
 
@@ -100,11 +122,14 @@ class CommentNotifier extends FamilyAsyncNotifier<List<FeedModel>, String?> {
   final FeedService _feedService = FeedService();
   final Connectivity _connectivity = Connectivity();
   final Storage _storage = Storage();
-  int _start = 0;
-  int _end = 10;
+  int _end = 9;
+  int _realEnd = 10;
+  bool _isLoadingMore = false;
 
   @override
   Future<List<FeedModel>> build(String? parentId) async {
+    _end = 0;
+    _realEnd = 9;
     try {
       final bool isOnlineAndAuthenticated = await _isOnlineAndAuthenticated();
       if (!isOnlineAndAuthenticated) {
@@ -119,17 +144,21 @@ class CommentNotifier extends FamilyAsyncNotifier<List<FeedModel>, String?> {
 
   Future<List<FeedModel>> _fetchComments({required String? parentId}) async {
     try {
-      final List<FeedModel> feeds = await _feedService.fetchComments(parentId: parentId);
-      myLogger.d('feeds in _fetchComments in commentNotifierProvider: $feeds');
-      return feeds.isEmpty ? [] : feeds;
+      final results = await _feedService.fetchComments(parentId: parentId);
+      myLogger.d('feeds in _fetchComments in commentNotifierProvider: ${results.item1}');
+      _end = results.item2 - 1;
+      return results.item1.isEmpty ? [] : results.item1;
     } catch (error) {
-      state = AsyncValue.error(error, StackTrace.current);
-      return [];
+      // state = AsyncValue.error(error, StackTrace.current);
+      rethrow;
     }
   }
 
   Future<List<FeedModel>> refresh({required String? parentId}) async {
     state = const AsyncValue.loading();
+    _end = 0;
+    _realEnd = 10;
+    _isLoadingMore = false;
     final Future<List<FeedModel>> feeds = _fetchComments(parentId: parentId);
     state = await AsyncValue.guard(() => feeds);
     return feeds;
@@ -167,13 +196,23 @@ class CommentNotifier extends FamilyAsyncNotifier<List<FeedModel>, String?> {
   }
 
   Future<void> loadMore({required TimelineType timelineType}) async {
-    _start = _end + 1;
-    _end = _start + 10;
+    if (_isLoadingMore || _end >= _realEnd) return;
+    _isLoadingMore = true;
 
-    final newFeeds = await _feedService.fetchTimeline(timelineType: timelineType, start: _start, end: _end);
+    try {
+      final nextStart = _end + 1;
+      int nextEnd = min(_realEnd, _end + 10);
 
-    state = state.whenData((existing) => [...existing, ...newFeeds]);
+      final results = await _feedService.fetchTimeline(timelineType: timelineType, start: nextStart, end: nextEnd);
+
+      if (results.item1.isEmpty) return;
+
+      _end = nextEnd;
+      _realEnd = results.item2 - 1;
+
+      state = AsyncValue.data([...?state.value, ...results.item1]);
+    } finally {
+      _isLoadingMore = false;
+    }
   }
 }
-
-/// ------------------------------------------ Post Notification ------------------------------------ ///

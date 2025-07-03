@@ -85,10 +85,15 @@ class MyApp extends ConsumerWidget {
           shape: const CircleBorder(),
           iconSize: 36,
         ),
-
         progressIndicatorTheme: ProgressIndicatorThemeData(color: theme.primaryText, borderRadius: BorderRadius.circular(8)),
         textSelectionTheme: TextSelectionThemeData(selectionHandleColor: theme.primaryText),
         iconTheme: const IconThemeData(color: Colors.greenAccent),
+        scrollbarTheme: ScrollbarThemeData(
+          radius: const Radius.circular(2),
+          thickness: const WidgetStatePropertyAll(4),
+          thumbColor: WidgetStatePropertyAll(theme.secondaryText),
+          trackColor: const WidgetStatePropertyAll(Colors.red),
+        ),
       ),
     );
   }
