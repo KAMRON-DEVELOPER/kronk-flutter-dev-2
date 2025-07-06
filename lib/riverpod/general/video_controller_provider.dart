@@ -8,9 +8,7 @@ import 'package:kronk/utility/constants.dart';
 import 'package:kronk/utility/my_logger.dart';
 import 'package:video_player/video_player.dart';
 
-final videoControllerProvider = AutoDisposeAsyncNotifierProviderFamily<VideoControllerNotifier, VideoPlayerController, VideoSourceState>(() {
-  return VideoControllerNotifier();
-});
+final videoControllerProvider = AutoDisposeAsyncNotifierProviderFamily<VideoControllerNotifier, VideoPlayerController, VideoSourceState>(VideoControllerNotifier.new);
 
 class VideoControllerNotifier extends AutoDisposeFamilyAsyncNotifier<VideoPlayerController, VideoSourceState> {
   late final VoidCallback _controllerListener;

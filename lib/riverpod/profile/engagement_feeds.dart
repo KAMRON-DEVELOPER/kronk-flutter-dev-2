@@ -5,11 +5,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kronk/constants/enums.dart';
 import 'package:kronk/models/feed_model.dart';
 import 'package:kronk/services/api_service/feed_service.dart';
+import 'package:kronk/utility/my_logger.dart';
 import 'package:kronk/utility/storage.dart';
+import 'package:tuple/tuple.dart';
 
-final engagementFeedNotifierProvider = AsyncNotifierProviderFamily<EngagementFeedNotifier, List<FeedModel>, EngagementType>(EngagementFeedNotifier.new);
+final engagementFeedNotifierProvider = AsyncNotifierProviderFamily<EngagementFeedNotifier, List<FeedModel>, Tuple2<String?, EngagementType>>(EngagementFeedNotifier.new);
 
-class EngagementFeedNotifier extends FamilyAsyncNotifier<List<FeedModel>, EngagementType> {
+class EngagementFeedNotifier extends FamilyAsyncNotifier<List<FeedModel>, Tuple2<String?, EngagementType>> {
   final FeedService _feedService = FeedService();
   final Connectivity _connectivity = Connectivity();
   final Storage _storage = Storage();
@@ -18,37 +20,37 @@ class EngagementFeedNotifier extends FamilyAsyncNotifier<List<FeedModel>, Engage
   bool _isLoadingMore = false;
 
   @override
-  Future<List<FeedModel>> build(EngagementType engagementType) async {
-    _end = 0;
-    _realEnd = 9;
+  Future<List<FeedModel>> build(Tuple2<String?, EngagementType> key) async {
+    _end = 9;
+    _realEnd = 10;
     try {
       final bool isOnlineAndAuthenticated = await _isOnlineAndAuthenticated();
       if (!isOnlineAndAuthenticated) {
         return [];
       }
-      return await _fetchEngagementFeeds(engagementType: engagementType);
+      return await _fetchEngagementFeeds(key: key);
     } catch (error) {
       rethrow;
     }
   }
 
-  Future<List<FeedModel>> _fetchEngagementFeeds({required EngagementType engagementType}) async {
+  Future<List<FeedModel>> _fetchEngagementFeeds({required Tuple2<String?, EngagementType> key}) async {
     try {
-      final results = await _feedService.fetchEngagementFeeds(engagementType: engagementType);
-      _end = results.item2 - 1;
+      final results = await _feedService.fetchEngagementFeeds(key: key);
+      _realEnd = results.item2 - 1;
       return results.item1;
     } catch (error) {
       rethrow;
     }
   }
 
-  Future<List<FeedModel>> refresh({required EngagementType engagementType}) async {
+  Future<List<FeedModel>> refresh({required Tuple2<String?, EngagementType> key}) async {
     state = const AsyncValue.loading();
-    _end = 0;
+    _end = 9;
     _realEnd = 10;
     _isLoadingMore = false;
     try {
-      final Future<List<FeedModel>> feeds = _fetchEngagementFeeds(engagementType: engagementType);
+      final Future<List<FeedModel>> feeds = _fetchEngagementFeeds(key: key);
       state = await AsyncValue.guard(() => feeds);
       return feeds;
     } catch (error) {
@@ -66,15 +68,16 @@ class EngagementFeedNotifier extends FamilyAsyncNotifier<List<FeedModel>, Engage
     return isOnline && isAuthenticated;
   }
 
-  Future<void> loadMore({required EngagementType engagementType}) async {
+  Future<void> loadMore({required Tuple2<String?, EngagementType> key}) async {
     if (_isLoadingMore || _end >= _realEnd) return;
     _isLoadingMore = true;
 
     try {
       final nextStart = _end + 1;
       int nextEnd = min(_realEnd, _end + 10);
+      myLogger.d('nextStart: $nextStart, nextEnd: $nextEnd');
 
-      final results = await _feedService.fetchEngagementFeeds(engagementType: engagementType, start: nextStart, end: nextEnd);
+      final results = await _feedService.fetchEngagementFeeds(key: key, start: nextStart, end: nextEnd);
 
       if (results.item1.isEmpty) return;
 

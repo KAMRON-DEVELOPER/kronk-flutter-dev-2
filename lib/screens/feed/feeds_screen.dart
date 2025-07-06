@@ -34,8 +34,7 @@ class FeedsScreen extends ConsumerWidget {
     final Dimensions dimensions = Dimensions.of(context);
 
     final double screenWidth = dimensions.screenWidth;
-    final double appBarHeight = 48 + 40;
-    final screenHeight = dimensions.screenHeight - MediaQuery.of(context).padding.top - appBarHeight - kBottomNavigationBarHeight;
+    final screenHeight = dimensions.screenHeight - MediaQuery.of(context).padding.top - kBottomNavigationBarHeight;
     final double radius1 = dimensions.radius1;
     return DefaultTabController(
       length: 2,
@@ -444,33 +443,37 @@ class MainAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final Dimensions dimensions = Dimensions.of(context);
     final double margin3 = dimensions.margin3;
     final double radius3 = dimensions.radius3;
+    final double iconSize2 = dimensions.iconSize2;
     final double textSize3 = dimensions.textSize3;
     final double tabHeight1 = dimensions.tabHeight1;
+    final double appBarHeight = dimensions.appBarHeight;
+    final double bottomHeight = dimensions.bottomHeight;
+    final double spacing2 = dimensions.spacing2;
     return CustomAppBar(
-      appBarHeight: 48,
-      bottomHeight: 40,
+      appBarHeight: appBarHeight,
+      bottomHeight: bottomHeight,
       bottomGap: 4,
-      actionsSpacing: 12,
+      actionsSpacing: spacing2,
       appBarPadding: EdgeInsets.only(left: margin3, right: margin3 - 6),
       bottomPadding: EdgeInsets.only(left: margin3, right: margin3, bottom: 4),
       leading: Builder(
         builder: (context) => GestureDetector(
           onTap: () => Scaffold.of(context).openDrawer(),
-          child: Icon(Icons.menu_rounded, color: theme.primaryText, size: 24),
+          child: Icon(Icons.menu_rounded, color: theme.primaryText, size: iconSize2),
         ),
       ),
       title: Text(
         titleText,
-        style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 24, fontWeight: FontWeight.w600),
+        style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: iconSize2, fontWeight: FontWeight.w600),
       ),
       actions: [
         GestureDetector(
           onTap: () => context.go('/search'),
-          child: Icon(Icons.search_rounded, color: theme.primaryText, size: 24),
+          child: Icon(Icons.search_rounded, color: theme.primaryText, size: iconSize2),
         ),
         GestureDetector(
           onTap: onTap,
-          child: Icon(Icons.more_vert_rounded, color: theme.primaryText, size: 24),
+          child: Icon(Icons.more_vert_rounded, color: theme.primaryText, size: iconSize2),
         ),
       ],
       bottom: Container(

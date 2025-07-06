@@ -40,7 +40,7 @@ class MyApp extends ConsumerWidget {
     final Dimensions dimensions = Dimensions.of(context);
     final MyTheme theme = ref.watch(themeNotifierProvider);
     final double textSize2 = dimensions.textSize2;
-    final double bodyMedium = dimensions.bodyMedium;
+    final double textSize3 = dimensions.textSize3;
     return MaterialApp.router(
       title: 'Kronk',
       debugShowCheckedModeBanner: false,
@@ -56,7 +56,7 @@ class MyApp extends ConsumerWidget {
           displayMedium: GoogleFonts.quicksand(fontSize: 28, color: theme.primaryText, fontWeight: FontWeight.w600),
           displaySmall: GoogleFonts.quicksand(fontSize: 20, color: theme.primaryText, fontWeight: FontWeight.w700),
           bodyLarge: GoogleFonts.quicksand(fontSize: textSize2, color: theme.primaryText, fontWeight: FontWeight.w700),
-          bodyMedium: GoogleFonts.quicksand(fontSize: bodyMedium, color: theme.primaryText, fontWeight: FontWeight.w500),
+          bodyMedium: GoogleFonts.quicksand(fontSize: textSize3, color: theme.primaryText, fontWeight: FontWeight.w500),
           bodySmall: GoogleFonts.quicksand(fontSize: 14, color: theme.primaryText),
           titleLarge: GoogleFonts.quicksand(fontSize: 24, color: theme.primaryText),
           titleMedium: GoogleFonts.quicksand(fontSize: 24, color: Colors.purpleAccent),

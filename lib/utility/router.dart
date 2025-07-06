@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kronk/bloc/authentication/authentication_bloc.dart';
+import 'package:kronk/constants/enums.dart';
 import 'package:kronk/models/feed_model.dart';
 import 'package:kronk/models/user_model.dart';
 import 'package:kronk/screens/chat/chat_screen.dart';
@@ -11,6 +12,7 @@ import 'package:kronk/screens/feed/feed_screen.dart';
 import 'package:kronk/screens/feed/feeds_screen.dart';
 import 'package:kronk/screens/search_screen.dart';
 import 'package:kronk/screens/user/auth_screen.dart';
+import 'package:kronk/screens/user/edit_profile_screen.dart';
 import 'package:kronk/screens/user/forgot_password_screen.dart';
 import 'package:kronk/screens/user/notes_screen.dart';
 import 'package:kronk/screens/user/player_screen.dart';
@@ -22,6 +24,7 @@ import 'package:kronk/screens/user/translator_screen.dart';
 import 'package:kronk/screens/user/verify_screen.dart';
 import 'package:kronk/screens/user/vocabularies_screen.dart';
 import 'package:kronk/screens/user/welcome_screen.dart';
+import 'package:kronk/widgets/image_cropper_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: '_rootNavigatorKey');
 final _feedsNavigatorKey = GlobalKey<NavigatorState>(debugLabel: '_feedsNavigatorKey');
@@ -85,6 +88,13 @@ class AppRouter {
           ),
         ],
       ),
+      GoRoute(
+        path: '/image_cropper/:type',
+        pageBuilder: (context, state) => SlidePageTransition(
+          key: state.pageKey,
+          child: ImageCropperScreen(cropImageFor: state.pathParameters['type'] == 'avatar' ? CropImageFor.avatar : CropImageFor.banner),
+        ),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) => navigationShell,
         branches: <StatefulShellBranch>[
@@ -97,12 +107,9 @@ class AppRouter {
                 routes: [
                   GoRoute(
                     path: 'feed',
-                    pageBuilder: (context, state) {
-                      final feed = state.extra as FeedModel;
-                      return SlidePageTransition(
-                        child: FeedScreen(key: state.pageKey, feed: feed),
-                      );
-                    },
+                    pageBuilder: (context, state) => SlidePageTransition(
+                      child: FeedScreen(key: state.pageKey, feed: state.extra as FeedModel),
+                    ),
                   ),
                 ],
               ),
@@ -126,12 +133,9 @@ class AppRouter {
                 routes: [
                   GoRoute(
                     path: 'chat',
-                    pageBuilder: (context, state) {
-                      final participant = state.extra as UserModel;
-                      return SlidePageTransition(
-                        child: ChatScreen(key: state.pageKey, participant: participant),
-                      );
-                    },
+                    pageBuilder: (context, state) => SlidePageTransition(
+                      child: ChatScreen(key: state.pageKey, participant: state.extra as UserModel),
+                    ),
                   ),
                 ],
               ),
@@ -201,6 +205,12 @@ class AppRouter {
               GoRoute(
                 path: '/profile',
                 pageBuilder: (context, state) => SlidePageTransition(key: state.pageKey, child: const ProfileScreen()),
+                routes: [
+                  GoRoute(
+                    path: 'edit',
+                    pageBuilder: (context, state) => SlidePageTransition(key: state.pageKey, child: const EditProfileScreen()),
+                  ),
+                ],
               ),
             ],
           ),

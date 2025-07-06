@@ -1,19 +1,23 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:kronk/constants/my_theme.dart';
+import 'package:kronk/riverpod/general/theme_notifier_provider.dart';
+import 'package:kronk/screens/user/edit_profile_screen.dart';
+import 'package:kronk/utility/dimensions.dart';
 
-class DatePicker extends StatefulWidget {
+class DatePicker extends ConsumerStatefulWidget {
+  final DateTime? initialValue;
   final Function(DateTime?) onDatePicked;
 
-  const DatePicker({super.key, required this.onDatePicked});
+  const DatePicker({super.key, this.initialValue, required this.onDatePicked});
 
   @override
-  State<DatePicker> createState() => _DatePickerState();
+  ConsumerState<DatePicker> createState() => _DatePickerState();
 }
 
-class _DatePickerState extends State<DatePicker> {
-  DateTime selectedDate = DateTime.now();
+class _DatePickerState extends ConsumerState<DatePicker> {
+  late DateTime selectedDate;
   late final FixedExtentScrollController dayController;
   late final FixedExtentScrollController monthController;
   late final FixedExtentScrollController yearController;
@@ -21,10 +25,10 @@ class _DatePickerState extends State<DatePicker> {
   @override
   void initState() {
     super.initState();
+    selectedDate = widget.initialValue ?? DateTime.now();
     dayController = FixedExtentScrollController(initialItem: selectedDate.day - 1);
     monthController = FixedExtentScrollController(initialItem: selectedDate.month - 1);
     yearController = FixedExtentScrollController(initialItem: 99);
-    log('${yearController.initialItem}');
   }
 
   @override
@@ -37,40 +41,41 @@ class _DatePickerState extends State<DatePicker> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 300,
-      height: 300,
-      padding: const EdgeInsets.all(8),
-      color: Colors.blueGrey.withValues(alpha: 0.5),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Text('${selectedDate.toLocal()}'.split(' ')[0]),
-          const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    final Dimensions dimensions = Dimensions.of(context);
+    final theme = ref.watch(themeNotifierProvider);
+
+    final double padding2 = dimensions.padding2;
+    final double radius2 = dimensions.radius2;
+    return Column(
+      children: [
+        const FieldLabel(label: 'birthdate'),
+        Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(padding2),
+          decoration: BoxDecoration(color: theme.secondaryBackground, borderRadius: BorderRadius.circular(radius2)),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Day selector
-              _buildDaySelector(),
-              // Month selector
-              _buildMonthSelector(),
-              // Year selector
-              _buildYearSelector(),
+              Text('${selectedDate.toLocal()}'.split(' ')[0]),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Day selector
+                  _buildDaySelector(theme),
+                  // Month selector
+                  _buildMonthSelector(theme),
+                  // Year selector
+                  _buildYearSelector(theme),
+                ],
+              ),
             ],
           ),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () {
-              widget.onDatePicked(selectedDate);
-            },
-            child: const Text('Select the Date'),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  Widget _buildDaySelector() {
+  Widget _buildDaySelector(MyTheme theme) {
     return Container(
       width: 60,
       height: 150,
@@ -83,6 +88,7 @@ class _DatePickerState extends State<DatePicker> {
           setState(() {
             selectedDate = DateTime(selectedDate.year, selectedDate.month, index + 1);
           });
+          widget.onDatePicked(selectedDate);
         },
         childDelegate: ListWheelChildBuilderDelegate(
           childCount: 31,
@@ -90,7 +96,7 @@ class _DatePickerState extends State<DatePicker> {
             return Center(
               child: Text(
                 '${index + 1}',
-                style: TextStyle(fontSize: selectedDate.day - 1 == index ? 24 : 16, color: selectedDate.day - 1 == index ? Colors.black : Colors.grey),
+                style: GoogleFonts.quicksand(fontSize: selectedDate.day - 1 == index ? 24 : 16, color: selectedDate.day - 1 == index ? theme.primaryText : theme.secondaryText),
               ),
             );
           },
@@ -99,7 +105,7 @@ class _DatePickerState extends State<DatePicker> {
     );
   }
 
-  Widget _buildMonthSelector() {
+  Widget _buildMonthSelector(MyTheme theme) {
     return Container(
       width: 60,
       height: 150,
@@ -112,6 +118,7 @@ class _DatePickerState extends State<DatePicker> {
           setState(() {
             selectedDate = DateTime(selectedDate.year, index + 1, selectedDate.day);
           });
+          widget.onDatePicked(selectedDate);
         },
         childDelegate: ListWheelChildBuilderDelegate(
           childCount: 12,
@@ -119,7 +126,7 @@ class _DatePickerState extends State<DatePicker> {
             return Center(
               child: Text(
                 '${index + 1}',
-                style: TextStyle(fontSize: selectedDate.month - 1 == index ? 24 : 16, color: selectedDate.month - 1 == index ? Colors.black : Colors.grey),
+                style: TextStyle(fontSize: selectedDate.month - 1 == index ? 24 : 16, color: selectedDate.month - 1 == index ? theme.primaryText : theme.secondaryText),
               ),
             );
           },
@@ -128,7 +135,7 @@ class _DatePickerState extends State<DatePicker> {
     );
   }
 
-  Widget _buildYearSelector() {
+  Widget _buildYearSelector(MyTheme theme) {
     return Container(
       width: 80,
       height: 150,
@@ -141,6 +148,7 @@ class _DatePickerState extends State<DatePicker> {
           setState(() {
             selectedDate = DateTime(DateTime.now().year - 99 + index, selectedDate.month, selectedDate.day);
           });
+          widget.onDatePicked(selectedDate);
         },
         childDelegate: ListWheelChildBuilderDelegate(
           childCount: 100,
@@ -150,7 +158,7 @@ class _DatePickerState extends State<DatePicker> {
                 '${DateTime.now().year - 99 + index}',
                 style: TextStyle(
                   fontSize: selectedDate.year == DateTime.now().year - 99 + index ? 24 : 16,
-                  color: selectedDate.year == DateTime.now().year - 99 + index ? Colors.black : Colors.grey,
+                  color: selectedDate.year == DateTime.now().year - 99 + index ? theme.primaryText : theme.secondaryText,
                 ),
               ),
             );
@@ -159,37 +167,4 @@ class _DatePickerState extends State<DatePicker> {
       ),
     );
   }
-}
-
-void showCustomDateSelector({required BuildContext context, required Function(DateTime?) onDateSelected}) {
-  showGeneralDialog(
-    context: context,
-    barrierColor: Colors.black54,
-    barrierDismissible: true,
-    barrierLabel: '',
-    transitionDuration: const Duration(milliseconds: 150),
-    transitionBuilder: (context, animation, secondaryAnimation, child) {
-      return Transform.scale(
-        scale: animation.value,
-        child: Opacity(
-          opacity: animation.value,
-          child: Dialog(
-            backgroundColor: Colors.greenAccent.withValues(alpha: 0.2),
-            // clipBehavior: Clip.antiAlias,
-            insetPadding: const EdgeInsets.all(8),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
-            child: DatePicker(
-              onDatePicked: (pickedDate) {
-                onDateSelected(pickedDate);
-                context.pop();
-              },
-            ),
-          ),
-        ),
-      );
-    },
-    pageBuilder: (context, animation, secondaryAnimation) {
-      return const SizedBox.shrink();
-    },
-  );
 }

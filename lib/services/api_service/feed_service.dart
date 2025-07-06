@@ -25,10 +25,7 @@ class FeedService {
 
       final response = await _dio.get(path, queryParameters: {'start': start, 'end': end});
 
-      myLogger.i('🚀 response.data in fetchTimeline: ${response.data}  statusCode: ${response.statusCode}');
       final data = response.data;
-      myLogger.d("data['feeds'] is List: ${data['feeds'] is List}");
-      myLogger.d("data['end']: ${data['end']}");
       if (data['feeds'] is List) {
         return Tuple2((data['feeds'] as List).map<FeedModel>((json) => FeedModel.fromJson(json as Map<String, dynamic>)).toList(), data['end'] ?? 0);
       } else {
@@ -113,14 +110,11 @@ class FeedService {
     }
   }
 
-  Future<Tuple2<List<FeedModel>, int>> fetchEngagementFeeds({required EngagementType engagementType, int start = 0, int end = 9}) async {
+  Future<Tuple2<List<FeedModel>, int>> fetchEngagementFeeds({required Tuple2<String?, EngagementType> key, int start = 0, int end = 9}) async {
     try {
-      final response = await _dio.get('/timeline/user', queryParameters: {'engagement_type': engagementType.name.toSnakeCase(), 'start': start, 'end': end});
+      final response = await _dio.get('/timeline/user', queryParameters: {'engagement_type': key.item2.name.toSnakeCase(), 'user_id': key.item1, 'start': start, 'end': end});
 
-      myLogger.i('🚀 response.data in fetchEngagementFeeds: ${response.data}  statusCode: ${response.statusCode}');
       final data = response.data;
-      myLogger.d("data['feeds'] is List: ${data['feeds'] is List}");
-      myLogger.d("data['end']: ${data['end']}");
       if (data['feeds'] is List) {
         return Tuple2((data['feeds'] as List).map<FeedModel>((json) => FeedModel.fromJson(json as Map<String, dynamic>)).toList(), data['end'] ?? end);
       } else {

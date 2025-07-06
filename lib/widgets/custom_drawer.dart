@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kronk/models/user_model.dart';
 import 'package:kronk/riverpod/general/theme_notifier_provider.dart';
-import 'package:kronk/riverpod/profile/user_provider.dart';
+import 'package:kronk/riverpod/profile/profile_provider.dart';
 import 'package:kronk/utility/constants.dart';
 import 'package:kronk/utility/extensions.dart';
 
@@ -39,7 +39,7 @@ class ProfileDrawerWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(themeNotifierProvider);
-    final AsyncValue<UserModel?> asyncUser = ref.watch(profileNotifierProvider);
+    final AsyncValue<UserModel?> asyncUser = ref.watch(profileNotifierProvider((null)));
     return asyncUser.when(
       data: (UserModel? user) {
         if (user == null) return const SizedBox.shrink();
@@ -79,7 +79,7 @@ class ProfileDrawerWidget extends ConsumerWidget {
               ),
 
               /// Name
-              Text('${user.name}', style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 12)),
+              Text(user.name, style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 12)),
 
               /// Username
               Text('@${user.username}', style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 12)),

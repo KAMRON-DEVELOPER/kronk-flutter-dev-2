@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:crop_your_image/crop_your_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:kronk/constants/enums.dart';
 
 class VideoOverlayState {
@@ -122,14 +124,52 @@ class VideoSourceState {
   int get hashCode => Object.hash(videoUrl, videoFile?.path);
 }
 
-// class FeedNotificationState {
-//   final ScrollController scrollController;
-//   final GlobalKey<RefreshIndicatorState> refreshKey;
-//   final List<String> avatarUrls;
-//
-//   FeedNotificationState({required this.scrollController, required this.refreshKey, this.avatarUrls = const []});
-//
-//   factory FeedNotificationState.from(FeedNotificationState base, {ScrollController? scrollController, GlobalKey<RefreshIndicatorState>? refreshKey, List<String>? avatarUrls}) {
-//     return FeedNotificationState(scrollController: scrollController ?? base.scrollController, refreshKey: refreshKey ?? base.refreshKey, avatarUrls: avatarUrls ?? base.avatarUrls);
-//   }
-// }
+const _unset = Object();
+
+class ImageCropperState {
+  final CropController cropController;
+  final String? pickedAvatarName;
+  final String? pickedBannerName;
+  final String? pickedAvatarMimeType;
+  final String? pickedBannerMimeType;
+  final Uint8List? pickedAvatarBytes;
+  final Uint8List? pickedBannerBytes;
+  final Uint8List? croppedAvatarBytes;
+  final Uint8List? croppedBannerBytes;
+
+  ImageCropperState({
+    required this.cropController,
+    this.pickedAvatarName,
+    this.pickedBannerName,
+    this.pickedAvatarMimeType,
+    this.pickedBannerMimeType,
+    this.pickedAvatarBytes,
+    this.pickedBannerBytes,
+    this.croppedAvatarBytes,
+    this.croppedBannerBytes,
+  });
+
+  ImageCropperState copyWith({
+    CropController? cropController,
+    Object? pickedAvatarName = _unset,
+    Object? pickedBannerName = _unset,
+    Object? pickedAvatarMimeType = _unset,
+    Object? pickedBannerMimeType = _unset,
+    Object? pickedAvatarBytes = _unset,
+    Object? pickedBannerBytes = _unset,
+    Object? croppedAvatarBytes = _unset,
+    Object? croppedBannerBytes = _unset,
+  }) {
+    return ImageCropperState(
+      cropController: cropController ?? this.cropController,
+      pickedAvatarName: pickedAvatarName == _unset ? this.pickedAvatarName : pickedAvatarName as String?,
+      pickedBannerName: pickedBannerName == _unset ? this.pickedBannerName : pickedBannerName as String?,
+      pickedAvatarMimeType: pickedAvatarMimeType == _unset ? this.pickedAvatarMimeType : pickedAvatarMimeType as String?,
+      pickedBannerMimeType: pickedBannerMimeType == _unset ? this.pickedBannerMimeType : pickedBannerMimeType as String?,
+      pickedAvatarBytes: pickedAvatarBytes == _unset ? this.pickedAvatarBytes : pickedAvatarBytes as Uint8List?,
+      pickedBannerBytes: pickedBannerBytes == _unset ? this.pickedBannerBytes : pickedBannerBytes as Uint8List?,
+      croppedAvatarBytes: croppedAvatarBytes == _unset ? this.croppedAvatarBytes : croppedAvatarBytes as Uint8List?,
+      croppedBannerBytes: croppedBannerBytes == _unset ? this.croppedBannerBytes : croppedBannerBytes as Uint8List?,
+    );
+  }
+}

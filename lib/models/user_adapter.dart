@@ -1,6 +1,5 @@
 import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:kronk/constants/enums.dart';
-
 import 'package:kronk/models/user_model.dart';
 
 class UserAdapter extends TypeAdapter<UserModel> {
@@ -13,10 +12,7 @@ class UserAdapter extends TypeAdapter<UserModel> {
       id: reader.readString(),
       createdAt: DateTime.fromMillisecondsSinceEpoch(reader.readInt()),
       updatedAt: DateTime.fromMillisecondsSinceEpoch(reader.readInt()),
-      name: () {
-        final value = reader.readString();
-        return value.isEmpty ? null : value;
-      }(),
+      name: reader.readString(),
       username: reader.readString(),
       email: reader.readString(),
       avatarUrl: () {
@@ -57,7 +53,7 @@ class UserAdapter extends TypeAdapter<UserModel> {
     writer.writeString(userModel.id);
     writer.writeInt(userModel.createdAt.millisecondsSinceEpoch);
     writer.writeInt(userModel.updatedAt.millisecondsSinceEpoch);
-    writer.writeString(userModel.name ?? '');
+    writer.writeString(userModel.name);
     writer.writeString(userModel.username);
     writer.writeString(userModel.email);
     writer.writeString(userModel.avatarUrl ?? '');

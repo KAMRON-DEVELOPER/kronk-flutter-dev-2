@@ -10,7 +10,7 @@ class ChatScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('data'), centerTitle: true),
-      body: Center(child: Text('${participant.name}')),
+      body: Center(child: Text(participant.name)),
     );
   }
 }

@@ -7,6 +7,7 @@ import 'package:kronk/models/feed_model.dart';
 import 'package:kronk/models/user_model.dart';
 import 'package:kronk/services/api_service/feed_service.dart';
 import 'package:kronk/services/api_service/user_service.dart';
+import 'package:kronk/utility/my_logger.dart';
 
 // -------------------- USER SEARCH --------------------
 
@@ -42,29 +43,34 @@ class UserSearchNotifier extends AsyncNotifier<List<UserModel>> {
   }
 
   Future<void> toggleFollow({required String userId}) async {
-    final currentState = state;
+    final AsyncValue<List<UserModel>> currentState = state;
 
-    if (currentState is AsyncData<List<UserModel>>) {
-      final users = currentState.value;
+    if (currentState is! AsyncData<List<UserModel>>) return;
 
-      final updatedUsers = users.map((user) {
-        if (user.id == userId) {
-          final isNowFollowing = !user.isFollowing!;
-          return user.copyWith(isFollowing: isNowFollowing, followersCount: isNowFollowing ? user.followersCount + 1 : user.followersCount - 1);
-        }
-        return user;
-      }).toList();
+    final List<UserModel> users = currentState.value;
 
-      // Optimistically update the UI
-      state = AsyncData(updatedUsers);
+    final previousUsers = [...users];
 
-      // Perform the actual follow/unfollow API call (fire-and-forget)
-      final targetUser = users.firstWhere((user) => user.id == userId);
-      if (!targetUser.isFollowing!) {
-        await _userService.fetchFollow(followingId: userId);
-      } else {
-        await _userService.fetchUnfollow(followingId: userId);
+    bool isNowFollowing = false;
+    final updatedUsers = users.map((user) {
+      if (user.id == userId) {
+        if (user.isFollowing == null) return user;
+        isNowFollowing = !(user.isFollowing ?? false);
+        return user.copyWith(isFollowing: isNowFollowing, followersCount: isNowFollowing ? user.followersCount + 1 : user.followersCount - 1);
       }
+      return user;
+    }).toList();
+
+    state = AsyncData(updatedUsers);
+
+    try {
+      final ok = isNowFollowing ? await _userService.fetchFollow(followingId: userId) : await _userService.fetchUnfollow(followingId: userId);
+      if (!ok) {
+        state = AsyncData(previousUsers);
+      }
+    } catch (error, stackTrace) {
+      myLogger.e('catch in toggleFollow: ${error.toString()}', error: error, stackTrace: stackTrace);
+      rethrow;
     }
   }
 

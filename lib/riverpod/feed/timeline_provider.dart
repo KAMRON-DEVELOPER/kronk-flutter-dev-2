@@ -42,7 +42,6 @@ class TimelineNotifier extends FamilyAsyncNotifier<List<FeedModel>, TimelineType
   Future<List<FeedModel>> _fetchTimeline({required TimelineType timelineType}) async {
     try {
       final results = await _feedService.fetchTimeline(timelineType: timelineType);
-      myLogger.d('feeds in _fetchTimeline in timelineNotifierProvider: ${results.item1}');
       _realEnd = results.item2 - 1;
       return results.item1.isEmpty ? [] : results.item1;
     } catch (error) {
@@ -128,8 +127,8 @@ class CommentNotifier extends FamilyAsyncNotifier<List<FeedModel>, String?> {
 
   @override
   Future<List<FeedModel>> build(String? parentId) async {
-    _end = 0;
-    _realEnd = 9;
+    _end = 9;
+    _realEnd = 10;
     try {
       final bool isOnlineAndAuthenticated = await _isOnlineAndAuthenticated();
       if (!isOnlineAndAuthenticated) {
@@ -156,7 +155,7 @@ class CommentNotifier extends FamilyAsyncNotifier<List<FeedModel>, String?> {
 
   Future<List<FeedModel>> refresh({required String? parentId}) async {
     state = const AsyncValue.loading();
-    _end = 0;
+    _end = 9;
     _realEnd = 10;
     _isLoadingMore = false;
     final Future<List<FeedModel>> feeds = _fetchComments(parentId: parentId);

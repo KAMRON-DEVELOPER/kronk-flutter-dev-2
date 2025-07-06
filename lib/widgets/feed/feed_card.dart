@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 
@@ -47,6 +48,7 @@ class FeedCard extends ConsumerWidget {
     final displayState = ref.watch(feedsScreenStyleProvider);
     final Dimensions dimensions = Dimensions.of(context);
     final double margin4 = dimensions.margin4;
+    final double margin5 = dimensions.margin5;
     final double radius1 = dimensions.radius1;
     myLogger.i('FeedCard is building...');
     final bool isFloating = displayState.screenStyle == ScreenStyle.floating;
@@ -62,7 +64,7 @@ class FeedCard extends ConsumerWidget {
           side: isFloating ? BorderSide(color: theme.secondaryBackground, width: 0.5) : BorderSide.none,
         ),
         child: Padding(
-          padding: EdgeInsets.all(margin4 / 1.4),
+          padding: EdgeInsets.all(margin5),
           child: Column(
             spacing: margin4,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -486,6 +488,7 @@ class FeedVideoWidget extends ConsumerWidget {
     final videoController = ref.watch(videoControllerProvider(videoSourceState));
     final videoControllerNotifier = ref.read(videoControllerProvider(videoSourceState).notifier);
 
+    final double videoWidth = dimensions.screenWidth - 2 * (dimensions.margin5 + dimensions.margin3);
     final double radius2 = dimensions.radius2;
     final double iconSize1 = dimensions.iconSize1;
     final double margin3 = dimensions.padding4;
@@ -502,7 +505,13 @@ class FeedVideoWidget extends ConsumerWidget {
               borderRadius: BorderRadius.circular(radius2),
               child: ImageFiltered(
                 imageFilter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
-                child: AspectRatio(aspectRatio: controller.value.aspectRatio, child: VideoPlayer(controller)),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 500),
+                  curve: Curves.easeInOut,
+                  width: double.infinity,
+                  height: videoWidth / controller.value.aspectRatio,
+                  child: VideoPlayer(controller),
+                ),
               ),
             ),
 
@@ -620,6 +629,32 @@ class FeedImageWidget extends ConsumerWidget {
     final imageUrls = feed.imageUrls;
     final imageCount = isEditable ? imageFiles?.length : imageUrls.length;
     final showAddButton = isEditable && imageCount! < 4;
+    final double imageWidth = dimensions.screenWidth - 2 * (dimensions.margin5 + dimensions.margin3);
+
+    if (imageCount == 1 && !isEditable) {
+      final imageUrl = '${constants.bucketEndpoint}/${imageUrls.first}';
+      return FutureBuilder<Size>(
+        future: _getNetworkImageSize(imageUrl),
+        builder: (context, snapshot) {
+          final double imageHeight = snapshot.hasData ? (imageWidth * snapshot.data!.height / snapshot.data!.width) : imageWidth * 9 / 16;
+
+          return ClipRRect(
+            borderRadius: BorderRadius.circular(radius2),
+            child: ImageFiltered(
+              imageFilter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
+              child: Image.network(
+                imageUrl,
+                width: imageWidth,
+                height: imageHeight,
+                cacheWidth: imageWidth.cacheSize(context),
+                cacheHeight: imageHeight.cacheSize(context),
+                fit: BoxFit.cover,
+              ),
+            ),
+          );
+        },
+      );
+    }
 
     List<StaggeredGridTile> tiles = [];
 
@@ -630,9 +665,10 @@ class FeedImageWidget extends ConsumerWidget {
 
     // Add image tiles
     for (int index = 0; index < imageCount!; index++) {
+      final isSingleImage = imageCount == 1;
       tiles.add(
         StaggeredGridTile.count(
-          crossAxisCellCount: 1,
+          crossAxisCellCount: isSingleImage ? 2 : 1,
           mainAxisCellCount: 1,
           child: LayoutBuilder(
             builder: (context, constraints) {
@@ -868,4 +904,19 @@ class FeedActionRow extends ConsumerWidget {
       ),
     );
   }
+}
+
+Future<Size> _getNetworkImageSize(String url) async {
+  final Completer<Size> completer = Completer();
+  final Image image = Image.network(url);
+  image.image
+      .resolve(const ImageConfiguration())
+      .addListener(
+        ImageStreamListener((ImageInfo info, bool _) {
+          final myImage = info.image;
+          final size = Size(myImage.width.toDouble(), myImage.height.toDouble());
+          completer.complete(size);
+        }),
+      );
+  return completer.future;
 }
