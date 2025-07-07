@@ -8,7 +8,7 @@ import 'package:kronk/models/user_model.dart';
 import 'package:kronk/riverpod/chat/chats_screen_style_provider.dart';
 import 'package:kronk/riverpod/feed/feed_screen_style_provider.dart';
 import 'package:kronk/riverpod/general/search_provider.dart';
-import 'package:kronk/riverpod/general/theme_notifier_provider.dart';
+import 'package:kronk/riverpod/general/theme_provider.dart';
 import 'package:kronk/utility/classes.dart';
 import 'package:kronk/utility/constants.dart';
 import 'package:kronk/utility/dimensions.dart';
@@ -56,60 +56,51 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with AutomaticKeepA
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final dimensions = Dimensions.of(context);
     final theme = ref.watch(themeNotifierProvider);
 
-    final double margin3 = dimensions.margin3;
-    final double radius3 = dimensions.radius3;
-    final double textSize3 = dimensions.textSize3;
-    final double iconSize2 = dimensions.iconSize2;
-    final double tabHeight1 = dimensions.tabHeight1;
-    final double appBarHeight = dimensions.appBarHeight;
-    final double bottomHeight = dimensions.bottomHeight;
-    final double spacing2 = dimensions.spacing2;
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: CustomAppBar(
-        appBarHeight: appBarHeight,
-        bottomHeight: bottomHeight,
-        bottomGap: 4,
-        actionsSpacing: spacing2,
-        appBarPadding: EdgeInsets.only(left: margin3, right: margin3 - 6),
-        bottomPadding: EdgeInsets.only(left: margin3, right: margin3, bottom: 4),
+        appBarHeight: 48.dp,
+        bottomHeight: 40.dp,
+        bottomGap: 4.dp,
+        actionsSpacing: 8.dp,
+        appBarPadding: EdgeInsets.only(left: 12.dp, right: 6.dp),
+        bottomPadding: EdgeInsets.only(left: 12.dp, right: 12.dp, bottom: 4.dp),
         leading: Builder(
           builder: (context) => GestureDetector(
             onTap: () => Scaffold.of(context).openDrawer(),
-            child: Icon(Icons.menu_rounded, color: theme.primaryText, size: iconSize2),
+            child: Icon(Icons.menu_rounded, color: theme.primaryText, size: 24.dp),
           ),
+        ),
+        title: Text(
+          'Search',
+          style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 24.dp, fontWeight: FontWeight.w500),
         ),
         actions: [
           GestureDetector(
+            onTap: () => context.go('/search'),
+            child: Icon(Icons.search_rounded, color: theme.primaryText, size: 24.dp),
+          ),
+          GestureDetector(
             onTap: () => showSearchScreenSettingsDialog(context),
-            child: Icon(Icons.more_vert_rounded, color: theme.primaryText, size: iconSize2),
+            child: Icon(Icons.more_vert_rounded, color: theme.primaryText, size: 24.dp),
           ),
         ],
-        title: Text(
-          'Search',
-          style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: iconSize2, fontWeight: FontWeight.w600),
-        ),
         bottom: Container(
-          padding: const EdgeInsets.all(2),
-          decoration: BoxDecoration(color: theme.secondaryBackground, borderRadius: BorderRadius.circular(radius3)),
+          padding: EdgeInsets.all(2.dp),
+          decoration: BoxDecoration(color: theme.secondaryBackground, borderRadius: BorderRadius.circular(12.dp)),
           child: TabBar(
-            controller: _tabController,
             dividerHeight: 0,
+            controller: _tabController,
             indicatorSize: TabBarIndicatorSize.tab,
-            indicator: BoxDecoration(color: theme.primaryBackground, borderRadius: BorderRadius.circular(radius3 - 2)),
-            labelStyle: GoogleFonts.quicksand(
-              textStyle: TextStyle(fontSize: textSize3, color: theme.primaryText, fontWeight: FontWeight.w500),
-            ),
-            unselectedLabelStyle: GoogleFonts.quicksand(
-              textStyle: TextStyle(fontSize: textSize3, color: theme.secondaryText, fontWeight: FontWeight.w500),
-            ),
+            indicator: BoxDecoration(color: theme.primaryBackground, borderRadius: BorderRadius.circular(10.dp)),
+            labelStyle: GoogleFonts.quicksand(fontSize: 18.dp, color: theme.primaryText, fontWeight: FontWeight.w600),
+            unselectedLabelStyle: GoogleFonts.quicksand(fontSize: 18.dp, color: theme.secondaryText, fontWeight: FontWeight.w600),
             indicatorAnimation: TabIndicatorAnimation.elastic,
             tabs: [
-              Tab(height: tabHeight1, text: 'feed'),
-              Tab(height: tabHeight1, text: 'user'),
+              Tab(height: 36.dp, text: 'feed'),
+              Tab(height: 36.dp, text: 'user'),
             ],
           ),
         ),
@@ -156,28 +147,31 @@ class _FeedSearchWidgetState extends ConsumerState<FeedSearchWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final dimensions = Dimensions.of(context);
     final theme = ref.watch(themeNotifierProvider);
     final AsyncValue<List<FeedModel>> asyncFeeds = ref.watch(feedSearchNotifierProvider);
     final FeedScreenDisplayState displayState = ref.watch(feedsScreenStyleProvider);
     final bool isFloating = displayState.screenStyle == ScreenStyle.floating;
 
-    final screenWidth = dimensions.screenWidth;
-    final screenHeight = dimensions.screenHeight - MediaQuery.of(context).padding.top - 88 - kBottomNavigationBarHeight;
-    final double margin3 = dimensions.margin3;
     final BorderRadius borderRadius = BorderRadius.circular(isFloating ? displayState.cardBorderRadius : 0);
-    final double iconSize3 = dimensions.iconSize2;
-    final double textSize3 = dimensions.textSize3;
     final BorderSide borderSide = BorderSide(color: theme.secondaryBackground, width: 0.5);
     myLogger.d('FeedSearchWidget is building');
     return Stack(
       children: [
         /// Static background images
         if (isFloating)
-          Positioned.fill(
+          Positioned(
+            left: 0,
+            top: MediaQuery.of(context).padding.top - 52.dp,
+            right: 0,
+            bottom: 0,
             child: Opacity(
               opacity: 0.4,
-              child: Image.asset(displayState.backgroundImagePath, fit: BoxFit.cover, cacheHeight: screenHeight.cacheSize(context), cacheWidth: screenWidth.cacheSize(context)),
+              child: Image.asset(
+                displayState.backgroundImagePath,
+                fit: BoxFit.cover,
+                cacheHeight: (Sizes.screenHeight - MediaQuery.of(context).padding.top - 52.dp).cacheSize(context),
+                cacheWidth: Sizes.screenWidth.cacheSize(context),
+              ),
             ),
           ),
 
@@ -187,11 +181,11 @@ class _FeedSearchWidgetState extends ConsumerState<FeedSearchWidget> {
             /// Search field
             SliverToBoxAdapter(
               child: Container(
-                height: 40,
-                margin: EdgeInsets.only(left: margin3, top: margin3, right: margin3),
+                height: 40.dp,
+                margin: EdgeInsets.only(left: 12.dp, top: 12.dp, right: 12.dp),
                 child: TextField(
                   controller: _searchController,
-                  style: TextStyle(fontSize: textSize3, fontWeight: FontWeight.w500),
+                  style: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 16, fontWeight: FontWeight.w500),
                   cursorColor: theme.primaryText,
                   cursorWidth: 1,
                   cursorRadius: const Radius.circular(0.5),
@@ -205,17 +199,17 @@ class _FeedSearchWidgetState extends ConsumerState<FeedSearchWidget> {
                     enabledBorder: OutlineInputBorder(borderRadius: borderRadius, borderSide: borderSide),
                     hint: Text(
                       'Search',
-                      style: Theme.of(context).textTheme.labelMedium?.copyWith(color: theme.secondaryText, fontWeight: FontWeight.w700),
+                      style: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 16.dp, fontWeight: FontWeight.w600),
                     ),
-                    contentPadding: const EdgeInsets.symmetric(vertical: (40 - 20) / 2, horizontal: 20),
-                    prefixIcon: Icon(Icons.search_rounded, size: iconSize3, color: theme.secondaryText),
+                    contentPadding: EdgeInsets.symmetric(vertical: 10.dp, horizontal: 20.dp),
+                    prefixIcon: Icon(Icons.search_rounded, size: 24.dp, color: theme.secondaryText),
                     suffixIcon: _searchController.text.isNotEmpty == true
                         ? IconButton(
                             onPressed: () {
                               _searchController.clear();
                               ref.invalidate(feedSearchNotifierProvider);
                             },
-                            icon: Icon(Icons.clear_rounded, size: iconSize3, color: theme.secondaryText),
+                            icon: Icon(Icons.clear_rounded, size: 20.dp, color: theme.secondaryText),
                           )
                         : null,
                   ),
@@ -227,19 +221,23 @@ class _FeedSearchWidgetState extends ConsumerState<FeedSearchWidget> {
             /// Feeds list
             asyncFeeds.when(
               data: (List<FeedModel> feeds) {
-                myLogger.d('feeds.isEmpty: ${feeds.isEmpty}');
                 if (feeds.isEmpty) {
                   return SliverFillRemaining(
-                    child: Center(child: Text('No results found. 🔍', style: Theme.of(context).textTheme.bodyLarge)),
+                    child: Center(
+                      child: Text(
+                        'No results found. 🔍',
+                        style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 32.dp, fontWeight: FontWeight.w600),
+                      ),
+                    ),
                   );
                 }
 
                 if (feeds.isNotEmpty) {
                   return SliverFillRemaining(
                     child: ListView.separated(
-                      padding: EdgeInsets.all(margin3),
+                      padding: EdgeInsets.all(12.dp),
                       itemCount: feeds.length,
-                      separatorBuilder: (context, index) => SizedBox(height: margin3),
+                      separatorBuilder: (context, index) => SizedBox(height: 12.dp),
                       itemBuilder: (context, index) => FeedCard(initialFeed: feeds.elementAt(index), isRefreshing: false),
                     ),
                   );
@@ -292,28 +290,31 @@ class _UserSearchWidgetState extends ConsumerState<UserSearchWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final dimensions = Dimensions.of(context);
     final theme = ref.watch(themeNotifierProvider);
     final asyncUsers = ref.watch(userSearchNotifierProvider);
     final ChatsScreenDisplayState displayState = ref.watch(chatsScreenStyleProvider);
     final bool isFloating = displayState.screenStyle == ScreenStyle.floating;
 
-    final screenWidth = dimensions.screenWidth;
-    final screenHeight = dimensions.screenHeight - MediaQuery.of(context).padding.top - 88 - kBottomNavigationBarHeight;
-    final double margin3 = dimensions.margin3;
     final BorderRadius borderRadius = BorderRadius.circular(isFloating ? displayState.tileBorderRadius : 0);
-    final double iconSize3 = dimensions.iconSize2;
-    final double textSize3 = dimensions.textSize3;
     final BorderSide borderSide = BorderSide(color: theme.secondaryBackground, width: 0.5);
     myLogger.d('UserSearchWidget is building');
     return Stack(
       children: [
         /// Static background images
         if (isFloating)
-          Positioned.fill(
+          Positioned(
+            left: 0,
+            top: MediaQuery.of(context).padding.top - 52.dp,
+            right: 0,
+            bottom: 0,
             child: Opacity(
               opacity: 0.4,
-              child: Image.asset(displayState.backgroundImagePath, fit: BoxFit.cover, cacheHeight: screenHeight.cacheSize(context), cacheWidth: screenWidth.cacheSize(context)),
+              child: Image.asset(
+                displayState.backgroundImagePath,
+                fit: BoxFit.cover,
+                cacheHeight: (Sizes.screenHeight - MediaQuery.of(context).padding.top - 52.dp).cacheSize(context),
+                cacheWidth: Sizes.screenWidth.cacheSize(context),
+              ),
             ),
           ),
 
@@ -323,11 +324,11 @@ class _UserSearchWidgetState extends ConsumerState<UserSearchWidget> {
             /// Search field
             SliverToBoxAdapter(
               child: Container(
-                height: 40,
-                margin: EdgeInsets.only(left: margin3, top: margin3, right: margin3),
+                height: 40.dp,
+                margin: EdgeInsets.only(left: 12.dp, top: 12.dp, right: 12.dp),
                 child: TextField(
                   controller: _searchController,
-                  style: TextStyle(fontSize: textSize3, fontWeight: FontWeight.w500),
+                  style: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 16, fontWeight: FontWeight.w500),
                   cursorColor: theme.primaryText,
                   cursorWidth: 1,
                   cursorRadius: const Radius.circular(0.5),
@@ -341,17 +342,17 @@ class _UserSearchWidgetState extends ConsumerState<UserSearchWidget> {
                     enabledBorder: OutlineInputBorder(borderRadius: borderRadius, borderSide: borderSide),
                     hint: Text(
                       'Search',
-                      style: Theme.of(context).textTheme.labelMedium?.copyWith(color: theme.secondaryText, fontWeight: FontWeight.w700),
+                      style: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 16.dp, fontWeight: FontWeight.w600),
                     ),
-                    contentPadding: const EdgeInsets.symmetric(vertical: (40 - 20) / 2, horizontal: 20),
-                    prefixIcon: Icon(Icons.search_rounded, size: iconSize3, color: theme.secondaryText),
+                    contentPadding: EdgeInsets.symmetric(vertical: 10.dp, horizontal: 20.dp),
+                    prefixIcon: Icon(Icons.search_rounded, size: 24.dp, color: theme.secondaryText),
                     suffixIcon: _searchController.text.isNotEmpty == true
                         ? IconButton(
                             onPressed: () {
                               _searchController.clear();
                               ref.invalidate(userSearchNotifierProvider);
                             },
-                            icon: Icon(Icons.clear_rounded, size: iconSize3, color: theme.secondaryText),
+                            icon: Icon(Icons.clear_rounded, size: 24.dp, color: theme.secondaryText),
                           )
                         : null,
                   ),
@@ -365,16 +366,21 @@ class _UserSearchWidgetState extends ConsumerState<UserSearchWidget> {
               data: (List<UserModel> userSearchResultList) {
                 if (userSearchResultList.isEmpty) {
                   return SliverFillRemaining(
-                    child: Center(child: Text('No results found. 🔍', style: Theme.of(context).textTheme.bodyLarge)),
+                    child: Center(
+                      child: Text(
+                        'No results found. 🔍',
+                        style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 32.dp, fontWeight: FontWeight.w600),
+                      ),
+                    ),
                   );
                 }
 
                 if (userSearchResultList.isNotEmpty) {
                   return SliverFillRemaining(
                     child: ListView.separated(
-                      padding: EdgeInsets.all(margin3),
+                      padding: EdgeInsets.all(12.dp),
                       itemCount: userSearchResultList.length,
-                      separatorBuilder: (context, index) => SizedBox(height: margin3),
+                      separatorBuilder: (context, index) => SizedBox(height: 12.dp),
                       itemBuilder: (context, index) {
                         final user = userSearchResultList.elementAt(index);
                         return ProfileSearchCard(user: user);

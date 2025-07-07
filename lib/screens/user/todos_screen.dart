@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kronk/constants/my_theme.dart';
 import 'package:kronk/widgets/navbar.dart';
 
-import '../../riverpod/general/theme_notifier_provider.dart';
+import '../../riverpod/general/theme_provider.dart';
 
 class TodosScreen extends ConsumerStatefulWidget {
   const TodosScreen({super.key});

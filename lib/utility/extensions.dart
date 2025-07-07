@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:kronk/constants/enums.dart';
 import 'package:kronk/constants/kronk_icon.dart';
+import 'package:kronk/utility/dimensions.dart';
 
-extension ValidatorExtension on String {
+extension StringExtensions on String {
   String? get isValidUsername {
     final nameRegExp = RegExp(r'^[A-Za-z][A-Za-z0-9_]{4,19}$');
     if (isEmpty) {
@@ -44,164 +44,88 @@ extension ValidatorExtension on String {
       return null;
     }
   }
-}
 
-extension ImageExtension on num {
-  int cacheSize(BuildContext context) {
-    return (this * MediaQuery.of(context).devicePixelRatio).round();
+  bool get isEmail {
+    final RegExp emailRegex = RegExp(r'^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+');
+    return emailRegex.hasMatch(this);
   }
 
-  double doubleCacheSize(BuildContext context) {
-    return (this * MediaQuery.of(context).devicePixelRatio).floorToDouble();
-  }
-}
-
-extension ColorExtention on String {
   Color fromHex() {
     final buffer = StringBuffer();
     if (length == 6 || length == 7) buffer.write('ff');
     buffer.write(replaceFirst('#', ''));
     return Color(int.parse(buffer.toString(), radix: 16));
   }
-}
 
-extension VerifyTypeExtension on String {
-  bool get isEmail {
-    final RegExp emailRegex = RegExp(r'^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+');
-    return emailRegex.hasMatch(this);
+  String toTitleCaseWithSpaces() {
+    return split('_').map((word) => word.isEmpty ? '' : '${word[0].toUpperCase()}${word.substring(1)}').join(' ');
+  }
+
+  String toSnakeCase() {
+    return replaceAllMapped(RegExp(r'([a-z0-9])([A-Z])'), (match) => '${match.group(1)}_${match.group(2)}').toLowerCase();
   }
 }
 
-extension FeedVisibilityExtension on FeedVisibility {
-  String get value {
-    switch (this) {
-      case FeedVisibility.public:
-        return 'public';
-      case FeedVisibility.followers:
-        return 'followers';
-      case FeedVisibility.private:
-        return 'private';
-      case FeedVisibility.archived:
-        return 'archived';
-    }
+/// Extension methods on `num` to provide convenient unit conversions
+/// for screen scaling and pixel-aware caching.
+extension NumExtensions on num {
+  /// Converts this number to a pixel value suitable for image caching,
+  /// based on the current device's pixel ratio.
+  ///
+  /// Useful for setting cache size for `CachedNetworkImageProvider` or
+  /// any image-related widget that needs pixel-accurate sizing.
+  ///
+  /// Example:
+  /// ```dart
+  /// final size = 120.cacheSize(context); // returns int
+  /// ```
+  int cacheSize(BuildContext context) {
+    return (this * MediaQuery.of(context).devicePixelRatio).round();
+  }
+
+  /// Converts this number to a pixel value (double) suitable for
+  /// precise image layout calculations based on device pixel ratio.
+  ///
+  /// Example:
+  /// ```dart
+  /// final size = 120.doubleCacheSize(context); // returns double
+  /// ```
+  double doubleCacheSize(BuildContext context) {
+    return (this * MediaQuery.of(context).devicePixelRatio).floorToDouble();
+  }
+
+  /// Scales this number according to the device's screen width,
+  /// using your custom `Sizes.scale()` method.
+  ///
+  /// This gives consistent sizing across different screen sizes by
+  /// comparing against a base width (e.g., 390).
+  ///
+  /// Example:
+  /// ```dart
+  /// final padding = 16.dp; // returns double, scaled to screen width
+  /// ```
+  ///
+  /// ⚠️ Make sure `Sizes.init(context)` is called before using this.
+  double get dp {
+    return Sizes.scale(this);
   }
 }
 
-extension FollowPolicyExtension on FollowPolicy {
-  String get value {
-    switch (this) {
-      case FollowPolicy.autoAccept:
-        return 'auto_accept';
-      case FollowPolicy.manualApproval:
-        return 'manual_approval';
-    }
-  }
-
-  set some(String str) {}
-}
-
-extension FollowStatusExtension on FollowStatus {
-  String get value {
-    switch (this) {
-      case FollowStatus.pending:
-        return 'pending';
-      case FollowStatus.accepted:
-        return 'accepted';
-      case FollowStatus.declined:
-        return 'declined';
-    }
-  }
-}
-
-extension ReportReasonExtension on ReportReason {
-  String get value {
-    switch (this) {
-      case ReportReason.intellectualProperty:
-        return 'intellectual_property';
-      case ReportReason.spam:
-        return 'spam';
-      case ReportReason.inappropriate:
-        return 'inappropriate';
-      case ReportReason.misinformation:
-        return 'misinformation';
-      case ReportReason.harassment:
-        return 'harassment';
-      case ReportReason.hateSpeech:
-        return 'hate_speech';
-      case ReportReason.violence:
-        return 'violence';
-      case ReportReason.other:
-        return 'other';
-    }
-  }
-}
-
-extension ProcessStatusExtension on ProcessStatus {
-  String get value {
-    switch (this) {
-      case ProcessStatus.pending:
-        return 'pending';
-      case ProcessStatus.processed:
-        return 'processed';
-      case ProcessStatus.failed:
-        return 'failed';
-    }
-  }
-}
-
-extension UserRoleExtension on UserRole {
-  String get value {
-    switch (this) {
-      case UserRole.admin:
-        return 'admin';
-      case UserRole.regular:
-        return 'regular';
-    }
-  }
-}
-
-extension UserStatusExtension on UserStatus {
-  String get value {
-    switch (this) {
-      case UserStatus.active:
-        return 'active';
-      case UserStatus.inactive:
-        return 'inactive';
-    }
-  }
-}
-
-extension WeekdayExtension on int {
-  String get weekdayName {
-    List<String> weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    return weekdays[this - 1];
-  }
-}
-
-extension MonthExtension on int {
-  String get monthName {
-    List<String> months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return months[this - 1];
-  }
-}
-
-extension CountNormalizer on int {
+extension IntExtensions on int {
   String get normalize {
     final bool isWithinRange100 = compareTo(100) == 0 || compareTo(100) < 0;
     final bool isWithinRange1k = compareTo(1000) == 0 || compareTo(1000) < 0;
     return isWithinRange100 ? toString() : (isWithinRange1k ? '+${this ~/ 1000}k' : '+${this ~/ 10000}k');
   }
-}
 
-extension TitleCaseWithSpaces on String {
-  String toTitleCaseWithSpaces() {
-    return split('_').map((word) => word.isEmpty ? '' : '${word[0].toUpperCase()}${word.substring(1)}').join(' ');
+  String get weekdayName {
+    List<String> weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    return weekdays[this - 1];
   }
-}
 
-extension CamelCaseConversion on String {
-  String toSnakeCase() {
-    return replaceAllMapped(RegExp(r'([a-z0-9])([A-Z])'), (match) => '${match.group(1)}_${match.group(2)}').toLowerCase();
+  String get monthName {
+    List<String> months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return months[this - 1];
   }
 }
 

@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:icons_plus/icons_plus.dart';
 import 'package:kronk/constants/enums.dart';
 import 'package:kronk/riverpod/general/image_cropper_provider.dart';
-import 'package:kronk/riverpod/general/theme_notifier_provider.dart';
+import 'package:kronk/riverpod/general/theme_provider.dart';
 import 'package:kronk/utility/classes.dart';
 import 'package:kronk/utility/dimensions.dart';
 import 'package:kronk/utility/extensions.dart';

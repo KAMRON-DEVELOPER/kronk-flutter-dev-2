@@ -8,7 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:icons_plus/icons_plus.dart';
 import 'package:kronk/models/user_model.dart';
 import 'package:kronk/riverpod/general/image_cropper_provider.dart';
-import 'package:kronk/riverpod/general/theme_notifier_provider.dart';
+import 'package:kronk/riverpod/general/theme_provider.dart';
 import 'package:kronk/riverpod/general/update_data_provider.dart';
 import 'package:kronk/riverpod/profile/profile_provider.dart';
 import 'package:kronk/utility/classes.dart';
@@ -26,7 +26,6 @@ class EditProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final Dimensions dimensions = Dimensions.of(context);
     final theme = ref.watch(themeNotifierProvider);
 
     final userAsync = ref.watch(profileNotifierProvider(null));
@@ -35,44 +34,40 @@ class EditProfileScreen extends ConsumerWidget {
     final updateData = ref.watch(updateDataNotifierProvider);
     final ImageCropperState imageCropperState = ref.watch(imageCropperNotifierProvider);
 
-    final double margin3 = dimensions.margin3;
-    final double avatarRadius = dimensions.avatarRadius;
-    final double appBarHeight = dimensions.appBarHeight;
-    final double spacing2 = dimensions.spacing2;
-    final double iconSize2 = dimensions.iconSize2;
-    final double textSize6 = dimensions.textSize6;
+    final double avatarHeight = 96.dp;
+    final double avatarRadius = avatarHeight / 2;
     return Scaffold(
       appBar: CustomAppBar(
-        appBarHeight: appBarHeight,
+        appBarHeight: 48.dp,
         bottomHeight: 0,
-        bottomGap: 4,
-        actionsSpacing: spacing2,
-        appBarPadding: EdgeInsets.only(left: margin3, right: margin3 - 6),
-        bottomPadding: EdgeInsets.only(left: margin3, right: margin3, bottom: 4),
+        bottomGap: 1,
+        actionsSpacing: 8.dp,
+        appBarPadding: EdgeInsets.only(left: 12.dp, right: 6.dp),
+        bottomPadding: EdgeInsets.only(left: 12.dp, right: 12.dp, bottom: 4.dp),
         leading: TextButton(
           onPressed: () => context.pop(),
           child: Text(
             'Cancel',
-            style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: textSize6, fontWeight: FontWeight.bold),
+            style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 16.dp, fontWeight: FontWeight.w600),
           ),
         ),
         title: Text(
-          'Edit Profile',
-          style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: iconSize2, fontWeight: FontWeight.w600),
+          'Search',
+          style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 24.dp, fontWeight: FontWeight.w500),
         ),
         actions: [
           TextButton(
             onPressed: () => ref.read(profileNotifierProvider(null).notifier).updateProfile(user: user, updateData: updateData, imageCropperState: imageCropperState),
             child: Text(
               'Save',
-              style: GoogleFonts.quicksand(color: theme.tertiaryBackground, fontSize: textSize6, fontWeight: FontWeight.bold),
+              style: GoogleFonts.quicksand(color: theme.tertiaryBackground, fontSize: 16.dp, fontWeight: FontWeight.w600),
             ),
           ),
         ],
       ),
       body: SingleChildScrollView(
         child: Column(
-          spacing: avatarRadius + margin3,
+          spacing: avatarRadius + 12.dp,
           children: [
             /// Banner & avatar
             EditProfileImages(user: user),
@@ -94,22 +89,15 @@ class EditProfileImages extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final Dimensions dimensions = Dimensions.of(context);
     final theme = ref.watch(themeNotifierProvider);
     final updateData = ref.watch(updateDataNotifierProvider);
     final ImageCropperState imageCropperState = ref.watch(imageCropperNotifierProvider);
 
-    final double screenWidth = dimensions.screenWidth;
+    final double screenWidth = Sizes.screenWidth;
     final bannerHeight = screenWidth * 9 / 20;
-    final double avatarHeight = dimensions.avatarHeight;
-    final double avatarRadius = dimensions.avatarRadius;
+    final double avatarHeight = 96.dp;
+    final double avatarRadius = 48.dp;
 
-    final double margin3 = dimensions.margin3;
-    final double buttonHeight5 = dimensions.buttonHeight5;
-
-    myLogger.i('EditProfileImages | imageCropperState.: ${imageCropperState.croppedAvatarBytes?.length}');
-    myLogger.i('EditProfileImages | user.avatarUrl.: ${user.avatarUrl}');
-    myLogger.i('EditProfileImages | updateData.removeAvatar.: ${updateData.removeAvatar}');
     return DeferredPointerHandler(
       child: Stack(
         clipBehavior: Clip.none,
@@ -149,10 +137,10 @@ class EditProfileImages extends ConsumerWidget {
           /// Avatar
           Positioned(
             top: bannerHeight - avatarRadius,
-            left: margin3 + 4,
+            left: 16.dp,
             height: avatarHeight,
             child: CustomPaint(
-              painter: AvatarPainter(borderColor: theme.primaryBackground, borderWidth: 8),
+              painter: AvatarPainter(borderColor: theme.primaryBackground, borderWidth: 8.dp),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(avatarRadius),
                 child: DeferPointer(
@@ -206,8 +194,8 @@ class EditProfileImages extends ConsumerWidget {
 
           /// Banner delete
           Positioned(
-            top: margin3,
-            right: margin3,
+            top: 24.dp,
+            right: 24.dp,
             child: GestureDetector(
               onTap: () {
                 if (imageCropperState.pickedAvatarBytes != null) {
@@ -219,7 +207,7 @@ class EditProfileImages extends ConsumerWidget {
                 }
               },
               child: Container(
-                height: buttonHeight5,
+                height: 36.dp,
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(color: theme.primaryBackground, shape: BoxShape.circle),
                 child: FittedBox(
@@ -238,8 +226,8 @@ class EditProfileImages extends ConsumerWidget {
 
           /// Avatar delete
           Positioned(
-            left: margin3 + 4 + avatarRadius + (avatarRadius * cos(pi / 4)) - buttonHeight5 / 2,
-            bottom: (avatarRadius * sin(pi / 4)) - buttonHeight5 / 2,
+            left: 16.dp + avatarRadius + (avatarRadius * cos(pi / 4)) - 18.dp,
+            bottom: (avatarRadius * sin(pi / 4)) - 18.dp,
             child: DeferPointer(
               child: GestureDetector(
                 onTap: () {
@@ -253,7 +241,7 @@ class EditProfileImages extends ConsumerWidget {
                   }
                 },
                 child: Container(
-                  height: buttonHeight5,
+                  height: 36.dp,
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(color: theme.primaryBackground, shape: BoxShape.circle),
                   child: FittedBox(
@@ -284,16 +272,13 @@ class EditProfileFields extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final Dimensions dimensions = Dimensions.of(context);
     final updateData = ref.watch(updateDataNotifierProvider);
     final updateNotifier = ref.read(updateDataNotifierProvider.notifier);
 
-    final double padding1 = dimensions.padding1;
-    final double margin3 = dimensions.margin3;
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: padding1),
+      padding: EdgeInsets.symmetric(horizontal: 12.dp),
       child: Column(
-        spacing: margin3,
+        spacing: 12.dp,
         children: [
           /// Name
           EditProfileField(
@@ -359,7 +344,7 @@ class EditProfileFields extends ConsumerWidget {
           ),
 
           /// Bottom gap
-          SizedBox(height: margin3),
+          SizedBox(height: 12.dp),
         ],
       ),
     );
@@ -374,15 +359,13 @@ class FieldLabel extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final Dimensions dimensions = Dimensions.of(context);
     final theme = ref.watch(themeNotifierProvider);
-    final double textSize4 = dimensions.textSize4;
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         Text(
           label,
-          style: GoogleFonts.quicksand(fontSize: textSize4, color: theme.secondaryText),
+          style: GoogleFonts.quicksand(fontSize: 12.dp, color: theme.secondaryText),
         ),
       ],
     );

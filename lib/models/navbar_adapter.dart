@@ -13,14 +13,14 @@ class NavbarAdapter extends TypeAdapter<NavbarModel> {
     final bool isUpcoming = reader.readBool();
     final bool isPending = reader.readBool();
 
-    return NavbarModel(route: route, isEnabled: isEnabled, isUpcoming: isUpcoming, isPending: isPending);
+    return NavbarModel(route: route, isEnabled: isEnabled, isComingSoon: isUpcoming, isPlanned: isPending);
   }
 
   @override
   void write(BinaryWriter writer, NavbarModel model) {
     writer.writeString(model.route);
     writer.writeBool(model.isEnabled);
-    writer.writeBool(model.isUpcoming);
-    writer.writeBool(model.isPending);
+    writer.writeBool(model.isComingSoon);
+    writer.writeBool(model.isPlanned);
   }
 }

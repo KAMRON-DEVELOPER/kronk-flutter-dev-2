@@ -72,6 +72,11 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
 
       myLogger.d('response.data: ${response.data}, type: ${response.data.runtimeType}');
 
+      if (response.statusCode == 400) {
+        emit(AuthFailure(failureMessage: response.data['details'] ?? 'server error'));
+        return;
+      }
+
       await _storage.setSettingsAllAsync({...response.data['tokens'], 'isDoneWelcome': true});
       await _storage.setUserAsync(user: UserModel.fromJson(response.data['user']));
 
@@ -172,10 +177,8 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
       }
       myLogger.w('🎃 social auth is failed!');
       emit(const AuthFailure(failureMessage: '🥶 Server error occurred while social auth.'));
-    } on GoogleSignInException catch (e) {
-      myLogger.e('GoogleSignInException e.details: ${e.details}');
-      myLogger.e('GoogleSignInException e.code: ${e.code}');
-      myLogger.e('GoogleSignInException e.description: ${e.description}');
+    } on GoogleSignInException catch (_) {
+      emit(const AuthFailure(failureMessage: 'Authentication cancelled by the user'));
     } catch (e) {
       myLogger.w('🥶 Google Sign-In Error: $e');
       emit(AuthFailure(failureMessage: '🥶 Google Sign-In Error: $e'));

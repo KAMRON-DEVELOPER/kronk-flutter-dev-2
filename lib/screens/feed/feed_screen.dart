@@ -7,7 +7,7 @@ import 'package:kronk/constants/my_theme.dart';
 import 'package:kronk/models/feed_model.dart';
 import 'package:kronk/riverpod/feed/feed_screen_style_provider.dart';
 import 'package:kronk/riverpod/feed/timeline_provider.dart';
-import 'package:kronk/riverpod/general/theme_notifier_provider.dart';
+import 'package:kronk/riverpod/general/theme_provider.dart';
 import 'package:kronk/utility/classes.dart';
 import 'package:kronk/utility/dimensions.dart';
 import 'package:kronk/utility/my_logger.dart';

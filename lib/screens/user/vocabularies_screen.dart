@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:kronk/riverpod/general/theme_notifier_provider.dart';
+import 'package:kronk/riverpod/general/theme_provider.dart';
 import 'package:kronk/utility/dimensions.dart';
 import 'package:kronk/widgets/custom_appbar.dart';
 import 'package:kronk/widgets/navbar.dart';

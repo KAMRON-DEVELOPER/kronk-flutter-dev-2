@@ -4,8 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:kronk/constants/my_theme.dart';
 import 'package:kronk/models/navbar_model.dart';
 import 'package:kronk/riverpod/general/navbar_provider.dart';
-import 'package:kronk/riverpod/general/theme_notifier_provider.dart';
+import 'package:kronk/riverpod/general/theme_provider.dart';
 import 'package:kronk/utility/dimensions.dart';
+import 'package:kronk/utility/extensions.dart';
 
 final StateProvider<int> selectedIndexProvider = StateProvider<int>((Ref ref) => 0);
 final StateProvider<double> navbarScrollOffsetProvider = StateProvider<double>((ref) => 0.0);
@@ -34,14 +35,13 @@ class _NavbarState extends ConsumerState<Navbar> {
 
   @override
   Widget build(BuildContext context) {
-    final Dimensions dimensions = Dimensions.of(context);
     final MyTheme theme = ref.watch(themeNotifierProvider);
     final List<NavbarModel> items = ref.watch(navbarProvider).where((NavbarModel navbarItem) => navbarItem.isEnabled).toList();
     final int selectedIndex = ref.watch(selectedIndexProvider);
 
-    const double iconSize = 32;
+    final double iconSize = 32.dp;
     const int maxIconsInScreen = 5;
-    final double screenWidth = dimensions.screenWidth;
+    final double screenWidth = Sizes.screenWidth;
 
     // Actual icons we are displaying
     final int count = items.length;
@@ -51,10 +51,12 @@ class _NavbarState extends ConsumerState<Navbar> {
     final double itemWidth = fitsWithoutScroll ? screenWidth / count : screenWidth / maxIconsInScreen;
 
     return Container(
-      height: 56,
+      height: 56.dp,
       decoration: BoxDecoration(
         color: theme.primaryBackground,
-        border: Border(top: BorderSide(color: theme.secondaryBackground, width: 0.5)),
+        border: Border(
+          top: BorderSide(color: theme.secondaryBackground, width: 0.5.dp),
+        ),
       ),
       child: ListView.builder(
         controller: _scrollController,

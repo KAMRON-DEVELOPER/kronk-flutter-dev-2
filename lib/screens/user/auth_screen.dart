@@ -1,18 +1,21 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:icons_plus/icons_plus.dart';
 import 'package:kronk/constants/my_theme.dart';
+import 'package:kronk/riverpod/general/connectivity_notifier_provider.dart';
 import 'package:kronk/utility/dimensions.dart';
 import 'package:kronk/utility/extensions.dart';
-import 'package:kronk/utility/my_logger.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 import '../../bloc/authentication/authentication_bloc.dart';
 import '../../bloc/authentication/authentication_event.dart';
 import '../../bloc/authentication/authentication_state.dart';
-import '../../riverpod/general/theme_notifier_provider.dart';
+import '../../riverpod/general/theme_provider.dart';
 
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
@@ -22,11 +25,7 @@ class AuthScreen extends ConsumerStatefulWidget {
 }
 
 class _AuthScreenState extends ConsumerState<AuthScreen> {
-  late TextEditingController _nameController;
-  late TextEditingController _emailController;
-  late TextEditingController _usernameController;
-  late TextEditingController _passwordController;
-  String? usernameError, emailError, passwordError;
+  late TextEditingController _nameController, _passwordController, _usernameController, _emailController;
   bool isPasswordVisible = false;
   bool isLoginMode = false;
 
@@ -48,247 +47,315 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     super.dispose();
   }
 
-  void _onPressed() {
-    if (usernameError == null && emailError == null && passwordError == null) {
-      final username = _usernameController.text.trim();
-      final password = _passwordController.text.trim();
-
-      final loginData = {'username': username, 'password': password};
-
-      if (isLoginMode) {
-        context.read<AuthenticationBloc>().add(LoginSubmitEvent(loginData: loginData));
-      } else {
-        final email = _emailController.text.trim();
-        final name = _nameController.text.trim();
-        final registerData = {...loginData, 'email': email, 'name': name};
-        context.read<AuthenticationBloc>().add(RegisterSubmitEvent(registerData: registerData));
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final dimensions = Dimensions.of(context);
     final MyTheme theme = ref.watch(themeNotifierProvider);
+    final AsyncValue<bool> isOnline = ref.watch(connectivityNotifierProvider);
 
-    final double with2 = dimensions.with2;
-    final double margin1 = dimensions.margin1;
-    final double margin2 = dimensions.margin2;
-    final double buttonHeight1 = dimensions.buttonHeight1;
-    final double padding1 = dimensions.padding1;
-    final double iconSize2 = dimensions.iconSize2;
-    final double iconSize1 = dimensions.iconSize1;
-    final double radius1 = dimensions.radius1;
-    myLogger.i('🔄 AuthScreen is building...');
+    isOnline.when(
+      data: (bool isOnline) => !isOnline ? Timer(const Duration(seconds: 5), () => context.go('/welcome')) : null,
+      error: (Object error, StackTrace stackTrace) {},
+      loading: () {},
+    );
+
+    void onPressed() {
+      isOnline.when(
+        data: (bool isOnline) {
+          if (!isOnline) {
+            if (GoRouterState.of(context).path == '/auth') {
+              return ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  backgroundColor: theme.secondaryBackground,
+                  behavior: SnackBarBehavior.floating,
+                  dismissDirection: DismissDirection.horizontal,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.dp)),
+                  margin: EdgeInsets.only(left: 28.dp, right: 28.dp, bottom: Sizes.screenHeight - 96.dp),
+                  content: Text(
+                    "Looks like you're offline! 🥺",
+                    style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 16.dp, height: 0),
+                  ),
+                ),
+              );
+            }
+          }
+
+          /// When online...
+          final name = _nameController.text.trim();
+          final username = _usernameController.text.trim();
+          final email = _emailController.text.trim();
+          final password = _passwordController.text.trim();
+
+          final bool isNameEmpty = name.isEmpty;
+          final bool isUsernameEmpty = username.isEmpty;
+          final bool isEmailEmpty = email.isEmpty;
+          final bool isPasswordEmpty = password.isEmpty;
+
+          final loginData = {'username': username, 'password': password};
+
+          if (isLoginMode && !isUsernameEmpty && !isPasswordEmpty) {
+            context.read<AuthenticationBloc>().add(LoginSubmitEvent(loginData: loginData));
+          } else if (!isNameEmpty && !isUsernameEmpty && !isEmailEmpty && !isPasswordEmpty) {
+            final registerData = {...loginData, 'email': email, 'name': name};
+            context.read<AuthenticationBloc>().add(RegisterSubmitEvent(registerData: registerData));
+          }
+        },
+        loading: () {},
+        error: (Object err, StackTrace stack) {},
+      );
+    }
+
     return BlocConsumer<AuthenticationBloc, AuthenticationState>(
-      listener: (BuildContext context, AuthenticationState state) async {
-        myLogger.d('🚨 listener: $state');
+      listener: (BuildContext context, AuthenticationState state) {
         if (state is AuthLoading) {
         } else if (state is LoginSuccess) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              backgroundColor: theme.tertiaryBackground,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius1)),
-              content: Text('🎉 You have logged in successfully', style: Theme.of(context).textTheme.labelSmall),
-            ),
-          );
-          await Future.delayed(const Duration(seconds: 4));
-          if (!context.mounted) return;
-          context.go('/settings');
+          if (GoRouterState.of(context).path == '/auth') {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                backgroundColor: theme.secondaryBackground,
+                behavior: SnackBarBehavior.floating,
+                dismissDirection: DismissDirection.horizontal,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.dp)),
+                margin: EdgeInsets.only(left: 28.dp, right: 28.dp, bottom: Sizes.screenHeight - 96.dp),
+                content: Text(
+                  '🎉 You have logged in successfully',
+                  style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 16.dp, height: 0),
+                ),
+              ),
+            );
+          }
+          Timer(const Duration(seconds: 4), () => context.go('/settings'));
         } else if (state is RegisterSuccess) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              backgroundColor: theme.tertiaryBackground,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius1)),
-              content: Text('🎉 You verification code sent.', style: Theme.of(context).textTheme.labelSmall),
-            ),
-          );
-          await Future.delayed(const Duration(seconds: 4));
-          if (!context.mounted) return;
-          context.go('/auth/verify');
+          if (GoRouterState.of(context).path == '/auth') {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                backgroundColor: theme.secondaryBackground,
+                behavior: SnackBarBehavior.floating,
+                dismissDirection: DismissDirection.horizontal,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.dp)),
+                margin: EdgeInsets.only(left: 28.dp, right: 28.dp, bottom: Sizes.screenHeight - 96.dp),
+                content: Text(
+                  '🎉 You verification code sent.',
+                  style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 16.dp, height: 0),
+                ),
+              ),
+            );
+          }
+          Timer(const Duration(seconds: 4), () => context.go('/auth/verify'));
         } else if (state is GoogleAuthSuccess) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              backgroundColor: theme.tertiaryBackground,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius1)),
-              content: Text('🎉 You have logged in successfully by Google', style: Theme.of(context).textTheme.labelSmall),
-            ),
-          );
-          if (!context.mounted) return;
-          context.go('/settings');
+          if (GoRouterState.of(context).path == '/auth') {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                backgroundColor: theme.secondaryBackground,
+                behavior: SnackBarBehavior.floating,
+                dismissDirection: DismissDirection.horizontal,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.dp)),
+                margin: EdgeInsets.only(left: 28.dp, right: 28.dp, bottom: Sizes.screenHeight - 96.dp),
+                content: Text(
+                  '🎉 You have logged in successfully by Google',
+                  style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 16.dp, height: 0),
+                ),
+              ),
+            );
+          }
+          Timer(const Duration(seconds: 4), () => context.go('/settings'));
         } else if (state is AuthFailure) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              backgroundColor: theme.tertiaryBackground,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius1)),
-              content: Text('🌋 ${state.failureMessage}', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.redAccent.withValues(alpha: 0.5))),
-            ),
-          );
+          if (GoRouterState.of(context).path == '/auth') {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                backgroundColor: theme.secondaryBackground,
+                behavior: SnackBarBehavior.floating,
+                dismissDirection: DismissDirection.horizontal,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.dp)),
+                margin: EdgeInsets.only(left: 28.dp, right: 28.dp, bottom: Sizes.screenHeight - 96.dp),
+                content: Text(
+                  '🌋 ${state.failureMessage}',
+                  style: GoogleFonts.quicksand(color: Colors.redAccent, fontSize: 16.dp, height: 0),
+                ),
+              ),
+            );
+          }
         }
       },
       builder: (BuildContext context, AuthenticationState state) {
         return Scaffold(
+          resizeToAvoidBottomInset: false,
           appBar: AppBar(automaticallyImplyLeading: false),
           body: Center(
             child: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: margin2),
+              padding: EdgeInsets.symmetric(horizontal: 28.dp),
               child: Column(
+                spacing: 12.dp,
                 mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(isLoginMode ? 'Login' : 'Register', style: Theme.of(context).textTheme.bodyLarge),
-                  SizedBox(height: margin1),
+                  /// Title
+                  Text(
+                    isLoginMode ? 'Login' : 'Register',
+                    style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 40.dp, fontWeight: FontWeight.bold, height: 0),
+                  ),
+
+                  /// Fields
                   AutofillGroup(
                     child: Column(
-                      spacing: margin2,
+                      spacing: 8.dp,
                       children: [
+                        /// Name
                         if (!isLoginMode)
                           TextFormField(
                             controller: _nameController,
-                            style: Theme.of(context).textTheme.bodyMedium,
+                            style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 16.dp, fontWeight: FontWeight.w500),
                             cursorColor: theme.primaryText,
-                            // onChanged: (String value) => setState(() => emailError = value.trim().isValidEmail),
                             autofillHints: [AutofillHints.name],
-                            // textAlignVertical: TextAlignVertical.center,
                             decoration: InputDecoration(
                               filled: true,
                               fillColor: theme.secondaryBackground,
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.dp), borderSide: BorderSide.none),
                               hintText: 'name',
                               errorText: null,
-                              errorStyle: Theme.of(context).textTheme.headlineSmall?.copyWith(color: Colors.red),
-                              hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(color: theme.secondaryText),
-                              contentPadding: EdgeInsets.symmetric(vertical: padding1, horizontal: padding1),
+                              hintStyle: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 16.dp, fontWeight: FontWeight.w500),
+                              contentPadding: EdgeInsets.symmetric(vertical: 16.dp, horizontal: 20.dp),
                             ),
                           ),
-                        if (!isLoginMode)
-                          TextFormField(
-                            controller: _emailController,
-                            style: Theme.of(context).textTheme.bodyMedium,
-                            cursorColor: theme.primaryText,
-                            onChanged: (String value) => setState(() => emailError = value.trim().isValidEmail),
-                            autofillHints: [AutofillHints.email],
-                            // textAlignVertical: TextAlignVertical.center,
-                            decoration: InputDecoration(
-                              filled: true,
-                              fillColor: theme.secondaryBackground,
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                              hintText: 'email',
-                              errorText: emailError,
-                              errorStyle: Theme.of(context).textTheme.headlineSmall?.copyWith(color: Colors.red),
-                              hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(color: theme.secondaryText),
-                              contentPadding: EdgeInsets.symmetric(vertical: padding1, horizontal: padding1),
-                            ),
-                          ),
+
+                        /// Username
                         TextFormField(
                           controller: _usernameController,
-                          style: Theme.of(context).textTheme.bodyMedium,
+                          style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 16.dp, fontWeight: FontWeight.w500),
                           cursorColor: theme.primaryText,
-                          onChanged: (String value) => setState(() => usernameError = value.trim().isValidUsername),
                           autofillHints: [AutofillHints.username],
-                          // textAlignVertical: TextAlignVertical.center,
                           decoration: InputDecoration(
                             filled: true,
                             fillColor: theme.secondaryBackground,
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.dp), borderSide: BorderSide.none),
                             hintText: 'username',
-                            errorText: usernameError,
-                            hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(color: theme.secondaryText),
-                            contentPadding: EdgeInsets.symmetric(vertical: padding1, horizontal: padding1),
+                            hintStyle: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 16.dp, fontWeight: FontWeight.w500),
+                            contentPadding: EdgeInsets.symmetric(vertical: 16.dp, horizontal: 20.dp),
                           ),
                         ),
+
+                        /// Email
+                        if (!isLoginMode)
+                          TextFormField(
+                            controller: _emailController,
+                            style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 16.dp, fontWeight: FontWeight.w500),
+                            cursorColor: theme.primaryText,
+                            autofillHints: [AutofillHints.email],
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: theme.secondaryBackground,
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.dp), borderSide: BorderSide.none),
+                              hintText: 'email',
+                              hintStyle: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 16.dp, fontWeight: FontWeight.w500),
+                              contentPadding: EdgeInsets.symmetric(vertical: 16.dp, horizontal: 20.dp),
+                            ),
+                          ),
+
+                        /// Password
                         TextFormField(
                           controller: _passwordController,
-                          style: Theme.of(context).textTheme.bodyMedium,
+                          style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 16.dp, fontWeight: FontWeight.w500),
                           cursorColor: theme.primaryText,
-                          onChanged: (String value) => setState(() => usernameError = value.trim().isValidPassword),
                           autofillHints: [AutofillHints.password],
                           obscureText: !isPasswordVisible,
                           decoration: InputDecoration(
                             filled: true,
                             fillColor: theme.secondaryBackground,
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                            hintText: 'password',
-                            errorText: passwordError,
-                            hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(color: theme.secondaryText),
-                            contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.dp), borderSide: BorderSide.none),
+                            hintText: isPasswordVisible ? '' : 'password',
+                            hintStyle: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 16.dp, fontWeight: FontWeight.w500),
+                            contentPadding: EdgeInsets.symmetric(vertical: 16.dp, horizontal: 20.dp),
                             suffixIcon: IconButton(
                               icon: Icon(isPasswordVisible ? Iconsax.eye_outline : Iconsax.eye_slash_outline, color: theme.primaryText.withAlpha(64)),
                               onPressed: () => setState(() => isPasswordVisible = !isPasswordVisible),
                             ),
                           ),
                         ),
+
+                        /// Request forgot password
+                        if (isLoginMode)
+                          GestureDetector(
+                            onTap: () => context.push('/auth/request_forgot_password'),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                Text(
+                                  'Forgot password?',
+                                  style: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 16.dp, fontWeight: FontWeight.w500),
+                                ),
+                              ],
+                            ),
+                          ),
                       ],
                     ),
                   ),
-                  if (isLoginMode) SizedBox(height: margin2),
-                  if (isLoginMode)
-                    GestureDetector(
-                      onTap: () => context.push('/auth/request_forgot_password'),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [Text('Forgot password?', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: theme.secondaryText, height: 0))],
-                      ),
-                    ),
-                  SizedBox(height: margin2),
+
+                  /// Continue button
                   ElevatedButton(
-                    onPressed: _onPressed,
+                    onPressed: onPressed,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: theme.primaryText,
-                      fixedSize: Size(with2, buttonHeight1),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius1)),
+                      fixedSize: Size(Sizes.screenWidth - 56.dp, 52.dp),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.dp)),
                     ),
                     child: state == AuthLoading()
-                        ? LoadingAnimationWidget.inkDrop(color: theme.primaryBackground, size: iconSize2)
-                        : Text('Continue', style: Theme.of(context).textTheme.displaySmall?.copyWith(color: theme.primaryBackground)),
+                        ? LoadingAnimationWidget.inkDrop(color: theme.primaryBackground, size: 24.dp)
+                        : Text(
+                            'Continue',
+                            style: GoogleFonts.quicksand(color: theme.primaryBackground, fontSize: 18.dp, fontWeight: FontWeight.w700),
+                          ),
                   ),
-                  SizedBox(height: margin1),
+
+                  /// Or continue with
                   Row(
                     children: [
-                      Expanded(child: Divider(color: theme.primaryText.withAlpha(128), thickness: 1, endIndent: 8)),
-                      Text('or continue with', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: theme.secondaryText)),
-                      Expanded(child: Divider(color: theme.primaryText.withAlpha(128), thickness: 1, indent: 8)),
+                      Expanded(
+                        child: Divider(color: theme.secondaryText, thickness: 1.dp, endIndent: 8.dp),
+                      ),
+                      Text(
+                        'or continue with',
+                        style: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 16.dp, fontWeight: FontWeight.w500),
+                      ),
+                      Expanded(
+                        child: Divider(color: theme.secondaryText, thickness: 1.dp, indent: 8.dp),
+                      ),
                     ],
                   ),
-                  SizedBox(height: margin1),
+
+                  /// Social auth
                   Row(
-                    spacing: margin2,
+                    spacing: 28.dp,
                     children: [
                       Expanded(
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: theme.secondaryBackground,
-                            fixedSize: Size.fromHeight(buttonHeight1),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius1)),
-                            // side: BorderSide(color: activeTheme.primaryText.withAlpha(32), width: 0.4),
+                            fixedSize: Size.fromHeight(52.dp),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.dp)),
                           ),
                           onPressed: () => context.read<AuthenticationBloc>().add(SocialAuthEvent()),
-                          child: Icon(IonIcons.logo_google, size: iconSize1, color: theme.primaryText),
+                          child: Icon(IonIcons.logo_google, size: 28.dp, color: theme.primaryText),
                         ),
                       ),
                       Expanded(
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: theme.secondaryBackground,
-                            fixedSize: Size.fromHeight(buttonHeight1),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius1)),
+                            fixedSize: Size.fromHeight(52.dp),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.dp)),
                           ),
                           onPressed: () => context.read<AuthenticationBloc>().add(SocialAuthEvent()),
-                          child: Icon(IonIcons.logo_apple, size: iconSize1, color: theme.primaryText),
+                          child: Icon(IonIcons.logo_apple, size: 28.dp, color: theme.primaryText),
                         ),
                       ),
                     ],
                   ),
-                  SizedBox(height: margin1),
+
+                  /// Toggle Register & Login
                   GestureDetector(
                     onTap: () => setState(() => isLoginMode = !isLoginMode),
                     child: Text(
-                      isLoginMode ? 'Don\'t have an account? Register' : 'Already have an account? Login',
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(color: theme.secondaryText),
+                      isLoginMode ? "Don't have an account? Register" : 'Already have an account? Login',
+                      style: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 16.dp, fontWeight: FontWeight.w500),
                     ),
                   ),
                 ],

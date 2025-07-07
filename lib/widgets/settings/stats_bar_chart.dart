@@ -4,7 +4,8 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kronk/constants/my_theme.dart';
-import 'package:kronk/riverpod/general/theme_notifier_provider.dart';
+import 'package:kronk/riverpod/general/theme_provider.dart';
+import 'package:kronk/utility/extensions.dart';
 
 class StatsBarChart extends ConsumerWidget {
   final Map<String, int> stats;
@@ -26,8 +27,8 @@ class StatsBarChart extends ConsumerWidget {
           BarChartRodData(
             toY: entry.value.toDouble(),
             width: 16,
-            borderRadius: const BorderRadius.only(topLeft: Radius.circular(4), topRight: Radius.circular(4)),
-            gradient: const LinearGradient(colors: [Colors.lightBlueAccent, Colors.purpleAccent], begin: Alignment.topCenter, end: Alignment.bottomCenter),
+            borderRadius: BorderRadius.only(topLeft: Radius.circular(4.dp), topRight: Radius.circular(4.dp)),
+            gradient: LinearGradient(colors: [theme.primaryText, theme.secondaryBackground], begin: Alignment.topCenter, end: Alignment.bottomCenter),
           ),
         ],
       );
@@ -43,7 +44,7 @@ class StatsBarChart extends ConsumerWidget {
         barTouchData: BarTouchData(
           touchTooltipData: BarTouchTooltipData(
             fitInsideVertically: true,
-            getTooltipColor: (BarChartGroupData group) => Colors.blueAccent,
+            getTooltipColor: (BarChartGroupData group) => theme.primaryText,
             getTooltipItem: (group, groupIndex, rod, rodIndex) => BarTooltipItem(
               '${stats.values.elementAt(group.x)}',
               TextStyle(color: theme.secondaryBackground),
@@ -55,14 +56,14 @@ class StatsBarChart extends ConsumerWidget {
         titlesData: FlTitlesData(
           rightTitles: AxisTitles(
             sideTitles: SideTitles(
-              showTitles: true,
+              showTitles: false,
               interval: _calculateInterval(maxY),
-              reservedSize: 36,
+              reservedSize: 36.dp,
               maxIncluded: false,
               getTitlesWidget: (double value, TitleMeta meta) {
                 return SideTitleWidget(
                   meta: meta,
-                  space: 4,
+                  space: 4.dp,
                   child: Text(_formatYValue(value), style: TextStyle(color: theme.primaryText, fontSize: 10)),
                 );
               },
@@ -73,13 +74,16 @@ class StatsBarChart extends ConsumerWidget {
             sideTitles: SideTitles(
               showTitles: true,
               interval: _calculateInterval(maxY),
-              reservedSize: 36,
+              reservedSize: 36.dp,
               maxIncluded: false,
               getTitlesWidget: (double value, TitleMeta meta) {
                 return SideTitleWidget(
                   meta: meta,
-                  space: 4,
-                  child: Text(_formatYValue(value), style: TextStyle(color: theme.primaryText, fontSize: 10)),
+                  space: 4.dp,
+                  child: Text(
+                    _formatYValue(value),
+                    style: TextStyle(color: theme.primaryText, fontSize: 10.dp),
+                  ),
                 );
               },
             ),
@@ -93,7 +97,10 @@ class StatsBarChart extends ConsumerWidget {
                   return SideTitleWidget(
                     meta: meta,
                     space: 0,
-                    child: Text(stats.keys.elementAt(index), style: TextStyle(color: theme.primaryText, fontSize: 10)),
+                    child: Text(
+                      stats.keys.elementAt(index),
+                      style: TextStyle(color: theme.primaryText, fontSize: 10.dp),
+                    ),
                   );
                 }
                 return const SizedBox();

@@ -8,7 +8,7 @@ import 'package:kronk/constants/kronk_icon.dart';
 import 'package:kronk/models/feed_model.dart';
 import 'package:kronk/models/user_model.dart';
 import 'package:kronk/riverpod/feed/feed_screen_style_provider.dart';
-import 'package:kronk/riverpod/general/theme_notifier_provider.dart';
+import 'package:kronk/riverpod/general/theme_provider.dart';
 import 'package:kronk/riverpod/profile/engagement_feeds.dart';
 import 'package:kronk/riverpod/profile/profile_provider.dart';
 import 'package:kronk/utility/classes.dart';
@@ -16,6 +16,7 @@ import 'package:kronk/utility/constants.dart';
 import 'package:kronk/utility/dimensions.dart';
 import 'package:kronk/utility/extensions.dart';
 import 'package:kronk/utility/my_logger.dart';
+import 'package:kronk/utility/storage.dart';
 import 'package:kronk/widgets/feed/feed_card.dart';
 import 'package:kronk/widgets/navbar.dart';
 import 'package:kronk/widgets/profile/custom_painters.dart';
@@ -29,12 +30,9 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final Dimensions dimensions = Dimensions.of(context);
     final FeedScreenDisplayState displayState = ref.watch(feedsScreenStyleProvider);
     final bool isFloating = displayState.screenStyle == ScreenStyle.floating;
 
-    final double screenWidth = dimensions.screenWidth;
-    final screenHeight = dimensions.screenHeight - MediaQuery.of(context).padding.top - kBottomNavigationBarHeight;
     myLogger.d('building profile screen...');
     return DefaultTabController(
       length: EngagementType.values.length,
@@ -47,7 +45,12 @@ class ProfileScreen extends ConsumerWidget {
               Positioned.fill(
                 child: Opacity(
                   opacity: 0.4,
-                  child: Image.asset(displayState.backgroundImagePath, fit: BoxFit.cover, cacheHeight: screenHeight.cacheSize(context), cacheWidth: screenWidth.cacheSize(context)),
+                  child: Image.asset(
+                    displayState.backgroundImagePath,
+                    fit: BoxFit.cover,
+                    cacheWidth: Sizes.screenWidth.cacheSize(context),
+                    cacheHeight: Sizes.screenHeight.cacheSize(context),
+                  ),
                 ),
               ),
 
@@ -67,17 +70,32 @@ class ProfileScreen extends ConsumerWidget {
 }
 
 /// ProfileHeaderWidget
-class ProfileHeaderWidget extends ConsumerWidget {
+class ProfileHeaderWidget extends ConsumerStatefulWidget {
   final String? targetUserId;
 
   const ProfileHeaderWidget({super.key, this.targetUserId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final AsyncValue<UserModel> asyncUser = ref.watch(profileNotifierProvider(targetUserId));
+  ConsumerState<ProfileHeaderWidget> createState() => _ProfileHeaderWidgetState();
+}
+
+class _ProfileHeaderWidgetState extends ConsumerState<ProfileHeaderWidget> {
+  late UserModel? cachedUser;
+  late Storage storage;
+
+  @override
+  void initState() {
+    super.initState();
+    storage = Storage();
+    cachedUser = storage.getUser();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final AsyncValue<UserModel> asyncUser = ref.watch(profileNotifierProvider(widget.targetUserId));
     return asyncUser.when(
       data: (UserModel user) => ProfileCard(user: user),
-      loading: () => const CircularProgressIndicator(),
+      loading: () => cachedUser != null ? ProfileCard(user: cachedUser!) : const Center(child: CircularProgressIndicator()),
       error: (Object error, StackTrace _) => Center(
         child: Text('Error: $error', style: const TextStyle(color: Colors.redAccent)),
       ),
@@ -93,25 +111,13 @@ class ProfileCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final Dimensions dimensions = Dimensions.of(context);
     final theme = ref.watch(themeNotifierProvider);
     final bool isFollowing = user.isFollowing ?? false;
     final bool isFollowingNull = user.isFollowing == null;
 
-    final double screenWidth = dimensions.screenWidth;
-    final double margin3 = dimensions.margin3;
-    final double textSize3 = dimensions.textSize3;
-    final double textSize4 = dimensions.textSize4;
-    final double iconSize4 = dimensions.iconSize4;
-    final double iconSize6 = dimensions.iconSize6;
-    final double buttonHeight5 = dimensions.buttonHeight5;
-    final double bannerHeight = dimensions.bannerHeight;
-    final double avatarHeight = dimensions.avatarHeight;
-    final double avatarRadius = dimensions.avatarRadius;
-    final double padding1 = dimensions.padding1;
-    final double padding2 = dimensions.padding2;
-    final double padding3 = dimensions.padding3;
-    myLogger.i('ProfileCard | user.avatarUrl: ${user.avatarUrl}, user.bannerUrl: ${user.bannerUrl}');
+    final double bannerHeight = 170.dp;
+    final double avatarHeight = 96.dp;
+    final double avatarRadius = avatarHeight / 2;
     return Container(
       color: theme.primaryBackground,
       child: Stack(
@@ -126,7 +132,7 @@ class ProfileCard extends ConsumerWidget {
                   '${constants.bucketEndpoint}/${user.bannerUrl}',
                   width: double.infinity,
                   height: bannerHeight,
-                  cacheWidth: screenWidth.cacheSize(context),
+                  cacheWidth: Sizes.screenWidth.cacheSize(context),
                   cacheHeight: bannerHeight.cacheSize(context),
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) => Container(width: double.infinity, height: bannerHeight, color: theme.secondaryBackground),
@@ -138,21 +144,21 @@ class ProfileCard extends ConsumerWidget {
               /// Message, edit profile, follow, following
               Container(
                 height: avatarRadius,
-                margin: EdgeInsets.symmetric(horizontal: margin3),
+                margin: EdgeInsets.symmetric(horizontal: 12.dp),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
-                  spacing: padding3,
+                  spacing: 12.dp,
                   children: [
                     /// Message
                     if (!isFollowingNull)
                       GestureDetector(
                         onTap: () => context.go('/chats/chat', extra: user),
                         child: Container(
-                          width: buttonHeight5,
-                          height: buttonHeight5,
+                          width: 100.dp,
+                          height: 36.dp,
                           alignment: Alignment.center,
-                          decoration: BoxDecoration(color: theme.secondaryBackground, borderRadius: BorderRadius.circular(buttonHeight5 / 2)),
-                          child: Icon(KronkIcon.messageCircleLeftOutline, size: iconSize6, color: theme.primaryText),
+                          decoration: BoxDecoration(color: theme.secondaryBackground, borderRadius: BorderRadius.circular(16.dp)),
+                          child: Icon(KronkIcon.messageCircleLeftOutline, size: 24.dp, color: theme.primaryText),
                         ),
                       ),
 
@@ -166,26 +172,26 @@ class ProfileCard extends ConsumerWidget {
                         }
                       },
                       child: Container(
-                        height: buttonHeight5,
+                        height: 32.dp,
+                        padding: EdgeInsets.symmetric(horizontal: 12.dp),
                         decoration: BoxDecoration(
                           color: !isFollowingNull && !isFollowing ? theme.primaryText : theme.secondaryBackground,
-                          borderRadius: BorderRadius.circular(buttonHeight5 / 2),
+                          borderRadius: BorderRadius.circular(16.dp),
                         ),
-                        padding: EdgeInsets.symmetric(horizontal: padding2),
                         child: Row(
-                          spacing: 4,
+                          spacing: 4.dp,
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            if (!isFollowingNull && !isFollowing) Icon(Icons.add_rounded, size: iconSize4, color: theme.primaryBackground),
+                            if (!isFollowingNull && !isFollowing) Icon(Icons.add_rounded, size: 24.dp, color: theme.primaryBackground),
                             Text(
                               isFollowingNull ? 'Edit Profile' : (isFollowing ? 'Following' : 'Follow'),
                               style: GoogleFonts.quicksand(
                                 color: isFollowing || isFollowingNull ? theme.primaryText : theme.primaryBackground,
-                                fontSize: textSize4,
-                                fontWeight: FontWeight.bold,
+                                fontSize: 16.dp,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
-                            if (!isFollowingNull && !isFollowing) const SizedBox(width: 2),
+                            if (!isFollowingNull && !isFollowing) SizedBox(width: 2.dp),
                           ],
                         ),
                       ),
@@ -197,73 +203,73 @@ class ProfileCard extends ConsumerWidget {
               /// Name, username
               Container(
                 width: double.infinity,
-                margin: EdgeInsets.symmetric(horizontal: margin3),
+                margin: EdgeInsets.symmetric(horizontal: 12.dp),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       user.name,
-                      style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: textSize3, fontWeight: FontWeight.bold),
+                      style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 28.dp, fontWeight: FontWeight.bold),
                     ),
                     Text(
                       '@${user.username}',
-                      style: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: textSize4, fontWeight: FontWeight.w600),
+                      style: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 16.dp, fontWeight: FontWeight.w600),
                     ),
                   ],
                 ),
               ),
 
-              SizedBox(height: padding3),
+              SizedBox(height: 12.dp),
 
               /// Bio
               if (user.bio != null) ProfileBioWidget(bio: user.bio!),
 
-              if (user.bio != null) SizedBox(height: padding3),
+              if (user.bio != null) SizedBox(height: 12.dp),
 
               /// Followers & followings count
               Container(
                 width: double.infinity,
-                margin: EdgeInsets.symmetric(horizontal: margin3),
+                margin: EdgeInsets.symmetric(horizontal: 12.dp),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
-                  spacing: padding1,
+                  spacing: 12.dp,
                   children: [
                     Row(
-                      spacing: 4,
+                      spacing: 4.dp,
                       children: [
                         Text(
                           '${user.followersCount}',
-                          style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: textSize4),
+                          style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 16.dp),
                         ),
                         Text(
                           'followers',
-                          style: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: textSize4, fontWeight: FontWeight.w600),
+                          style: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 16.dp, fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
                     Row(
-                      spacing: 4,
+                      spacing: 4.dp,
                       children: [
                         Text(
                           '${user.followingsCount}',
-                          style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: textSize4),
+                          style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 16.dp),
                         ),
                         Text(
                           'followings',
-                          style: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: textSize4, fontWeight: FontWeight.w600),
+                          style: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 16.dp, fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
                     Row(
-                      spacing: 4,
+                      spacing: 4.dp,
                       children: [
                         Text(
-                          '14',
-                          style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: textSize4),
+                          '0',
+                          style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 16.dp),
                         ),
                         Text(
                           'feeds',
-                          style: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: textSize4, fontWeight: FontWeight.w600),
+                          style: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 16.dp, fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
@@ -274,18 +280,18 @@ class ProfileCard extends ConsumerWidget {
               /// TabBar
               TabBar(
                 isScrollable: true,
-                dividerHeight: 1,
+                dividerHeight: 1.dp,
                 dividerColor: theme.outline,
                 tabAlignment: TabAlignment.start,
                 indicator: UnderlineTabIndicator(
-                  borderSide: BorderSide(color: theme.primaryText, width: 2),
-                  borderRadius: const BorderRadius.only(topLeft: Radius.circular(1), topRight: Radius.circular(1)),
+                  borderSide: BorderSide(color: theme.primaryText, width: 2.dp),
+                  borderRadius: BorderRadius.only(topLeft: Radius.circular(1.dp), topRight: Radius.circular(1.dp)),
                 ),
                 labelStyle: GoogleFonts.quicksand(
-                  textStyle: TextStyle(fontSize: textSize3, color: theme.primaryText, fontWeight: FontWeight.w500),
+                  textStyle: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 16.dp, fontWeight: FontWeight.w500),
                 ),
                 unselectedLabelStyle: GoogleFonts.quicksand(
-                  textStyle: TextStyle(fontSize: textSize3, color: theme.secondaryText, fontWeight: FontWeight.w500),
+                  textStyle: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 16.dp, fontWeight: FontWeight.w500),
                 ),
                 indicatorAnimation: TabIndicatorAnimation.elastic,
                 tabs: EngagementType.values.map((e) => Tab(text: e.name)).toList(),
@@ -296,10 +302,10 @@ class ProfileCard extends ConsumerWidget {
           /// Avatar
           Positioned(
             top: bannerHeight - avatarRadius,
-            left: margin3 + 4,
+            left: 16.dp,
             height: avatarHeight,
             child: CustomPaint(
-              painter: AvatarPainter(borderColor: theme.primaryBackground, borderWidth: 8),
+              painter: AvatarPainter(borderColor: theme.primaryBackground, borderWidth: 8.dp),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(avatarRadius),
                 child: Image.network(

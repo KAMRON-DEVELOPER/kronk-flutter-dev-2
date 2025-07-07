@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:kronk/constants/my_theme.dart';
 import 'package:kronk/models/navbar_model.dart';
 import 'package:kronk/models/statistics_model.dart';
 import 'package:kronk/riverpod/general/navbar_provider.dart';
-import 'package:kronk/riverpod/general/theme_notifier_provider.dart';
+import 'package:kronk/riverpod/general/theme_provider.dart';
 import 'package:kronk/riverpod/settings/settings_statistics.dart';
 import 'package:kronk/utility/dimensions.dart';
 import 'package:kronk/utility/extensions.dart';
@@ -23,49 +24,58 @@ class SettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final dimensions = Dimensions.of(context);
-
-    final double margin2 = dimensions.margin2;
+    final MyTheme theme = ref.watch(themeNotifierProvider);
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          const SliverAppBar(leading: BackButtonWidget(), title: Text('Settings'), floating: true, snap: true),
-          const SectionTitleWidget(title: 'appearance'),
+          SliverAppBar(
+            leading: const BackButtonWidget(),
+            title: Text(
+              'Settings',
+              style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 24.dp, fontWeight: FontWeight.w500),
+            ),
+            floating: true,
+            snap: true,
+            bottom: PreferredSize(
+              preferredSize: Size.fromHeight(0.5.dp),
+              child: Divider(height: 0.1, color: theme.outline),
+            ),
+          ),
+          const SectionLabelWidget(title: 'appearance'),
           const AppearanceSectionWidget(),
-          SliverToBoxAdapter(child: SizedBox(height: margin2)),
-          const SectionTitleWidget(title: 'service'),
-          const ServiceSectionWidget(),
-          SliverToBoxAdapter(child: SizedBox(height: margin2)),
-          const SectionTitleWidget(title: 'statistics'),
+          SliverToBoxAdapter(child: SizedBox(height: 12.dp)),
+          const SectionLabelWidget(title: 'services', isServie: true),
+          const ServicesSectionWidget(),
+          SliverToBoxAdapter(child: SizedBox(height: 12.dp)),
+          const SectionLabelWidget(title: 'statistics'),
           const StatisticsSectionWidget(),
-          SliverToBoxAdapter(child: SizedBox(height: margin2)),
-          const SectionTitleWidget(title: 'support'),
+          SliverToBoxAdapter(child: SizedBox(height: 12.dp)),
+          const SectionLabelWidget(title: 'support'),
           const SupportSectionWidget(),
           const MaraudersMapFootprints(),
           const DisappointingSectionWidget(),
-          SliverToBoxAdapter(child: SizedBox(height: margin2)),
+          SliverToBoxAdapter(child: SizedBox(height: 12.dp)),
         ],
       ),
     );
   }
 }
 
-class SectionTitleWidget extends StatelessWidget {
+class SectionLabelWidget extends ConsumerWidget {
   final String title;
+  final bool isServie;
 
-  const SectionTitleWidget({super.key, required this.title});
+  const SectionLabelWidget({super.key, required this.title, this.isServie = false});
 
   @override
-  Widget build(BuildContext context) {
-    final Dimensions dimensions = Dimensions.of(context);
-
-    final double margin2 = dimensions.margin2;
-    return SliverPadding(
-      padding: EdgeInsets.symmetric(horizontal: margin2),
-      sliver: SliverToBoxAdapter(
-        child: Container(
-          margin: const EdgeInsets.only(bottom: 4),
-          child: Text(title, style: Theme.of(context).textTheme.displaySmall),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final MyTheme theme = ref.watch(themeNotifierProvider);
+    return SliverToBoxAdapter(
+      child: Container(
+        margin: EdgeInsets.only(left: 16.dp, bottom: isServie ? 0 : 4.dp),
+        child: Text(
+          title,
+          style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 20.dp, fontWeight: FontWeight.w500),
         ),
       ),
     );
@@ -77,22 +87,14 @@ class AppearanceSectionWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final Dimensions dimensions = Dimensions.of(context);
     final MyTheme theme = ref.watch(themeNotifierProvider);
     final themeNotifier = ref.read(themeNotifierProvider.notifier);
     final List<Themes> allThemes = themeNotifier.getThemes();
 
-    final double contentWidth1 = dimensions.with1;
-    final double margin2 = dimensions.margin2;
-    final double margin3 = dimensions.margin3;
-    final double padding3 = dimensions.padding3;
-    final double padding4 = dimensions.padding4;
-    final double height1 = dimensions.height1;
-    final double themeCircleRadius = dimensions.themeCircleRadius;
     return SliverToBoxAdapter(
       child: SizedBox(
-        width: contentWidth1,
-        height: height1,
+        width: Sizes.screenWidth - 32.dp,
+        height: 104.dp,
         child: ShaderMask(
           shaderCallback: (Rect bounds) {
             return const LinearGradient(
@@ -104,26 +106,29 @@ class AppearanceSectionWidget extends ConsumerWidget {
           },
           blendMode: BlendMode.dstIn,
           child: ListView.separated(
-            padding: EdgeInsetsGeometry.symmetric(horizontal: margin2),
+            padding: EdgeInsetsGeometry.symmetric(horizontal: 16.dp),
             scrollDirection: Axis.horizontal,
             itemCount: allThemes.length,
             itemBuilder: (context, index) {
               return GestureDetector(
                 onTap: () async => await themeNotifier.changeTheme(theme: allThemes.elementAt(index)),
                 child: Container(
-                  padding: EdgeInsets.only(top: padding4, left: padding3, right: padding3),
+                  padding: EdgeInsets.symmetric(vertical: 8.dp, horizontal: 12.dp),
                   decoration: BoxDecoration(color: theme.secondaryBackground, borderRadius: BorderRadius.circular(12)),
                   child: Column(
-                    spacing: padding4,
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    spacing: 8.dp,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Container(
                         decoration: BoxDecoration(
-                          border: Border.all(color: MyTheme.fromThemes(theme: allThemes.elementAt(index)).primaryText, width: 2),
+                          border: Border.all(
+                            color: MyTheme.fromThemes(theme: allThemes.elementAt(index)).primaryText,
+                            width: 2.dp,
+                          ),
                           shape: BoxShape.circle,
                         ),
                         child: CustomPaint(
-                          size: Size(themeCircleRadius, themeCircleRadius),
+                          size: Size(56.dp, 56.dp),
                           painter: HalfCirclePainter(
                             firstColor: MyTheme.fromThemes(theme: allThemes.elementAt(index)).primaryBackground,
                             secondColor: MyTheme.fromThemes(theme: allThemes.elementAt(index)).secondaryBackground,
@@ -132,14 +137,19 @@ class AppearanceSectionWidget extends ConsumerWidget {
                       ),
                       Text(
                         allThemes.elementAt(index).name,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: MyTheme.fromThemes(theme: allThemes.elementAt(index)).primaryText),
+                        style: GoogleFonts.quicksand(
+                          color: MyTheme.fromThemes(theme: allThemes.elementAt(index)).primaryText,
+                          fontSize: 16.dp,
+                          fontWeight: FontWeight.w500,
+                          height: 0,
+                        ),
                       ),
                     ],
                   ),
                 ),
               );
             },
-            separatorBuilder: (context, index) => SizedBox(width: margin3),
+            separatorBuilder: (context, index) => SizedBox(width: 8.dp),
           ),
         ),
       ),
@@ -147,22 +157,16 @@ class AppearanceSectionWidget extends ConsumerWidget {
   }
 }
 
-class ServiceSectionWidget extends ConsumerWidget {
-  const ServiceSectionWidget({super.key});
+class ServicesSectionWidget extends ConsumerWidget {
+  const ServicesSectionWidget({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final dimensions = Dimensions.of(context);
     final MyTheme theme = ref.watch(themeNotifierProvider);
     final List<NavbarModel> services = ref.watch(navbarProvider);
 
-    final double iconSize3 = dimensions.iconSize3;
-    final double padding2 = dimensions.padding2;
-    final double padding3 = dimensions.padding3;
-    final double padding4 = dimensions.padding4;
-    final double margin2 = dimensions.margin2;
     return SliverPadding(
-      padding: EdgeInsets.symmetric(horizontal: margin2),
+      padding: EdgeInsets.symmetric(horizontal: 16.dp),
       sliver: SliverReorderableList(
         itemCount: services.length,
         onReorder: (int oldIndex, int newIndex) async {
@@ -171,43 +175,41 @@ class ServiceSectionWidget extends ConsumerWidget {
         },
         itemBuilder: (context, index) {
           final service = services.elementAt(index);
-          final bool isAvailable = !service.isPending;
+
           return ReorderableDelayedDragStartListener(
             key: ValueKey(service.route),
             index: index,
             child: Container(
-              padding: EdgeInsets.symmetric(vertical: padding3, horizontal: padding3),
-              margin: EdgeInsets.symmetric(vertical: padding4),
-              decoration: BoxDecoration(color: theme.secondaryBackground, borderRadius: BorderRadius.circular(12)),
+              padding: EdgeInsets.symmetric(vertical: 8.dp, horizontal: 12.dp),
+              margin: EdgeInsets.symmetric(vertical: 4.dp),
+              decoration: BoxDecoration(color: theme.secondaryBackground, borderRadius: BorderRadius.circular(12.dp)),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
-                    spacing: padding2,
+                    spacing: 8.dp,
                     children: [
-                      Icon(Icons.drag_indicator_rounded, size: iconSize3, color: service.isEnabled ? theme.primaryText : theme.secondaryText),
+                      Icon(Icons.drag_indicator_rounded, size: 20.dp, color: service.isEnabled ? theme.primaryText : theme.secondaryText),
                       Text(
                         service.route.replaceFirst('/', '').toTitleCaseWithSpaces(),
-                        style: service.isEnabled ? Theme.of(context).textTheme.bodyMedium : Theme.of(context).textTheme.bodyMedium?.copyWith(color: theme.secondaryText),
+                        style: GoogleFonts.quicksand(color: service.isEnabled ? theme.primaryText : theme.secondaryText, fontSize: 16.dp, fontWeight: FontWeight.w500, height: 0),
                       ),
                     ],
                   ),
                   Row(
-                    spacing: padding2,
+                    spacing: 8.dp,
                     children: [
-                      if (service.isUpcoming)
-                        Container(
-                          padding: EdgeInsets.symmetric(horizontal: padding3, vertical: padding4),
-                          decoration: BoxDecoration(color: theme.tertiaryBackground, borderRadius: BorderRadius.circular(padding2)),
-                          child: Text('Upcoming', style: Theme.of(context).textTheme.headlineSmall),
+                      if (service.isComingSoon)
+                        Text(
+                          'Coming Soon',
+                          style: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 12.dp, fontWeight: FontWeight.w500),
                         ),
-                      if (service.isPending)
-                        Container(
-                          padding: EdgeInsets.symmetric(horizontal: padding3, vertical: padding4),
-                          decoration: BoxDecoration(color: theme.tertiaryBackground, borderRadius: BorderRadius.circular(padding2)),
-                          child: Text('Future', style: Theme.of(context).textTheme.headlineSmall),
+                      if (service.isPlanned)
+                        Text(
+                          'Planned',
+                          style: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 12.dp, fontWeight: FontWeight.w500),
                         ),
-                      CustomToggle(index: index, isEnabled: service.isEnabled, toggleable: isAvailable),
+                      CustomToggle(index: index, isEnabled: service.isEnabled, toggleable: !service.isPlanned),
                     ],
                   ),
                 ],
@@ -225,57 +227,61 @@ class StatisticsSectionWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final dimensions = Dimensions.of(context);
     final MyTheme theme = ref.watch(themeNotifierProvider);
     AsyncValue<StatisticsModel> statistics = ref.watch(settingsStatisticsWsStreamProvider);
 
-    final double margin2 = dimensions.margin2;
-    final double radius4 = dimensions.radius4;
-    final double padding2 = dimensions.padding2;
-    final double height2 = dimensions.height2;
     final List<String> statNames = ['weekly', 'monthly', 'yearly'];
     return statistics.when(
       data: (StatisticsModel data) {
         return SliverPadding(
-          padding: EdgeInsets.symmetric(horizontal: margin2),
+          padding: EdgeInsets.symmetric(horizontal: 16.dp),
           sliver: SliverToBoxAdapter(
             child: Container(
               width: double.infinity,
-              decoration: BoxDecoration(color: theme.secondaryBackground, borderRadius: BorderRadius.circular(padding2)),
+              decoration: BoxDecoration(color: theme.secondaryBackground, borderRadius: BorderRadius.circular(12.dp)),
               child: DefaultTabController(
                 length: 3,
                 child: Column(
-                  spacing: padding2,
+                  spacing: 12.dp,
                   children: [
+                    /// Label & heart animation
                     Padding(
-                      padding: EdgeInsets.only(left: padding2, top: padding2, right: padding2),
+                      padding: EdgeInsets.only(left: 12.dp, top: 12.dp, right: 12.dp),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('Total users: ${data.total}', style: Theme.of(context).textTheme.labelLarge),
-                          SizedBox(width: height2 * 1.16, height: height2, child: const RiveAnimation.asset('assets/animations/heart.riv')),
+                          Text(
+                            'Total users: ${data.total}',
+                            style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 24.dp, fontWeight: FontWeight.w500),
+                          ),
+                          SizedBox(width: 36.dp, height: 36.dp, child: const RiveAnimation.asset('assets/animations/heart.riv')),
                         ],
                       ),
                     ),
+
+                    /// Tabs
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: padding2),
+                      padding: EdgeInsets.symmetric(horizontal: 12.dp),
                       child: Container(
-                        decoration: BoxDecoration(color: theme.primaryBackground, borderRadius: BorderRadius.circular(radius4)),
+                        decoration: BoxDecoration(color: theme.primaryBackground, borderRadius: BorderRadius.circular(8.dp)),
                         child: TabBar(
-                          padding: const EdgeInsets.all(2),
+                          padding: EdgeInsets.all(2.dp),
                           dividerHeight: 0,
                           indicatorSize: TabBarIndicatorSize.tab,
-                          indicator: BoxDecoration(color: theme.secondaryBackground, borderRadius: BorderRadius.circular(radius4 - 2)),
-                          labelStyle: Theme.of(context).textTheme.labelSmall,
-                          unselectedLabelStyle: Theme.of(context).textTheme.labelSmall?.copyWith(color: theme.secondaryText),
+                          indicator: BoxDecoration(color: theme.secondaryBackground, borderRadius: BorderRadius.circular(6.dp)),
+                          labelStyle: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 12.dp, fontWeight: FontWeight.w500),
+                          unselectedLabelStyle: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 12.dp, fontWeight: FontWeight.w500),
                           indicatorAnimation: TabIndicatorAnimation.elastic,
-                          tabs: List.generate(3, (index) => Tab(height: 24, text: statNames.elementAt(index))),
+                          tabs: List.generate(3, (index) => Tab(height: 24.dp, text: statNames.elementAt(index))),
                         ),
                       ),
                     ),
-                    SizedBox(
+
+                    /// Stats
+                    Container(
                       width: double.infinity,
-                      height: 240,
+                      height: 240.dp,
+                      padding: EdgeInsets.only(right: 16.dp),
                       child: TabBarView(
                         children: [
                           StatsBarChart(stats: data.weekly),
@@ -292,12 +298,24 @@ class StatisticsSectionWidget extends ConsumerWidget {
         );
       },
       error: (error, stackTrace) {
-        myLogger.d('### error, error: $error, stackTrace: $stackTrace');
-        return const SliverToBoxAdapter(child: SizedBox(height: 200, width: 200, child: RiveAnimation.asset('assets/animations/error_glitch.riv')));
+        return SliverToBoxAdapter(
+          child: Container(
+            width: double.infinity,
+            height: 200.dp,
+            decoration: BoxDecoration(color: theme.secondaryBackground, borderRadius: BorderRadius.circular(12.dp)),
+            child: const RiveAnimation.asset('assets/animations/error_glitch.riv'),
+          ),
+        );
       },
       loading: () {
-        myLogger.d('### loading...');
-        return const SliverToBoxAdapter(child: Center(child: CircularProgressIndicator()));
+        return SliverToBoxAdapter(
+          child: Container(
+            width: double.infinity,
+            height: 200.dp,
+            decoration: BoxDecoration(color: theme.secondaryBackground, borderRadius: BorderRadius.circular(12.dp)),
+            child: const CircularProgressIndicator(),
+          ),
+        );
       },
     );
   }
@@ -308,41 +326,41 @@ class SupportSectionWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final dimensions = Dimensions.of(context);
-    final double contentWidth1 = dimensions.with1;
-    final double buttonHeight1 = dimensions.buttonHeight1;
-    final double cornerRadius1 = dimensions.radius1;
-    final double textSize3 = dimensions.textSize3;
-    final double padding3 = dimensions.padding3;
-    final double margin2 = dimensions.margin2;
+    final MyTheme theme = ref.watch(themeNotifierProvider);
     return SliverPadding(
-      padding: EdgeInsets.symmetric(horizontal: margin2),
+      padding: EdgeInsets.symmetric(horizontal: 16.dp),
       sliver: SliverToBoxAdapter(
         child: Column(
-          spacing: padding3,
+          spacing: 8.dp,
           children: [
+            /// buymeacoffee
             ElevatedButton(
               onPressed: () async {
                 await customURLLauncher(isWebsite: true, url: 'https://buymeacoffee.com/kamronbek');
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xffFFDD00),
-                fixedSize: Size(contentWidth1, buttonHeight1),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(cornerRadius1)),
+                fixedSize: Size(Sizes.screenWidth - 32.dp, 52.dp),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.dp)),
               ),
               child: SvgPicture.asset('assets/icons/others/bmc-button.svg'),
             ),
+
+            /// tirikchilik
             ElevatedButton(
               onPressed: () async {
                 await customURLLauncher(isWebsite: true, url: 'https://tirikchilik.uz/kamronbek');
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
-                fixedSize: Size(contentWidth1, buttonHeight1),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(cornerRadius1)),
+                fixedSize: Size(Sizes.screenWidth - 32.dp, 52.dp),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.dp)),
               ),
-              child: SvgPicture.asset('assets/icons/others/tirikchilik.svg', height: textSize3),
+              child: SvgPicture.asset('assets/icons/others/tirikchilik.svg', height: 16.dp),
             ),
+
+            /// Motivational text
+            Text("Hi. My name is Kamronbek. I'm happy for you joining. I hope you...", style: GoogleFonts.quicksand(color: theme.primaryText)),
           ],
         ),
       ),
@@ -356,36 +374,35 @@ class DisappointingSectionWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final MyTheme theme = ref.watch(themeNotifierProvider);
-    final dimensions = Dimensions.of(context);
-
-    final double contentWidth1 = dimensions.with1;
-    final double buttonHeight1 = dimensions.buttonHeight1;
-    final double cornerRadius1 = dimensions.radius1;
-    final double padding3 = dimensions.padding3;
-    final double margin2 = dimensions.margin3;
     return SliverPadding(
-      padding: EdgeInsets.symmetric(horizontal: margin2),
+      padding: EdgeInsets.symmetric(horizontal: 12.dp),
       sliver: SliverToBoxAdapter(
         child: Column(
-          spacing: padding3,
+          spacing: 8.dp,
           children: [
             ElevatedButton(
               onPressed: () {},
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.redAccent,
-                fixedSize: Size(contentWidth1, buttonHeight1),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(cornerRadius1)),
+                fixedSize: Size(Sizes.screenWidth - 32.dp, 52.dp),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.dp)),
               ),
-              child: Text('Log out', style: Theme.of(context).textTheme.displaySmall?.copyWith(color: theme.primaryBackground)),
+              child: Text(
+                'Log out',
+                style: GoogleFonts.quicksand(color: theme.primaryBackground, fontSize: 18.dp, fontWeight: FontWeight.w700),
+              ),
             ),
             OutlinedButton(
               onPressed: () {},
               style: OutlinedButton.styleFrom(
-                fixedSize: Size(contentWidth1, buttonHeight1),
-                side: const BorderSide(color: Colors.redAccent, width: 2.4),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(cornerRadius1)),
+                fixedSize: Size(Sizes.screenWidth - 32.dp, 52.dp),
+                side: BorderSide(color: Colors.redAccent, width: 2.dp),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.dp)),
               ),
-              child: Text('Delete account', style: Theme.of(context).textTheme.displaySmall?.copyWith(color: Colors.redAccent)),
+              child: Text(
+                'Delete account',
+                style: GoogleFonts.quicksand(color: Colors.redAccent, fontSize: 18.dp, fontWeight: FontWeight.w700),
+              ),
             ),
           ],
         ),
@@ -419,11 +436,9 @@ class BackButtonWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final dimensions = Dimensions.of(context);
     final MyTheme theme = ref.watch(themeNotifierProvider);
     final bool isAnyServiceEnabled = ref.watch(navbarProvider).any((service) => service.isEnabled);
 
-    final double iconSize1 = dimensions.iconSize1;
     return IconButton(
       onPressed: () {
         myLogger.i('isAnyServiceEnabled: $isAnyServiceEnabled');
@@ -436,7 +451,7 @@ class BackButtonWidget extends ConsumerWidget {
           context.go(firstRoute);
         }
       },
-      icon: Icon(Icons.arrow_back_rounded, color: theme.primaryText, size: iconSize1),
+      icon: Icon(Icons.arrow_back_rounded, color: theme.primaryText, size: 24.dp),
     );
   }
 }

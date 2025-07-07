@@ -24,7 +24,7 @@ class Storage {
     final List<Tuple3<String, bool, bool>> services = [
       const Tuple3<String, bool, bool>('/feeds', false, false),
       const Tuple3<String, bool, bool>('/search', false, false),
-      const Tuple3<String, bool, bool>('/chats', false, false),
+      const Tuple3<String, bool, bool>('/chats', true, false),
       const Tuple3<String, bool, bool>('/education', false, true),
       const Tuple3<String, bool, bool>('/notes', true, false),
       const Tuple3<String, bool, bool>('/todos', false, true),
@@ -38,7 +38,7 @@ class Storage {
       const Tuple3<String, bool, bool>('/profile', false, false),
     ];
     final List<NavbarModel> defaultServices = services
-        .map((Tuple3<String, bool, bool> service) => NavbarModel(route: service.item1, isUpcoming: service.item2, isPending: service.item3))
+        .map((Tuple3<String, bool, bool> service) => NavbarModel(route: service.item1, isComingSoon: service.item2, isPlanned: service.item3))
         .toList();
 
     await navbarBox.addAll(defaultServices);

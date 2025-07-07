@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kronk/riverpod/general/theme_notifier_provider.dart';
+import 'package:kronk/riverpod/general/theme_provider.dart';
+import 'package:kronk/utility/extensions.dart';
 
 class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
   final Widget? leading;
@@ -29,7 +30,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
   });
 
   @override
-  Size get preferredSize => Size(double.infinity, appBarHeight + (bottomHeight ?? 0) + bottomGap + 2);
+  Size get preferredSize => Size(double.infinity, appBarHeight + (bottomHeight ?? 0) + bottomGap);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -37,7 +38,9 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
     return Container(
       decoration: BoxDecoration(
         color: theme.primaryBackground,
-        border: Border(bottom: BorderSide(color: theme.secondaryBackground, width: 0.5)),
+        border: Border(
+          bottom: BorderSide(color: theme.secondaryBackground, width: 0.5.dp),
+        ),
       ),
       child: SafeArea(
         child: Column(

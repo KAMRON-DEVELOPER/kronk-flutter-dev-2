@@ -11,17 +11,17 @@ class NavbarModel extends HiveObject {
   bool isEnabled;
 
   @HiveField(2)
-  bool isUpcoming;
+  bool isComingSoon;
 
   @HiveField(3)
-  bool isPending;
+  bool isPlanned;
 
-  NavbarModel({required this.route, this.isEnabled = false, this.isUpcoming = false, this.isPending = false});
+  NavbarModel({required this.route, this.isEnabled = false, this.isComingSoon = false, this.isPlanned = false});
 
   IconData getIconData({required bool isActive}) => getNavbarIconByName(route: route, isActive: isActive);
 
-  NavbarModel copyWith({bool? isEnabled, bool? isUpcoming, bool? isPending}) {
-    return NavbarModel(route: route, isEnabled: isEnabled ?? this.isEnabled, isUpcoming: isUpcoming ?? this.isUpcoming, isPending: isPending ?? this.isPending);
+  NavbarModel copyWith({bool? isEnabled, bool? isComingSoon, bool? isPlanned}) {
+    return NavbarModel(route: route, isEnabled: isEnabled ?? this.isEnabled, isComingSoon: isComingSoon ?? this.isComingSoon, isPlanned: isPlanned ?? this.isPlanned);
   }
 
   // @override

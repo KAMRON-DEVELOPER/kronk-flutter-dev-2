@@ -9,7 +9,7 @@ import 'package:kronk/bloc/authentication/authentication_event.dart';
 import 'package:kronk/bloc/authentication/authentication_state.dart';
 import 'package:kronk/constants/my_theme.dart';
 import 'package:kronk/riverpod/general/connectivity_notifier_provider.dart';
-import 'package:kronk/riverpod/general/theme_notifier_provider.dart';
+import 'package:kronk/riverpod/general/theme_provider.dart';
 import 'package:kronk/utility/dimensions.dart';
 import 'package:kronk/utility/extensions.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';

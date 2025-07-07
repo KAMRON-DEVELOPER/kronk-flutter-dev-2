@@ -1,19 +1,20 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:kronk/constants/enums.dart';
 import 'package:kronk/models/chat_tile_model.dart';
 import 'package:kronk/riverpod/chat/chats_provider.dart';
 import 'package:kronk/riverpod/chat/chats_screen_style_provider.dart';
 import 'package:kronk/riverpod/chat/chats_ws_provider.dart';
 import 'package:kronk/riverpod/feed/feed_screen_style_provider.dart';
-import 'package:kronk/riverpod/general/theme_notifier_provider.dart';
-import 'package:kronk/screens/feed/feeds_screen.dart';
+import 'package:kronk/riverpod/general/theme_provider.dart';
 import 'package:kronk/utility/classes.dart';
 import 'package:kronk/utility/dimensions.dart';
 import 'package:kronk/utility/extensions.dart';
 import 'package:kronk/utility/my_logger.dart';
 import 'package:kronk/widgets/custom_drawer.dart';
+import 'package:kronk/widgets/main_appbar.dart';
 import 'package:kronk/widgets/navbar.dart';
 
 class ChatsScreen extends ConsumerWidget {
@@ -23,11 +24,7 @@ class ChatsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final ChatsScreenDisplayState displayState = ref.watch(chatsScreenStyleProvider);
     final bool isFloating = displayState.screenStyle == ScreenStyle.floating;
-    final Dimensions dimensions = Dimensions.of(context);
 
-    final double screenWidth = dimensions.screenWidth;
-    final double appBarHeight = 56; // Title
-    final screenHeight = dimensions.screenHeight - MediaQuery.of(context).padding.top - appBarHeight - kBottomNavigationBarHeight;
     final AsyncValue<String> chats = ref.watch(chatsWSNotifierProvider);
 
     chats.when(
@@ -52,10 +49,19 @@ class ChatsScreen extends ConsumerWidget {
           children: [
             /// Static background images
             if (isFloating)
-              Positioned.fill(
+              Positioned(
+                left: 0,
+                top: MediaQuery.of(context).padding.top - 52.dp,
+                right: 0,
+                bottom: 0,
                 child: Opacity(
                   opacity: 0.4,
-                  child: Image.asset(displayState.backgroundImagePath, fit: BoxFit.cover, cacheHeight: screenHeight.cacheSize(context), cacheWidth: screenWidth.cacheSize(context)),
+                  child: Image.asset(
+                    displayState.backgroundImagePath,
+                    fit: BoxFit.cover,
+                    cacheHeight: (Sizes.screenHeight - MediaQuery.of(context).padding.top - 52.dp).cacheSize(context),
+                    cacheWidth: Sizes.screenWidth.cacheSize(context),
+                  ),
                 ),
               ),
 
@@ -112,8 +118,7 @@ class ChatTileListWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final Dimensions dimensions = Dimensions.of(context);
-    final double margin3 = dimensions.margin3;
+    final theme = ref.watch(themeNotifierProvider);
     final ChatsScreenDisplayState displayState = ref.watch(chatsScreenStyleProvider);
     final bool isFloating = displayState.screenStyle == ScreenStyle.floating;
     return CustomScrollView(
@@ -126,8 +131,14 @@ class ChatTileListWidget extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('No chats yet. 💬', style: Theme.of(context).textTheme.bodyLarge),
-                  Text('Find people to chat.', style: Theme.of(context).textTheme.displaySmall),
+                  Text(
+                    'No chats yet. 💬',
+                    style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 32.dp, fontWeight: FontWeight.w600),
+                  ),
+                  Text(
+                    'Find people to chat.',
+                    style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 32.dp, fontWeight: FontWeight.w600),
+                  ),
                 ],
               ),
             ),
@@ -135,10 +146,10 @@ class ChatTileListWidget extends ConsumerWidget {
 
         if (chatTiles.isNotEmpty)
           SliverPadding(
-            padding: EdgeInsets.all(isFloating ? margin3 : 0),
+            padding: EdgeInsets.all(isFloating ? 12.dp : 0),
             sliver: SliverList.separated(
               itemCount: chatTiles.length,
-              separatorBuilder: (context, index) => SizedBox(height: margin3),
+              separatorBuilder: (context, index) => SizedBox(height: 12.dp),
               itemBuilder: (context, index) => ChatTile(key: ValueKey(chatTiles.elementAt(index).id), initialChatTile: chatTiles.elementAt(index), isRefreshing: isRefreshing),
             ),
           ),

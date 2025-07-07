@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:kronk/constants/enums.dart';
 import 'package:kronk/constants/kronk_icon.dart';
@@ -16,7 +17,7 @@ import 'package:kronk/models/user_model.dart';
 import 'package:kronk/riverpod/feed/feed_card_state_provider.dart';
 import 'package:kronk/riverpod/feed/feed_screen_style_provider.dart';
 import 'package:kronk/riverpod/feed/timeline_provider.dart';
-import 'package:kronk/riverpod/general/theme_notifier_provider.dart';
+import 'package:kronk/riverpod/general/theme_provider.dart';
 import 'package:kronk/riverpod/general/video_controller_provider.dart';
 import 'package:kronk/services/api_service/feed_service.dart';
 import 'package:kronk/utility/classes.dart';
@@ -41,16 +42,11 @@ class FeedCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeNotifierProvider);
     final FeedModel feed = ref.watch(feedCardStateProvider(initialFeed));
     final FeedCardStateNotifier notifier = ref.read(feedCardStateProvider(initialFeed).notifier);
 
-    final theme = ref.watch(themeNotifierProvider);
     final displayState = ref.watch(feedsScreenStyleProvider);
-    final Dimensions dimensions = Dimensions.of(context);
-    final double margin4 = dimensions.margin4;
-    final double margin5 = dimensions.margin5;
-    final double radius1 = dimensions.radius1;
-    myLogger.i('FeedCard is building...');
     final bool isFloating = displayState.screenStyle == ScreenStyle.floating;
     return VisibilityDetector(
       key: ValueKey('1-${feed.id}'),
@@ -64,132 +60,14 @@ class FeedCard extends ConsumerWidget {
           side: isFloating ? BorderSide(color: theme.secondaryBackground, width: 0.5) : BorderSide.none,
         ),
         child: Padding(
-          padding: EdgeInsets.all(margin5),
+          padding: EdgeInsets.all(8.dp),
           child: Column(
-            spacing: margin4,
+            spacing: 8.dp,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               FeedHeaderSection(feed: feed, isRefreshing: isRefreshing, notifier: notifier),
               FeedBodySection(feed: feed, notifier: notifier),
               FeedMediaSection(feed: feed, notifier: notifier, isRefreshing: isRefreshing),
-              if ([FeedModeEnum.create, FeedModeEnum.edit].contains(feed.feedModeEnum))
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    GestureDetector(
-                      onTap: () async {
-                        try {
-                          if (feed.feedModeEnum == FeedModeEnum.create) await notifier.save();
-                          if (feed.feedModeEnum == FeedModeEnum.edit) await notifier.update();
-                        } catch (error) {
-                          myLogger.e('$error');
-
-                          String errorMessage;
-                          if (error is List) {
-                            errorMessage = error.join(', ');
-                          } else if (error is Exception && error.toString().startsWith('Exception: [')) {
-                            // Extract inner list string from Exception string: "Exception: [msg1, msg2]"
-                            errorMessage = error.toString().replaceFirst('Exception: [', '').replaceFirst(']', '');
-                          } else {
-                            errorMessage = error.toString();
-                          }
-
-                          if (!context.mounted) return;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              backgroundColor: theme.tertiaryBackground,
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius1)),
-                              content: Text(errorMessage, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.redAccent)),
-                            ),
-                          );
-                        }
-                      },
-                      child: Container(
-                        alignment: Alignment.center,
-                        width: 120,
-                        height: 24,
-                        decoration: BoxDecoration(color: theme.secondaryBackground, borderRadius: BorderRadius.circular(8)),
-                        child: Text('feed visibility', style: Theme.of(context).textTheme.bodySmall?.copyWith(height: 0)),
-                      ),
-                    ),
-
-                    GestureDetector(
-                      onTap: () async {
-                        try {
-                          if (feed.feedModeEnum == FeedModeEnum.create) await notifier.save();
-                          if (feed.feedModeEnum == FeedModeEnum.edit) await notifier.update();
-                        } catch (error) {
-                          myLogger.e('$error');
-
-                          String errorMessage;
-                          if (error is List) {
-                            errorMessage = error.join(', ');
-                          } else if (error is Exception && error.toString().startsWith('Exception: [')) {
-                            // Extract inner list string from Exception string: "Exception: [msg1, msg2]"
-                            errorMessage = error.toString().replaceFirst('Exception: [', '').replaceFirst(']', '');
-                          } else {
-                            errorMessage = error.toString();
-                          }
-
-                          if (!context.mounted) return;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              backgroundColor: theme.tertiaryBackground,
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius1)),
-                              content: Text(errorMessage, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.redAccent)),
-                            ),
-                          );
-                        }
-                      },
-                      child: Container(
-                        alignment: Alignment.center,
-                        width: 140,
-                        height: 24,
-                        decoration: BoxDecoration(color: theme.secondaryBackground, borderRadius: BorderRadius.circular(8)),
-                        child: Text('comment policy', style: Theme.of(context).textTheme.bodySmall?.copyWith(height: 0)),
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () async {
-                        try {
-                          if (feed.feedModeEnum == FeedModeEnum.create) await notifier.save();
-                          if (feed.feedModeEnum == FeedModeEnum.edit) await notifier.update();
-                        } catch (error) {
-                          myLogger.e('$error');
-
-                          String errorMessage;
-                          if (error is List) {
-                            errorMessage = error.join(', ');
-                          } else if (error is Exception && error.toString().startsWith('Exception: [')) {
-                            // Extract inner list string from Exception string: "Exception: [msg1, msg2]"
-                            errorMessage = error.toString().replaceFirst('Exception: [', '').replaceFirst(']', '');
-                          } else {
-                            errorMessage = error.toString();
-                          }
-
-                          if (!context.mounted) return;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              backgroundColor: theme.tertiaryBackground,
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius1)),
-                              content: Text(errorMessage, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.redAccent)),
-                            ),
-                          );
-                        }
-                      },
-                      child: Container(
-                        alignment: Alignment.center,
-                        width: 60,
-                        height: 24,
-                        decoration: BoxDecoration(color: theme.secondaryBackground, borderRadius: BorderRadius.circular(8)),
-                        child: Icon(Icons.schedule_rounded, color: theme.primaryText, size: 22),
-                      ),
-                    ),
-                  ],
-                ),
               FeedActionSection(feed: feed, notifier: notifier),
             ],
           ),
@@ -200,23 +78,28 @@ class FeedCard extends ConsumerWidget {
 }
 
 /// FeedBodySection
-class FeedBodySection extends StatelessWidget {
+class FeedBodySection extends ConsumerWidget {
   final FeedModel feed;
   final FeedCardStateNotifier notifier;
 
   const FeedBodySection({super.key, required this.feed, required this.notifier});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeNotifierProvider);
     final bool isEditable = feed.feedModeEnum == FeedModeEnum.create || feed.feedModeEnum == FeedModeEnum.edit;
 
     if (isEditable) {
       return FeedBodyInputWidget(feed: feed, notifier: notifier);
     }
-    return Text(feed.body ?? 'No!!!', style: const TextStyle(fontSize: 15));
+    return Text(
+      feed.body!,
+      style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 16.dp),
+    );
   }
 }
 
+/// FeedBodyInputWidget
 class FeedBodyInputWidget extends ConsumerStatefulWidget {
   final FeedModel feed;
   final FeedCardStateNotifier notifier;
@@ -247,14 +130,14 @@ class _FeedBodyInputWidgetState extends ConsumerState<FeedBodyInputWidget> {
     final theme = ref.watch(themeNotifierProvider);
     return TextField(
       controller: textEditingController,
-      style: Theme.of(context).textTheme.labelSmall,
+      style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 16.dp),
       decoration: InputDecoration(
         hintText: "What's on your mind?",
-        hintStyle: Theme.of(context).textTheme.labelSmall?.copyWith(color: theme.secondaryText),
+        hintStyle: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 16.dp),
         border: InputBorder.none,
         counter: null,
       ),
-      maxLength: 200,
+      maxLength: 280,
       minLines: 1,
       maxLines: 6,
       cursorColor: theme.primaryText,
@@ -263,7 +146,6 @@ class _FeedBodyInputWidgetState extends ConsumerState<FeedBodyInputWidget> {
       },
       onEditingComplete: () {
         FocusScope.of(context).unfocus();
-        myLogger.d('onEditingComplete');
       },
     );
   }
@@ -280,10 +162,6 @@ class FeedHeaderSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(themeNotifierProvider);
-    final Dimensions dimensions = Dimensions.of(context);
-    final double radius1 = dimensions.radius1;
-    final double margin4 = dimensions.margin4;
-    final devicePixelRatio = View.of(context).devicePixelRatio;
     double blurSigma = isRefreshing ? 3 : 0;
 
     final String? avatarUrl = feed.author.avatarUrl;
@@ -294,63 +172,66 @@ class FeedHeaderSection extends ConsumerWidget {
       children: [
         /// Left side items (avatar + name + time)
         Row(
-          spacing: margin4,
+          spacing: 8.dp,
           children: [
             /// Avatar
             ClipRRect(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(16.dp),
               child: avatarUrl != null
                   ? ImageFiltered(
                       imageFilter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
-                      child: Image.network('${constants.bucketEndpoint}/$avatarUrl', fit: BoxFit.cover, width: 32, cacheWidth: (32 * devicePixelRatio).round()),
+                      child: Image.network('${constants.bucketEndpoint}/$avatarUrl', fit: BoxFit.cover, width: 32.dp, cacheWidth: 32.cacheSize(context)),
                     )
-                  : Icon(Icons.account_circle_rounded, size: 32, color: theme.primaryText),
+                  : Icon(Icons.account_circle_rounded, size: 32.dp, color: theme.primaryText),
             ),
 
             /// Name
-            Text('${feed.author.name}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            Text(
+              '${feed.author.name}',
+              style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 16.dp, fontWeight: FontWeight.w600),
+            ),
             if (isEditable)
-              GestureDetector(
-                onTap: () async {
-                  try {
-                    if (feed.feedModeEnum == FeedModeEnum.create) await notifier.save();
-                    if (feed.feedModeEnum == FeedModeEnum.edit) await notifier.update();
-                  } catch (error) {
-                    myLogger.e('$error');
+              Padding(
+                padding: EdgeInsets.only(left: 16.dp),
+                child: GestureDetector(
+                  onTap: () async {
+                    try {
+                      if (feed.feedModeEnum == FeedModeEnum.create) await notifier.save();
+                      if (feed.feedModeEnum == FeedModeEnum.edit) await notifier.update();
+                    } catch (error) {
+                      myLogger.e('$error');
 
-                    String errorMessage;
-                    if (error is List) {
-                      errorMessage = error.join(', ');
-                    } else if (error is Exception && error.toString().startsWith('Exception: [')) {
-                      // Extract inner list string from Exception string: "Exception: [msg1, msg2]"
-                      errorMessage = error.toString().replaceFirst('Exception: [', '').replaceFirst(']', '');
-                    } else {
-                      errorMessage = error.toString();
+                      String errorMessage;
+                      if (error is List) {
+                        errorMessage = error.join(', ');
+                      } else if (error is Exception && error.toString().startsWith('Exception: [')) {
+                        // Extract inner list string from Exception string: "Exception: [msg1, msg2]"
+                        errorMessage = error.toString().replaceFirst('Exception: [', '').replaceFirst(']', '');
+                      } else {
+                        errorMessage = error.toString();
+                      }
+
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          backgroundColor: theme.tertiaryBackground,
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.dp)),
+                          content: Text(errorMessage, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.redAccent)),
+                        ),
+                      );
                     }
-
-                    if (!context.mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        backgroundColor: theme.tertiaryBackground,
-                        behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius1)),
-                        content: Text(errorMessage, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.redAccent)),
-                      ),
-                    );
-                  }
-                },
-                child: Container(
-                  alignment: Alignment.center,
-                  width: 60,
-                  height: 24,
-                  decoration: BoxDecoration(color: theme.secondaryBackground, borderRadius: BorderRadius.circular(8)),
-                  child: Text('save', style: Theme.of(context).textTheme.bodySmall?.copyWith(height: 0)),
+                  },
+                  child: Text(
+                    'save',
+                    style: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
                 ),
               )
             else
               Text(
                 FeedModel.timeAgoShort(dateTime: feed.createdAt!),
-                style: TextStyle(fontWeight: FontWeight.normal, fontSize: 16, color: theme.primaryText.withValues(alpha: 0.75)),
+                style: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 16.dp, fontWeight: FontWeight.w600),
               ),
           ],
         ),
@@ -372,18 +253,16 @@ class FeedCardMenuButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(themeNotifierProvider);
-    final Dimensions dimensions = Dimensions.of(context);
-    final double radius1 = dimensions.radius1;
     return GestureDetector(
-      child: Icon(Icons.more_vert_rounded, color: theme.primaryText),
+      child: Icon(Icons.more_vert_rounded, color: theme.primaryText, size: 24.dp),
       onTap: () {
         final Storage storage = Storage();
         final UserModel? user = storage.getUser();
-        if (feed.feedModeEnum == FeedModeEnum.create && feed.author.id == user?.id) return;
+        if (feed.feedModeEnum == FeedModeEnum.create || feed.author.id != user?.id) return;
         showModalBottomSheet(
           context: context,
           backgroundColor: theme.secondaryBackground,
-          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(12.dp))),
           builder: (context) {
             return Column(
               mainAxisSize: MainAxisSize.min,
@@ -392,8 +271,8 @@ class FeedCardMenuButton extends ConsumerWidget {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   splashColor: Colors.red,
                   iconColor: theme.primaryText,
-                  titleTextStyle: TextStyle(color: theme.primaryText),
-                  subtitleTextStyle: TextStyle(color: theme.primaryText),
+                  titleTextStyle: GoogleFonts.quicksand(color: theme.primaryText),
+                  subtitleTextStyle: GoogleFonts.quicksand(color: theme.primaryText),
                   leading: const Icon(Icons.flag_rounded),
                   title: const Text('Edit'),
                   // subtitle: const Text('subtitle'),
@@ -405,8 +284,8 @@ class FeedCardMenuButton extends ConsumerWidget {
                 ListTile(
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   iconColor: theme.primaryText,
-                  titleTextStyle: TextStyle(color: theme.primaryText),
-                  subtitleTextStyle: TextStyle(color: theme.primaryText),
+                  titleTextStyle: GoogleFonts.quicksand(color: theme.primaryText),
+                  subtitleTextStyle: GoogleFonts.quicksand(color: theme.primaryText),
                   leading: const Icon(Icons.delete_outline_rounded),
                   title: const Text('Delete'),
                   // subtitle: const Text('subtitle'),
@@ -436,7 +315,7 @@ class FeedCardMenuButton extends ConsumerWidget {
                         SnackBar(
                           backgroundColor: theme.tertiaryBackground,
                           behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius1)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.dp)),
                           content: Text(errorMessage, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.redAccent)),
                         ),
                       );
@@ -463,7 +342,6 @@ class FeedMediaSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final bool isEditable = feed.feedModeEnum == FeedModeEnum.create || feed.feedModeEnum == FeedModeEnum.edit;
-    // final Dimensions dimensions = Dimensions.of(context);
 
     if (feed.videoFile != null || feed.videoUrl != null) return FeedVideoWidget(feed: feed, isRefreshing: isRefreshing, notifier: notifier);
     if (feed.imageFiles != null && feed.imageFiles!.isNotEmpty || feed.imageUrls.isNotEmpty) return FeedImageWidget(feed: feed, isRefreshing: isRefreshing, notifier: notifier);
@@ -482,16 +360,12 @@ class FeedVideoWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final Dimensions dimensions = Dimensions.of(context);
     final theme = ref.watch(themeNotifierProvider);
     final VideoSourceState videoSourceState = VideoSourceState(feedId: feed.id, videoUrl: feed.videoUrl, videoFile: feed.videoFile);
     final videoController = ref.watch(videoControllerProvider(videoSourceState));
     final videoControllerNotifier = ref.read(videoControllerProvider(videoSourceState).notifier);
 
-    final double videoWidth = dimensions.screenWidth - 2 * (dimensions.margin5 + dimensions.margin3);
-    final double radius2 = dimensions.radius2;
-    final double iconSize1 = dimensions.iconSize1;
-    final double margin3 = dimensions.padding4;
+    final double videoWidth = Sizes.screenWidth - 40.dp;
     final bool isEditable = feed.feedModeEnum == FeedModeEnum.create || feed.feedModeEnum == FeedModeEnum.edit;
     double blurSigma = isRefreshing ? 3 : 0;
 
@@ -502,11 +376,11 @@ class FeedVideoWidget extends ConsumerWidget {
           children: [
             /// Actual Video
             ClipRRect(
-              borderRadius: BorderRadius.circular(radius2),
+              borderRadius: BorderRadius.circular(10.dp),
               child: ImageFiltered(
                 imageFilter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
                 child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 500),
+                  duration: const Duration(milliseconds: 300),
                   curve: Curves.easeInOut,
                   width: double.infinity,
                   height: videoWidth / controller.value.aspectRatio,
@@ -563,12 +437,15 @@ class FeedVideoWidget extends ConsumerWidget {
                   final durationText = '$positionText/$totalText';
 
                   return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding: EdgeInsets.symmetric(horizontal: 8.dp, vertical: 2.dp),
                     decoration: BoxDecoration(color: theme.primaryBackground.withValues(alpha: 0.5), borderRadius: BorderRadius.circular(8)),
                     child: Row(
-                      spacing: 8,
+                      spacing: 8.dp,
                       children: [
-                        Text(durationText, style: TextStyle(color: theme.secondaryText, fontSize: 12)),
+                        Text(
+                          durationText,
+                          style: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 12.dp),
+                        ),
                         GestureDetector(
                           child: Icon(controller.value.volume == 0 ? Icons.volume_off_rounded : Icons.volume_up_rounded, color: theme.secondaryText),
                           onTap: () async => await videoControllerNotifier.toggleMute(),
@@ -582,16 +459,16 @@ class FeedVideoWidget extends ConsumerWidget {
 
             if (isEditable)
               Positioned(
-                top: margin3,
-                right: margin3,
+                top: 8.dp,
+                right: 8.dp,
                 child: GestureDetector(
                   onTap: () {
                     if (feed.feedModeEnum == FeedModeEnum.create) notifier.updateField(feed: feed.copyWith(videoFile: null, videoUrl: null));
                     if (feed.feedModeEnum == FeedModeEnum.edit && feed.videoUrl != null) notifier.update(removeVideoTarget: feed.videoUrl);
                   },
                   child: DecoratedBox(
-                    decoration: BoxDecoration(color: theme.primaryBackground.withValues(alpha: 0.5), borderRadius: BorderRadius.circular(iconSize1 / 2)),
-                    child: Icon(Icons.close_rounded, color: theme.secondaryText, size: iconSize1),
+                    decoration: BoxDecoration(color: theme.primaryBackground.withValues(alpha: 0.5), borderRadius: BorderRadius.circular(12.dp)),
+                    child: Icon(Icons.close_rounded, color: theme.secondaryText, size: 24.dp),
                   ),
                 ),
               ),
@@ -898,7 +775,7 @@ class FeedActionRow extends ConsumerWidget {
             AnimatedFlipCounter(
               hideLeadingZeroes: true,
               value: count!.toDouble(),
-              textStyle: TextStyle(color: color, fontSize: 16, height: 0),
+              textStyle: GoogleFonts.quicksand(color: color, fontSize: 16, height: 0),
             ),
         ],
       ),
