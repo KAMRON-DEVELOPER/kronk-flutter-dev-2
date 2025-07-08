@@ -9,7 +9,7 @@ import 'package:kronk/riverpod/feed/feed_screen_style_provider.dart';
 import 'package:kronk/riverpod/feed/timeline_provider.dart';
 import 'package:kronk/riverpod/general/theme_provider.dart';
 import 'package:kronk/utility/classes.dart';
-import 'package:kronk/utility/dimensions.dart';
+import 'package:kronk/utility/extensions.dart';
 import 'package:kronk/utility/my_logger.dart';
 import 'package:kronk/widgets/feed/feed_card.dart';
 
@@ -20,13 +20,10 @@ class FeedScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final Dimensions dimensions = Dimensions.of(context);
     final MyTheme theme = ref.watch(themeNotifierProvider);
     final FeedScreenDisplayState displayState = ref.watch(feedsScreenStyleProvider);
     final bool isFloating = displayState.screenStyle == ScreenStyle.floating;
 
-    final double margin2 = dimensions.margin2;
-    final double margin3 = dimensions.margin3;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Post'),
@@ -35,7 +32,7 @@ class FeedScreen extends ConsumerWidget {
           onTap: () => context.pop(),
           child: Icon(Icons.arrow_back_rounded, color: theme.primaryText),
         ),
-        actionsPadding: EdgeInsets.only(right: margin2),
+        actionsPadding: EdgeInsets.only(right: 28.dp),
       ),
       body: RefreshIndicator(
         color: theme.primaryText,
@@ -46,7 +43,7 @@ class FeedScreen extends ConsumerWidget {
           slivers: [
             /// Main Feed
             SliverPadding(
-              padding: EdgeInsets.all(isFloating ? margin3 : 0),
+              padding: EdgeInsets.all(isFloating ? 12.dp : 0),
               sliver: SliverToBoxAdapter(child: FeedCard(initialFeed: feed, isRefreshing: false)),
             ),
 
@@ -97,8 +94,6 @@ class CommentListWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final Dimensions dimensions = Dimensions.of(context);
-    final double margin3 = dimensions.margin3;
     final FeedScreenDisplayState displayState = ref.watch(feedsScreenStyleProvider);
     final bool isFloating = displayState.screenStyle == ScreenStyle.floating;
 
@@ -119,10 +114,10 @@ class CommentListWidget extends ConsumerWidget {
     }
 
     return SliverPadding(
-      padding: EdgeInsets.all(isFloating ? margin3 : 0),
+      padding: EdgeInsets.all(isFloating ? 12.dp : 0),
       sliver: SliverList.separated(
         itemCount: comments.length,
-        separatorBuilder: (context, index) => SizedBox(height: margin3),
+        separatorBuilder: (context, index) => SizedBox(height: 12.dp),
         itemBuilder: (context, index) {
           return FeedCard(key: ValueKey(comments[index].id), initialFeed: comments[index], isRefreshing: isRefreshing);
         },

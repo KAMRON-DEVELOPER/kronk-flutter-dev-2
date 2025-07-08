@@ -47,7 +47,7 @@ class AuthorModel extends Equatable {
   const AuthorModel({this.id, this.name, this.username, this.avatarUrl});
 
   factory AuthorModel.fromJson(Map<String, dynamic> json) {
-    return AuthorModel(id: json['id'], name: json['name'], username: json['username'], avatarUrl: json['avatarUrl']);
+    return AuthorModel(id: json['id'], name: json['name'], username: json['username'], avatarUrl: json['avatar_url']);
   }
 
   @override
@@ -70,7 +70,7 @@ class FeedModel extends Equatable {
   final String? parentId;
   final List<File>? imageFiles;
   final File? videoFile;
-  final FeedModeEnum feedModeEnum;
+  final FeedMode feedMode;
 
   const FeedModel({
     this.updatedAt,
@@ -86,7 +86,7 @@ class FeedModel extends Equatable {
     required this.engagement,
     this.quoteId,
     this.parentId,
-    this.feedModeEnum = FeedModeEnum.view,
+    this.feedMode = FeedMode.view,
     this.imageFiles,
     this.videoFile,
   });
@@ -151,7 +151,7 @@ class FeedModel extends Equatable {
     Object? quoteId = _sentinel,
     Object? parentId = _sentinel,
     EngagementModel? engagement,
-    Object? feedModeEnum = _sentinel,
+    Object? feedMode = _sentinel,
     Object? imageFiles = _sentinel,
     Object? videoFile = _sentinel,
   }) {
@@ -169,29 +169,14 @@ class FeedModel extends Equatable {
       quoteId: quoteId == _sentinel ? this.quoteId : quoteId as String?,
       parentId: parentId == _sentinel ? this.parentId : parentId as String?,
       engagement: engagement ?? this.engagement,
-      feedModeEnum: feedModeEnum == _sentinel ? this.feedModeEnum : feedModeEnum as FeedModeEnum,
+      feedMode: feedMode == _sentinel ? this.feedMode : feedMode as FeedMode,
       imageFiles: imageFiles == _sentinel ? this.imageFiles : imageFiles as List<File>,
       videoFile: videoFile == _sentinel ? this.videoFile : videoFile as File?,
     );
   }
 
   @override
-  List<Object?> get props => [
-    updatedAt,
-    createdAt,
-    id,
-    author,
-    body,
-    imageUrls,
-    videoUrl,
-    scheduledAt,
-    feedVisibility,
-    commentPolicy,
-    engagement,
-    imageFiles,
-    videoFile,
-    feedModeEnum,
-  ];
+  List<Object?> get props => [updatedAt, createdAt, id, author, body, imageUrls, videoUrl, scheduledAt, feedVisibility, commentPolicy, engagement, imageFiles, videoFile, feedMode];
 }
 
 class FeedSearchResultModel {

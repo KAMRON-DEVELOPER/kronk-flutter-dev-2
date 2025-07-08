@@ -380,8 +380,14 @@ class DisappointingSectionWidget extends ConsumerWidget {
         child: Column(
           spacing: 8.dp,
           children: [
+            /// logout
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () async {
+                final Storage storage = Storage();
+                await storage.logOut();
+                if (!context.mounted) return;
+                context.push('/welcome');
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.redAccent,
                 fixedSize: Size(Sizes.screenWidth - 32.dp, 52.dp),
@@ -392,8 +398,26 @@ class DisappointingSectionWidget extends ConsumerWidget {
                 style: GoogleFonts.quicksand(color: theme.primaryBackground, fontSize: 18.dp, fontWeight: FontWeight.w700),
               ),
             ),
+
+            /// Delete account
             OutlinedButton(
-              onPressed: () {},
+              onPressed: () {
+                if (GoRouterState.of(context).path == '/settings') {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      backgroundColor: theme.secondaryBackground,
+                      behavior: SnackBarBehavior.floating,
+                      dismissDirection: DismissDirection.horizontal,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.dp)),
+                      margin: EdgeInsets.only(left: 28.dp, right: 28.dp, bottom: Sizes.screenHeight - 96.dp),
+                      content: Text(
+                        "No Bro. you can't delete right now. later",
+                        style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 16.dp, height: 0),
+                      ),
+                    ),
+                  );
+                }
+              },
               style: OutlinedButton.styleFrom(
                 fixedSize: Size(Sizes.screenWidth - 32.dp, 52.dp),
                 side: BorderSide(color: Colors.redAccent, width: 2.dp),

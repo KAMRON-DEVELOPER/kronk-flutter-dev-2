@@ -6,7 +6,7 @@ enum ScreenStyle { edgeToEdge, floating }
 
 enum EngagementType { feeds, reposts, quotes, likes, views, bookmarks }
 
-enum FeedModeEnum { view, edit, create }
+enum FeedMode { view, edit, create }
 
 class EngagementStatus {
   final bool isReposted;

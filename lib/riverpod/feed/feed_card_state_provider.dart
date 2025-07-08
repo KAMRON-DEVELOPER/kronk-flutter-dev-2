@@ -89,7 +89,7 @@ class FeedCardStateNotifier extends AutoDisposeFamilyNotifier<FeedModel, FeedMod
         author: AuthorModel.fromJson(data['author']),
         feedVisibility: FeedVisibility.values.byName(data['feed_visibility']),
         commentPolicy: CommentingPolicy.values.byName(data['comment_policy']),
-        feedModeEnum: FeedModeEnum.view,
+        feedMode: FeedMode.view,
       );
 
       state = updatedFeed;
@@ -149,7 +149,7 @@ class FeedCardStateNotifier extends AutoDisposeFamilyNotifier<FeedModel, FeedMod
   }
 
   Future<void> onVisibilityChanged({required VisibilityInfo info}) async {
-    if ((state.feedModeEnum.name == FeedModeEnum.create.name) || (state.engagement.viewed ?? false)) return;
+    if ((state.feedMode.name == FeedMode.create.name) || (state.engagement.viewed ?? false)) return;
 
     final FeedService feedService = FeedService();
 

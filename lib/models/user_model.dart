@@ -41,6 +41,8 @@ class UserModel extends Equatable {
   final int followersCount;
   @HiveField(19)
   final int followingsCount;
+  @HiveField(20)
+  final int feedsCount;
 
   final bool? isFollowing;
 
@@ -63,6 +65,7 @@ class UserModel extends Equatable {
     required this.followPolicy,
     required this.followersCount,
     required this.followingsCount,
+    this.feedsCount = 0,
     this.isFollowing,
   });
 
@@ -86,6 +89,7 @@ class UserModel extends Equatable {
       followPolicy: FollowPolicy.values.byName(json['follow_policy']),
       followersCount: json['followers_count'],
       followingsCount: json['followings_count'],
+      feedsCount: json['feeds_count'] ?? 0,
       isFollowing: json['is_following'],
     );
   }
@@ -110,6 +114,7 @@ class UserModel extends Equatable {
     Object? followPolicy = _sentinel,
     Object? followersCount = _sentinel,
     Object? followingsCount = _sentinel,
+    Object? feedsCount = _sentinel,
     Object? isFollowing = _sentinel,
   }) {
     return UserModel(
@@ -130,6 +135,7 @@ class UserModel extends Equatable {
       followPolicy: followPolicy != _sentinel ? followPolicy as FollowPolicy : this.followPolicy,
       followersCount: followersCount != _sentinel ? followersCount as int : this.followersCount,
       followingsCount: followingsCount != _sentinel ? followingsCount as int : this.followingsCount,
+      feedsCount: feedsCount != _sentinel ? feedsCount as int : this.feedsCount,
       isFollowing: isFollowing != _sentinel ? isFollowing as bool : this.isFollowing,
     );
   }

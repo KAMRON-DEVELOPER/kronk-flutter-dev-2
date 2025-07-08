@@ -13,7 +13,6 @@ import 'package:kronk/utility/classes.dart';
 import 'package:kronk/utility/dimensions.dart';
 import 'package:kronk/utility/exceptions.dart';
 import 'package:kronk/utility/extensions.dart';
-import 'package:kronk/utility/my_logger.dart';
 import 'package:kronk/widgets/custom_drawer.dart';
 import 'package:kronk/widgets/feed/feed_card.dart';
 import 'package:kronk/widgets/feed/feed_notification_widget.dart';
@@ -31,11 +30,6 @@ class FeedsScreen extends ConsumerWidget {
     final theme = ref.watch(themeNotifierProvider);
     final FeedScreenDisplayState displayState = ref.watch(feedsScreenStyleProvider);
     final bool isFloating = displayState.screenStyle == ScreenStyle.floating;
-
-    myLogger.d('GoRouterState.of(context).path: ${GoRouterState.of(context).path}');
-    myLogger.d('GoRouterState.of(context).fullPath: ${GoRouterState.of(context).fullPath}');
-    myLogger.d('GoRouterState.of(context).uri.path: ${GoRouterState.of(context).uri.path}');
-    myLogger.d('GoRouterState.of(context).uri.toString(): ${GoRouterState.of(context).uri.toString()}');
 
     return DefaultTabController(
       length: 2,
@@ -229,8 +223,6 @@ class FeedListWidget extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final FeedScreenDisplayState displayState = ref.watch(feedsScreenStyleProvider);
     final bool isFloating = displayState.screenStyle == ScreenStyle.floating;
-
-    myLogger.i('FeedListWidget is building...');
 
     return Scrollbar(
       controller: controller,

@@ -23,7 +23,4 @@ class NavbarModel extends HiveObject {
   NavbarModel copyWith({bool? isEnabled, bool? isComingSoon, bool? isPlanned}) {
     return NavbarModel(route: route, isEnabled: isEnabled ?? this.isEnabled, isComingSoon: isComingSoon ?? this.isComingSoon, isPlanned: isPlanned ?? this.isPlanned);
   }
-
-  // @override
-  // List<Object?> get props => [route, isEnabled, isUpcoming, isPending];
 }

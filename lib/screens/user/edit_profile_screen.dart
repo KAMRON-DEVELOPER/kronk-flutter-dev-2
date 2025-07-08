@@ -365,7 +365,7 @@ class FieldLabel extends ConsumerWidget {
       children: [
         Text(
           label,
-          style: GoogleFonts.quicksand(fontSize: 12.dp, color: theme.secondaryText),
+          style: GoogleFonts.quicksand(fontSize: 16.dp, color: theme.secondaryText, fontWeight: FontWeight.w500),
         ),
       ],
     );
@@ -405,15 +405,13 @@ class _EditProfileFieldState extends ConsumerState<EditProfileField> {
 
   @override
   Widget build(BuildContext context) {
-    final Dimensions dimensions = Dimensions.of(context);
     final theme = ref.watch(themeNotifierProvider);
-    final double padding1 = dimensions.padding1;
     return Column(
       children: [
         FieldLabel(label: widget.hintText),
         TextFormField(
           controller: _controller,
-          style: Theme.of(context).textTheme.bodyMedium,
+          style: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 16.dp, fontWeight: FontWeight.w500),
           cursorColor: theme.primaryText,
           onChanged: widget.onChanged,
           autofillHints: [?widget.autofillHints],
@@ -422,15 +420,15 @@ class _EditProfileFieldState extends ConsumerState<EditProfileField> {
           decoration: InputDecoration(
             filled: true,
             fillColor: theme.secondaryBackground,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.dp), borderSide: BorderSide.none),
             hintText: widget.hintText,
             errorText: null,
-            errorStyle: Theme.of(context).textTheme.headlineSmall?.copyWith(color: Colors.red),
-            hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(color: theme.secondaryText),
-            contentPadding: EdgeInsets.symmetric(vertical: padding1, horizontal: padding1),
+            errorStyle: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 16.dp, fontWeight: FontWeight.w500),
+            hintStyle: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 16.dp, fontWeight: FontWeight.w500),
+            contentPadding: EdgeInsets.all(12.dp),
             suffixIcon: widget.isPassword
                 ? IconButton(
-                    icon: Icon(isPasswordVisible ? Iconsax.eye_outline : Iconsax.eye_slash_outline, color: theme.primaryText.withAlpha(64)),
+                    icon: Icon(isPasswordVisible ? Iconsax.eye_outline : Iconsax.eye_slash_outline, color: theme.secondaryText),
                     onPressed: () => setState(() => isPasswordVisible = !isPasswordVisible),
                   )
                 : null,

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kronk/riverpod/general/theme_provider.dart';
-import 'package:kronk/utility/dimensions.dart';
+import 'package:kronk/utility/extensions.dart';
 import 'package:shimmer/shimmer.dart';
 
 class FeedShimmerWidget extends StatelessWidget {
@@ -9,16 +9,9 @@ class FeedShimmerWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Dimensions dimensions = Dimensions.of(context);
-    final double margin2 = dimensions.margin2;
-    // return ListView.separated(
-    //   itemCount: 3,
-    //   itemBuilder: (context, index) => const FeedShimmerCard(),
-    //   separatorBuilder: (context, index) => SizedBox(height: margin2),
-    // );
     return SliverList.separated(
       itemBuilder: (context, index) => const FeedShimmerCard(),
-      separatorBuilder: (context, index) => SizedBox(height: margin2),
+      separatorBuilder: (context, index) => SizedBox(height: 8.dp),
     );
   }
 }
@@ -28,15 +21,13 @@ class FeedShimmerCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final Dimensions dimensions = Dimensions.of(context);
-    final double globalMargin2 = dimensions.margin2;
     final activeTheme = ref.watch(themeNotifierProvider);
 
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       color: activeTheme.primaryBackground.withValues(alpha: 0.5),
       child: Padding(
-        padding: EdgeInsets.all(globalMargin2 / 2),
+        padding: EdgeInsets.all(4.dp),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

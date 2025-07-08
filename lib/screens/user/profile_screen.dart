@@ -15,7 +15,6 @@ import 'package:kronk/utility/classes.dart';
 import 'package:kronk/utility/constants.dart';
 import 'package:kronk/utility/dimensions.dart';
 import 'package:kronk/utility/extensions.dart';
-import 'package:kronk/utility/my_logger.dart';
 import 'package:kronk/utility/storage.dart';
 import 'package:kronk/widgets/feed/feed_card.dart';
 import 'package:kronk/widgets/navbar.dart';
@@ -33,7 +32,6 @@ class ProfileScreen extends ConsumerWidget {
     final FeedScreenDisplayState displayState = ref.watch(feedsScreenStyleProvider);
     final bool isFloating = displayState.screenStyle == ScreenStyle.floating;
 
-    myLogger.d('building profile screen...');
     return DefaultTabController(
       length: EngagementType.values.length,
       child: Scaffold(
@@ -209,11 +207,11 @@ class ProfileCard extends ConsumerWidget {
                   children: [
                     Text(
                       user.name,
-                      style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 28.dp, fontWeight: FontWeight.bold),
+                      style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 24.dp, fontWeight: FontWeight.bold, height: 0),
                     ),
                     Text(
                       '@${user.username}',
-                      style: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 16.dp, fontWeight: FontWeight.w600),
+                      style: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 16.dp, fontWeight: FontWeight.w600, height: 0),
                     ),
                   ],
                 ),
@@ -381,12 +379,10 @@ class EngagementFeedList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final Dimensions dimensions = Dimensions.of(context);
     final theme = ref.watch(themeNotifierProvider);
     final FeedScreenDisplayState displayState = ref.watch(feedsScreenStyleProvider);
     final bool isFloating = displayState.screenStyle == ScreenStyle.floating;
 
-    final double margin3 = dimensions.margin3;
     return RefreshIndicator(
       color: theme.primaryText,
       backgroundColor: theme.secondaryBackground,
@@ -400,9 +396,9 @@ class EngagementFeedList extends ConsumerWidget {
           return false;
         },
         child: ListView.separated(
-          padding: EdgeInsets.all(isFloating ? margin3 : 0),
+          padding: EdgeInsets.all(isFloating ? 12.dp : 0),
           itemCount: feeds.length,
-          separatorBuilder: (context, index) => SizedBox(height: margin3),
+          separatorBuilder: (context, index) => SizedBox(height: 12.dp),
           itemBuilder: (context, index) => FeedCard(key: ValueKey(feeds.elementAt(index).id), initialFeed: feeds.elementAt(index), isRefreshing: isRefreshing),
         ),
       ),
@@ -410,6 +406,7 @@ class EngagementFeedList extends ConsumerWidget {
   }
 }
 
+/// ProfileBioWidget
 class ProfileBioWidget extends ConsumerStatefulWidget {
   final String bio;
 
@@ -427,12 +424,9 @@ class _ProfileBioWidgetState extends ConsumerState<ProfileBioWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final Dimensions dimensions = Dimensions.of(context);
     final theme = ref.watch(themeNotifierProvider);
-    final double textSize4 = dimensions.textSize4;
-    final double margin3 = dimensions.margin3;
 
-    final textStyle = GoogleFonts.quicksand(color: theme.primaryText, fontSize: textSize4);
+    final textStyle = GoogleFonts.quicksand(color: theme.primaryText, fontSize: 16.dp, fontWeight: FontWeight.w600);
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -447,7 +441,7 @@ class _ProfileBioWidgetState extends ConsumerState<ProfileBioWidget> {
 
         return Container(
           width: double.infinity,
-          margin: EdgeInsets.symmetric(horizontal: margin3),
+          margin: EdgeInsets.symmetric(horizontal: 12.dp),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -457,7 +451,7 @@ class _ProfileBioWidgetState extends ConsumerState<ProfileBioWidget> {
                   onTap: () => setState(() => isBioExpanded = !isBioExpanded),
                   child: Text(
                     isBioExpanded ? 'Show less' : 'Show more',
-                    style: GoogleFonts.quicksand(fontSize: textSize4, color: theme.secondaryText, fontWeight: FontWeight.w500),
+                    style: GoogleFonts.quicksand(fontSize: 16.dp, color: theme.secondaryText, fontWeight: FontWeight.w500),
                   ),
                 ),
             ],

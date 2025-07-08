@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:kronk/constants/my_theme.dart';
 import 'package:kronk/riverpod/general/theme_provider.dart';
 import 'package:kronk/screens/user/edit_profile_screen.dart';
-import 'package:kronk/utility/dimensions.dart';
+import 'package:kronk/utility/extensions.dart';
 
 class DatePicker extends ConsumerStatefulWidget {
   final DateTime? initialValue;
@@ -41,18 +41,15 @@ class _DatePickerState extends ConsumerState<DatePicker> {
 
   @override
   Widget build(BuildContext context) {
-    final Dimensions dimensions = Dimensions.of(context);
     final theme = ref.watch(themeNotifierProvider);
 
-    final double padding2 = dimensions.padding2;
-    final double radius2 = dimensions.radius2;
     return Column(
       children: [
         const FieldLabel(label: 'birthdate'),
         Container(
           width: double.infinity,
-          padding: EdgeInsets.all(padding2),
-          decoration: BoxDecoration(color: theme.secondaryBackground, borderRadius: BorderRadius.circular(radius2)),
+          padding: EdgeInsets.all(12.dp),
+          decoration: BoxDecoration(color: theme.secondaryBackground, borderRadius: BorderRadius.circular(12.dp)),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [

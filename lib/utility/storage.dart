@@ -213,4 +213,10 @@ class Storage {
   }
 
   Future<void> setThemeAsync({required Themes themeName}) async => await settingsBox.put('themeName', themeName.name);
+
+  Future<void> logOut() async {
+    await navbarBox.clear();
+    await userBox.clear();
+    await settingsBox.clear();
+  }
 }

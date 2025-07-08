@@ -44,7 +44,7 @@ class ChatsScreen extends ConsumerWidget {
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         backgroundColor: Colors.transparent,
-        appBar: MainAppBar(titleText: 'Gram', tabText1: 'chats', tabText2: 'groups', onTap: () => showChatsScreenSettingsDialog(context, ref)),
+        appBar: MainAppBar(titleText: 'Chats', tabText1: 'chats', tabText2: 'groups', onTap: () => showChatsScreenSettingsDialog(context)),
         body: Stack(
           children: [
             /// Static background images
@@ -176,18 +176,22 @@ class ChatTile extends ConsumerWidget {
   }
 }
 
-class GroupTilesWidget extends StatelessWidget {
+class GroupTilesWidget extends ConsumerWidget {
   const GroupTilesWidget({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeNotifierProvider);
     return Center(
-      child: Text('Will be available soon, ⌛', style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 24, fontWeight: FontWeight.bold)),
+      child: Text(
+        'Will be available soon, ⌛',
+        style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 24.dp, fontWeight: FontWeight.bold),
+      ),
     );
   }
 }
 
-void showChatsScreenSettingsDialog(BuildContext context, WidgetRef ref) {
+void showChatsScreenSettingsDialog(BuildContext context) {
   const List<String> backgroundImages = [
     '0.jpg',
     '1.jpg',
@@ -225,27 +229,21 @@ void showChatsScreenSettingsDialog(BuildContext context, WidgetRef ref) {
     builder: (context) {
       return Consumer(
         builder: (context, ref, child) {
-          final Dimensions dimensions = Dimensions.of(context);
           final theme = ref.watch(themeNotifierProvider);
           final ChatsScreenDisplayState displayState = ref.watch(chatsScreenStyleProvider);
           final bool isFloating = displayState.screenStyle == ScreenStyle.floating;
 
-          final double feedImageSelectorWidth = dimensions.feedImageSelectorWidth;
-          final double width = feedImageSelectorWidth;
+          final double width = 96.dp;
           final double height = 16 / 9 * width;
-          final double iconSize2 = dimensions.iconSize2;
-          final double padding2 = dimensions.padding2;
-          final double padding3 = dimensions.padding3;
-          final double radius2 = dimensions.radius2;
           return Dialog(
             backgroundColor: theme.tertiaryBackground,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(padding2)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.dp)),
             child: Padding(
-              padding: EdgeInsets.all(padding3),
+              padding: EdgeInsets.all(8.dp),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                spacing: padding2,
+                spacing: 8.dp,
                 children: [
                   /// Background image list
                   SizedBox(
@@ -260,7 +258,7 @@ void showChatsScreenSettingsDialog(BuildContext context, WidgetRef ref) {
                           children: [
                             /// Images list
                             ClipRRect(
-                              borderRadius: BorderRadius.circular(radius2),
+                              borderRadius: BorderRadius.circular(8.dp),
                               child: GestureDetector(
                                 onTap: () => ref.read(chatsScreenStyleProvider.notifier).updateChatsScreenStyle(backgroundImagePath: imageName),
                                 child: Image.asset(imageName, height: height, width: width, cacheHeight: height.cacheSize(context), cacheWidth: width.cacheSize(context)),
@@ -271,27 +269,28 @@ void showChatsScreenSettingsDialog(BuildContext context, WidgetRef ref) {
                             if (displayState.backgroundImagePath == imageName)
                               Positioned(
                                 bottom: 8,
-                                child: Icon(Icons.check_circle_rounded, color: theme.secondaryText, size: iconSize2),
+                                child: Icon(Icons.check_circle_rounded, color: theme.secondaryText, size: 32.dp),
                               ),
                           ],
                         );
                       },
-                      separatorBuilder: (context, index) => SizedBox(width: padding3),
+                      separatorBuilder: (context, index) => SizedBox(width: 8.dp),
                     ),
                   ),
 
                   /// Toggle button
                   Row(
+                    spacing: 8.dp,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(
                         child: GestureDetector(
                           onTap: () => ref.read(feedsScreenStyleProvider.notifier).updateFeedScreenStyle(screenStyle: ScreenStyle.edgeToEdge),
                           child: Container(
-                            height: feedImageSelectorWidth,
+                            height: 64.dp,
                             decoration: BoxDecoration(
                               color: theme.secondaryBackground,
-                              borderRadius: BorderRadius.circular(radius2),
+                              borderRadius: BorderRadius.circular(8.dp),
                               border: Border.all(color: isFloating ? theme.secondaryBackground : theme.primaryText),
                             ),
                             child: Center(

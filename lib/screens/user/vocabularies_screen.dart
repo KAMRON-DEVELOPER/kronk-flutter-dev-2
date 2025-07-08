@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kronk/riverpod/general/theme_provider.dart';
-import 'package:kronk/utility/dimensions.dart';
+import 'package:kronk/utility/extensions.dart';
 import 'package:kronk/widgets/custom_appbar.dart';
 import 'package:kronk/widgets/navbar.dart';
 
@@ -12,16 +12,14 @@ class VocabulariesScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(themeNotifierProvider);
-    final Dimensions dimensions = Dimensions.of(context);
-    final double margin3 = dimensions.margin3;
     return Scaffold(
       appBar: CustomAppBar(
         appBarHeight: 48,
         bottomHeight: 0,
         bottomGap: 4,
         actionsSpacing: 12,
-        appBarPadding: EdgeInsets.only(left: margin3, right: margin3 - 6),
-        bottomPadding: EdgeInsets.only(left: margin3, right: margin3, bottom: 4),
+        appBarPadding: EdgeInsets.only(left: 12.dp, right: 6.dp),
+        bottomPadding: EdgeInsets.only(left: 12.dp, right: 12.dp, bottom: 4.dp),
         leading: Builder(
           builder: (context) => GestureDetector(
             onTap: () => Scaffold.of(context).openDrawer(),

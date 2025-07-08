@@ -75,7 +75,7 @@ class _NavbarState extends ConsumerState<Navbar> {
                 iconSize: iconSize,
                 onPressed: () {
                   if (!isActive) {
-                    ref.read(selectedIndexProvider.notifier).state = index;
+                    // ref.read(selectedIndexProvider.notifier).state = index;
                     context.go(item.route);
                   }
                 },
@@ -91,14 +91,4 @@ class _NavbarState extends ConsumerState<Navbar> {
       ),
     );
   }
-}
-
-String beautifyServiceName(String route, {bool isCapitalize = false}) {
-  String cleaned = route.replaceFirst(RegExp(r'^/'), '');
-
-  String spaced = cleaned.replaceAll('_', ' ');
-
-  if (isCapitalize && spaced.isNotEmpty) return spaced[0].toUpperCase() + spaced.substring(1);
-
-  return spaced;
 }

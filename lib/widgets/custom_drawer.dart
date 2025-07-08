@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kronk/models/user_model.dart';
 import 'package:kronk/riverpod/general/theme_provider.dart';
@@ -14,20 +15,16 @@ class CustomDrawer extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(themeNotifierProvider);
     return Drawer(
+      width: 280.dp,
       backgroundColor: theme.secondaryBackground,
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Column(
-            children: [
-              /// Title
-              Text('Quick Settings', style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 36)),
+      child: const Column(
+        children: [
+          /// Profile
+          ProfileDrawerWidget(),
 
-              /// Profile
-              const ProfileDrawerWidget(),
-            ],
-          ),
-        ),
+          /// Options
+          OptionsWidget(),
+        ],
       ),
     );
   }
@@ -40,49 +37,53 @@ class ProfileDrawerWidget extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(themeNotifierProvider);
     final AsyncValue<UserModel?> asyncUser = ref.watch(profileNotifierProvider((null)));
+
+    final double avatarHeight = 96.dp;
+    final double avatarRadius = avatarHeight / 2;
     return asyncUser.when(
       data: (UserModel? user) {
         if (user == null) return const SizedBox.shrink();
         return Container(
-          height: 100,
-          decoration: BoxDecoration(color: theme.primaryBackground, borderRadius: BorderRadius.circular(12)),
+          width: 280.dp,
+          padding: EdgeInsets.only(left: 12.dp, top: MediaQuery.of(context).padding.top + 12.dp, bottom: 12.dp),
+          decoration: BoxDecoration(color: theme.primaryBackground),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              /// Avatar + follower/ing count
-              Row(
-                children: [
-                  /// Avatar
-                  Expanded(
-                    flex: 1,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: user.avatarUrl != null
-                          ? Image.network('${constants.bucketEndpoint}/${user.avatarUrl}', fit: BoxFit.cover, width: 32, cacheWidth: 32.cacheSize(context))
-                          : Icon(Icons.account_circle_rounded, size: 32, color: theme.primaryText),
-                    ),
+              /// Avatar
+              ClipRRect(
+                borderRadius: BorderRadius.circular(avatarRadius),
+                child: Image.network(
+                  '${constants.bucketEndpoint}/${user.avatarUrl}',
+                  width: avatarHeight,
+                  height: avatarHeight,
+                  cacheWidth: avatarHeight.cacheSize(context),
+                  cacheHeight: avatarHeight.cacheSize(context),
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    width: avatarHeight,
+                    decoration: BoxDecoration(color: theme.secondaryBackground, shape: BoxShape.circle),
                   ),
-
-                  /// Follower/ing count
-                  Expanded(
-                    flex: 6,
-                    child: Row(
-                      children: [
-                        /// Follower count
-                        Text('${user.followersCount}', style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 12)),
-
-                        /// Following count
-                        Text('${user.followingsCount}', style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 12)),
-                      ],
-                    ),
-                  ),
-                ],
+                  loadingBuilder: (context, child, loadingProgress) => loadingProgress == null
+                      ? child
+                      : Container(
+                          width: avatarHeight,
+                          decoration: BoxDecoration(color: theme.secondaryBackground, shape: BoxShape.circle),
+                        ),
+                ),
               ),
 
               /// Name
-              Text(user.name, style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 12)),
+              Text(
+                user.name,
+                style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 16.dp, fontWeight: FontWeight.w500),
+              ),
 
               /// Username
-              Text('@${user.username}', style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 12)),
+              Text(
+                '@${user.username}',
+                style: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 12.dp, fontWeight: FontWeight.w500),
+              ),
             ],
           ),
         );
@@ -96,6 +97,44 @@ class ProfileDrawerWidget extends ConsumerWidget {
         height: 100,
         decoration: BoxDecoration(color: theme.primaryBackground, borderRadius: BorderRadius.circular(12)),
         child: CircularProgressIndicator(color: theme.primaryText, constraints: const BoxConstraints(maxHeight: 50, maxWidth: 50)),
+      ),
+    );
+  }
+}
+
+class OptionsWidget extends ConsumerWidget {
+  const OptionsWidget({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Padding(
+      padding: EdgeInsets.all(12.dp),
+      child: const Column(children: [OptionWidget()]),
+    );
+  }
+}
+
+/// OptionWidget
+class OptionWidget extends ConsumerWidget {
+  const OptionWidget({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeNotifierProvider);
+    return GestureDetector(
+      onTap: () => context.push('/settings'),
+      child: Row(
+        spacing: 12.dp,
+        children: [
+          /// Icon
+          const Icon(Icons.settings_rounded, size: 24),
+
+          /// Title
+          Text(
+            'Settings',
+            style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 20.dp, fontWeight: FontWeight.w700),
+          ),
+        ],
       ),
     );
   }

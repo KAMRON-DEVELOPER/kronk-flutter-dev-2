@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:crop_your_image/crop_your_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:kronk/constants/enums.dart';
+import 'package:kronk/models/feed_model.dart';
 
 class VideoOverlayState {
   final bool showPlayPauseOverlay;
@@ -172,4 +173,13 @@ class ImageCropperState {
       croppedBannerBytes: croppedBannerBytes == _unset ? this.croppedBannerBytes : croppedBannerBytes as Uint8List?,
     );
   }
+}
+
+class FeedCardState {
+  final FeedModel feed;
+  final FeedMode feedMode;
+  final List<String> removeImageTargets;
+  final String? removeVideoTarget;
+
+  FeedCardState({required this.feed, this.feedMode = FeedMode.view, this.removeImageTargets = const [], this.removeVideoTarget});
 }

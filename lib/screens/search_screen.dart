@@ -3,12 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kronk/constants/enums.dart';
+import 'package:kronk/constants/kronk_icon.dart';
 import 'package:kronk/models/feed_model.dart';
 import 'package:kronk/models/user_model.dart';
 import 'package:kronk/riverpod/chat/chats_screen_style_provider.dart';
 import 'package:kronk/riverpod/feed/feed_screen_style_provider.dart';
 import 'package:kronk/riverpod/general/search_provider.dart';
 import 'package:kronk/riverpod/general/theme_provider.dart';
+import 'package:kronk/screens/chat/chats_screen.dart';
+import 'package:kronk/screens/feed/feeds_screen.dart';
 import 'package:kronk/utility/classes.dart';
 import 'package:kronk/utility/constants.dart';
 import 'package:kronk/utility/dimensions.dart';
@@ -57,6 +60,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with AutomaticKeepA
   Widget build(BuildContext context) {
     super.build(context);
     final theme = ref.watch(themeNotifierProvider);
+    final int tabIndex = ref.watch(searchScreenTabIndexProvider);
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -79,11 +83,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with AutomaticKeepA
         ),
         actions: [
           GestureDetector(
-            onTap: () => context.go('/search'),
-            child: Icon(Icons.search_rounded, color: theme.primaryText, size: 24.dp),
-          ),
-          GestureDetector(
-            onTap: () => showSearchScreenSettingsDialog(context),
+            onTap: () => tabIndex == 0 ? showFeedScreenSettingsDialog(context) : showChatsScreenSettingsDialog(context),
             child: Icon(Icons.more_vert_rounded, color: theme.primaryText, size: 24.dp),
           ),
         ],
@@ -154,7 +154,6 @@ class _FeedSearchWidgetState extends ConsumerState<FeedSearchWidget> {
 
     final BorderRadius borderRadius = BorderRadius.circular(isFloating ? displayState.cardBorderRadius : 0);
     final BorderSide borderSide = BorderSide(color: theme.secondaryBackground, width: 0.5);
-    myLogger.d('FeedSearchWidget is building');
     return Stack(
       children: [
         /// Static background images
@@ -291,13 +290,12 @@ class _UserSearchWidgetState extends ConsumerState<UserSearchWidget> {
   @override
   Widget build(BuildContext context) {
     final theme = ref.watch(themeNotifierProvider);
-    final asyncUsers = ref.watch(userSearchNotifierProvider);
+    final AsyncValue<List<UserModel>> asyncUsers = ref.watch(userSearchNotifierProvider);
     final ChatsScreenDisplayState displayState = ref.watch(chatsScreenStyleProvider);
     final bool isFloating = displayState.screenStyle == ScreenStyle.floating;
 
     final BorderRadius borderRadius = BorderRadius.circular(isFloating ? displayState.tileBorderRadius : 0);
     final BorderSide borderSide = BorderSide(color: theme.secondaryBackground, width: 0.5);
-    myLogger.d('UserSearchWidget is building');
     return Stack(
       children: [
         /// Static background images
@@ -412,280 +410,143 @@ class ProfileSearchCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(themeNotifierProvider);
-    final dimensions = Dimensions.of(context);
 
-    final double margin3 = dimensions.margin3;
-    final devicePixelRatio = View.of(context).devicePixelRatio;
     return Card(
-      color: theme.secondaryBackground,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      color: theme.primaryBackground,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.dp)),
       elevation: 2,
       child: Padding(
-        padding: EdgeInsets.all(margin3),
-        child: Row(
+        padding: EdgeInsets.symmetric(vertical: 8.dp, horizontal: 12.dp),
+        child: Column(
+          spacing: 12.dp,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Avatar
-            ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: user.avatarUrl != null
-                  ? Image.network('${constants.bucketEndpoint}/${user.avatarUrl}', width: 60, height: 60, fit: BoxFit.cover, cacheWidth: (60 * devicePixelRatio).round())
-                  : Icon(Icons.account_circle_rounded, size: 60, color: theme.primaryText),
-            ),
-            SizedBox(width: margin3),
+            /// Avatar, name, username, followers, followings, feeds
+            Row(
+              spacing: 12.dp,
+              children: [
+                /// Avatar
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(28.dp),
+                  child: Image.network(
+                    '${constants.bucketEndpoint}/${user.avatarUrl}',
+                    fit: BoxFit.cover,
+                    width: 56.dp,
+                    cacheWidth: 56.cacheSize(context),
+                    loadingBuilder: (context, child, loadingProgress) =>
+                        loadingProgress == null ? child : Icon(Icons.account_circle_rounded, size: 56.dp, color: theme.primaryText),
+                    errorBuilder: (context, error, stackTrace) => Icon(Icons.account_circle_rounded, size: 56.dp, color: theme.primaryText),
+                  ),
+                ),
 
-            // Info + Buttons
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    user.name,
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: theme.primaryText),
-                  ),
-                  Text('@${user.username}', style: TextStyle(fontSize: 12, color: theme.secondaryText)),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Text('${user.followingsCount} following', style: TextStyle(fontSize: 10, color: theme.primaryText)),
-                      const SizedBox(width: 8),
-                      Text('${user.followersCount} followers', style: TextStyle(fontSize: 10, color: theme.secondaryText)),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  if (user.isFollowing != null)
+                /// Name, username, followers, followings, feeds
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    /// Name
+                    Text(
+                      user.name,
+                      style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 12.dp, fontWeight: FontWeight.w500),
+                    ),
+
+                    /// Username
+                    Text(
+                      '@${user.username}',
+                      style: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 10.dp, fontWeight: FontWeight.w500),
+                    ),
+
+                    /// Followers & followings
                     Row(
+                      spacing: 12.dp,
                       children: [
-                        ElevatedButton(
-                          onPressed: () => ref.read(userSearchNotifierProvider.notifier).toggleFollow(userId: user.id),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: user.isFollowing! ? theme.secondaryText : theme.secondaryBackground,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          ),
-                          child: Text(
-                            user.isFollowing! ? 'Following' : 'Follow',
-                            style: TextStyle(fontSize: 12, color: user.isFollowing! ? theme.primaryText : theme.secondaryText),
-                          ),
+                        Row(
+                          spacing: 4.dp,
+                          children: [
+                            Text(
+                              '${user.followersCount}',
+                              style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 10.dp, fontWeight: FontWeight.w500),
+                            ),
+                            Text(
+                              'followers',
+                              style: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 10.dp, fontWeight: FontWeight.w500),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 8),
-                        OutlinedButton(
-                          onPressed: () {
-                            context.push('/chats/chat', extra: user);
-                          },
-                          style: OutlinedButton.styleFrom(
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            side: BorderSide(color: theme.outline),
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          ),
-                          child: Text('Chat', style: TextStyle(fontSize: 12, color: theme.primaryText)),
+                        Row(
+                          spacing: 4.dp,
+                          children: [
+                            Text(
+                              '${user.followingsCount}',
+                              style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 10.dp, fontWeight: FontWeight.w500),
+                            ),
+                            Text(
+                              'followings',
+                              style: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 10.dp, fontWeight: FontWeight.w500),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          spacing: 4.dp,
+                          children: [
+                            Text(
+                              '0',
+                              style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 10.dp, fontWeight: FontWeight.w500),
+                            ),
+                            Text(
+                              'feeds',
+                              style: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 10.dp, fontWeight: FontWeight.w500),
+                            ),
+                          ],
                         ),
                       ],
                     ),
+                  ],
+                ),
+              ],
+            ),
+
+            /// Follow & chat buttons
+            if (user.isFollowing != null)
+              Row(
+                spacing: 12.dp,
+                children: [
+                  /// Chat
+                  GestureDetector(
+                    onTap: () => context.go('/chats/chat', extra: user),
+                    child: Container(
+                      alignment: Alignment.center,
+                      padding: EdgeInsets.all(6.dp),
+                      decoration: BoxDecoration(color: theme.secondaryBackground, borderRadius: BorderRadius.circular(18.dp)),
+                      child: Icon(KronkIcon.messageCircleLeftOutline, size: 24.dp, color: theme.primaryText),
+                    ),
+                  ),
+
+                  /// Follow & unfollow
+                  GestureDetector(
+                    onTap: () => ref.read(userSearchNotifierProvider.notifier).toggleFollow(userId: user.id),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 4.dp, horizontal: 12.dp),
+                      decoration: BoxDecoration(color: user.isFollowing! ? theme.secondaryBackground : theme.primaryText, borderRadius: BorderRadius.circular(18.dp)),
+                      child: Row(
+                        spacing: 2.dp,
+                        children: [
+                          if (!user.isFollowing!) Icon(Icons.add_rounded, size: 22.dp, color: theme.primaryBackground),
+                          Text(
+                            user.isFollowing! ? 'Following' : 'Follow',
+                            style: GoogleFonts.quicksand(color: user.isFollowing! ? theme.primaryText : theme.primaryBackground, fontSize: 18.dp, fontWeight: FontWeight.w600),
+                          ),
+                          if (!user.isFollowing!) SizedBox(width: 4.dp),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
-            ),
           ],
         ),
       ),
     );
   }
-}
-
-void showSearchScreenSettingsDialog(BuildContext context) {
-  const List<String> backgroundImages = [
-    '0.jpg',
-    '1.jpg',
-    '2.jpg',
-    '3.jpg',
-    '4.jpg',
-    '5.jpg',
-    '6.jpeg',
-    '7.jpeg',
-    '8.jpeg',
-    '9.jpeg',
-    '10.jpeg',
-    '11.jpeg',
-    '12.jpeg',
-    '13.jpeg',
-    '14.jpeg',
-    '15.jpeg',
-    '16.jpeg',
-    '17.jpeg',
-    '18.jpeg',
-    '19.jpg',
-    '20.jpg',
-    '21.jpg',
-    '22.jpg',
-    '23.jpg',
-    '24.jpg',
-    '25.jpg',
-    '26.jpg',
-    '27.jpg',
-    '28.jpg',
-  ];
-
-  showDialog(
-    context: context,
-    builder: (context) {
-      return Consumer(
-        builder: (context, ref, child) {
-          final Dimensions dimensions = Dimensions.of(context);
-          final theme = ref.watch(themeNotifierProvider);
-          final tabIndex = ref.watch(searchScreenTabIndexProvider);
-          final FeedScreenDisplayState feedsScreenDisplayState = ref.watch(feedsScreenStyleProvider);
-          final ChatsScreenDisplayState chatsScreenDisplayState = ref.watch(chatsScreenStyleProvider);
-          final bool isFloating = (tabIndex == 0 ? feedsScreenDisplayState.screenStyle : chatsScreenDisplayState.screenStyle) == ScreenStyle.floating;
-
-          final double feedImageSelectorWidth = dimensions.feedImageSelectorWidth;
-          final double width = feedImageSelectorWidth;
-          final double height = 16 / 9 * width;
-          final double iconSize2 = dimensions.iconSize2;
-          final double padding2 = dimensions.padding2;
-          final double padding3 = dimensions.padding3;
-          final double radius2 = dimensions.radius2;
-          return Dialog(
-            backgroundColor: theme.tertiaryBackground,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(padding2)),
-            child: Padding(
-              padding: EdgeInsets.all(padding3),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                spacing: padding2,
-                children: [
-                  /// Background image list
-                  SizedBox(
-                    height: height,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: backgroundImages.length,
-                      itemBuilder: (context, index) {
-                        final String imageName = 'assets/images/${backgroundImages.elementAt(index)}';
-                        return Stack(
-                          alignment: Alignment.bottomCenter,
-                          children: [
-                            /// Images list
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(radius2),
-                              child: GestureDetector(
-                                onTap: () {
-                                  switch (tabIndex) {
-                                    case 0:
-                                      ref.read(feedsScreenStyleProvider.notifier).updateFeedScreenStyle(backgroundImagePath: imageName);
-                                    case 1:
-                                      ref.read(chatsScreenStyleProvider.notifier).updateChatsScreenStyle(backgroundImagePath: imageName);
-                                  }
-                                },
-                                child: Image.asset(imageName, height: height, width: width, cacheHeight: height.cacheSize(context), cacheWidth: width.cacheSize(context)),
-                              ),
-                            ),
-
-                            /// Selected background image indicator
-                            if ((tabIndex == 0 ? feedsScreenDisplayState.backgroundImagePath : chatsScreenDisplayState.backgroundImagePath) == imageName)
-                              Positioned(
-                                bottom: 8,
-                                child: Icon(Icons.check_circle_rounded, color: theme.secondaryText, size: iconSize2),
-                              ),
-                          ],
-                        );
-                      },
-                      separatorBuilder: (context, index) => SizedBox(width: padding3),
-                    ),
-                  ),
-
-                  /// Toggle button
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () => ref.read(feedsScreenStyleProvider.notifier).updateFeedScreenStyle(screenStyle: ScreenStyle.edgeToEdge),
-                          child: Container(
-                            height: feedImageSelectorWidth,
-                            decoration: BoxDecoration(
-                              color: theme.secondaryBackground,
-                              borderRadius: BorderRadius.circular(radius2),
-                              border: Border.all(color: isFloating ? theme.secondaryBackground : theme.primaryText),
-                            ),
-                            child: Center(
-                              child: Text('Edge-to-edge', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: isFloating ? theme.secondaryText : theme.primaryText)),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () {
-                            switch (tabIndex) {
-                              case 0:
-                                ref.read(feedsScreenStyleProvider.notifier).updateFeedScreenStyle(screenStyle: ScreenStyle.floating);
-                              case 1:
-                                ref.read(chatsScreenStyleProvider.notifier).updateChatsScreenStyle(screenStyle: ScreenStyle.floating);
-                            }
-                          },
-                          child: Container(
-                            height: 100,
-                            decoration: BoxDecoration(
-                              color: theme.secondaryBackground,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: isFloating ? theme.primaryText : theme.secondaryBackground),
-                            ),
-                            child: Center(
-                              child: Text('Floating', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: isFloating ? theme.primaryText : theme.secondaryText)),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  /// Slider Rounded Corner
-                  Slider(
-                    value: tabIndex == 0 ? feedsScreenDisplayState.cardBorderRadius : chatsScreenDisplayState.tileBorderRadius,
-                    min: 0,
-                    max: 22,
-                    activeColor: theme.primaryText,
-                    inactiveColor: theme.primaryText.withValues(alpha: 0.2),
-                    thumbColor: theme.primaryText,
-                    label: 'Card radius',
-                    // divisions: 22,
-                    onChanged: (double newRadius) {
-                      switch (tabIndex) {
-                        case 0:
-                          ref.read(feedsScreenStyleProvider.notifier).updateFeedScreenStyle(cardBorderRadius: newRadius);
-                        case 1:
-                          ref.read(chatsScreenStyleProvider.notifier).updateChatsScreenStyle(tileBorderRadius: newRadius);
-                      }
-                    },
-                  ),
-
-                  /// Slider opacity
-                  Slider(
-                    value: tabIndex == 0 ? feedsScreenDisplayState.cardOpacity : chatsScreenDisplayState.tileOpacity,
-                    min: 0,
-                    max: 1,
-                    activeColor: theme.primaryText,
-                    inactiveColor: theme.primaryText.withValues(alpha: 0.2),
-                    thumbColor: theme.primaryText,
-                    label: 'Card and Tile opacity',
-                    // divisions: 10,
-                    onChanged: (double newOpacity) {
-                      switch (tabIndex) {
-                        case 0:
-                          ref.read(feedsScreenStyleProvider.notifier).updateFeedScreenStyle(cardOpacity: newOpacity);
-                        case 1:
-                          ref.read(chatsScreenStyleProvider.notifier).updateChatsScreenStyle(tileOpacity: newOpacity);
-                      }
-                    },
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      );
-    },
-  );
 }

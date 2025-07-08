@@ -72,7 +72,7 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
 
       myLogger.d('response.data: ${response.data}, type: ${response.data.runtimeType}');
 
-      if (response.statusCode == 400) {
+      if ([400, 404].contains(response.statusCode)) {
         emit(AuthFailure(failureMessage: response.data['details'] ?? 'server error'));
         return;
       }

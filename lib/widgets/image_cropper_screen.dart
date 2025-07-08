@@ -7,7 +7,6 @@ import 'package:kronk/constants/enums.dart';
 import 'package:kronk/riverpod/general/image_cropper_provider.dart';
 import 'package:kronk/riverpod/general/theme_provider.dart';
 import 'package:kronk/utility/classes.dart';
-import 'package:kronk/utility/dimensions.dart';
 import 'package:kronk/utility/extensions.dart';
 
 class ImageCropperScreen extends ConsumerWidget {
@@ -17,14 +16,12 @@ class ImageCropperScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final Dimensions dimensions = Dimensions.of(context);
     final theme = ref.watch(themeNotifierProvider);
     final ImageCropperState imageCropperState = ref.watch(imageCropperNotifierProvider);
 
-    final double cropAreaWidth = dimensions.with1;
-    final double cropAreaHeight = cropImageFor == CropImageFor.avatar ? dimensions.with1 : dimensions.with1 * 9 / 20;
-    final double margin3 = dimensions.margin3;
-    final double fromViewport = cropImageFor == CropImageFor.avatar ? margin3 : 0;
+    final double cropAreaWidth = 300.dp;
+    final double cropAreaHeight = cropImageFor == CropImageFor.avatar ? cropAreaWidth : cropAreaWidth * 9 / 20;
+    final double fromViewport = cropImageFor == CropImageFor.avatar ? 24.dp : 0;
     return Scaffold(
       body: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -41,7 +38,7 @@ class ImageCropperScreen extends ConsumerWidget {
                 aspectRatio: cropImageFor == CropImageFor.avatar ? 1 : 3 / 8,
                 interactive: true,
                 fixCropRect: true,
-                radius: cropImageFor == CropImageFor.avatar ? (cropAreaWidth - 2 * margin3) / 2 : 0,
+                radius: cropImageFor == CropImageFor.avatar ? (cropAreaWidth - 2 * 24.dp) / 2 : 0,
                 baseColor: Colors.black87,
                 maskColor: Colors.white.withValues(alpha: 0.3),
                 onCropped: (CropResult cropResult) {

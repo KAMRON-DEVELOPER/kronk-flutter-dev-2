@@ -120,8 +120,7 @@ class UserService {
     try {
       _dio.interceptors.add(AccessTokenInterceptor());
       final queryParameters = {if (targetUserId != null) 'target_user_id': targetUserId};
-      final response = await _dio.get('/profile', queryParameters: queryParameters);
-      myLogger.i('response.data: ${response.data}');
+      final Response response = await _dio.get('/profile', queryParameters: queryParameters);
       return UserModel.fromJson(response.data);
     } catch (error) {
       myLogger.w('catch in fetchUserProfile: ${error.toString()}');
@@ -188,10 +187,8 @@ class UserService {
     try {
       _dio.interceptors.add(AccessTokenInterceptor());
       Response response = await _dio.get('/search', queryParameters: {'query': query, 'offset': start, 'limit': (end + 1) - start});
-      myLogger.i('🚀 response.data in fetchUserSearch: ${response.data}  statusCode: ${response.statusCode}');
       final data = response.data;
       if (data['users'] is List) {
-        // if ((data['users'] as List).isEmpty) return const Tuple2([], 0);
         return Tuple2((data['users'] as List).map<UserModel>((json) => UserModel.fromJson(json as Map<String, dynamic>)).toList(), data['end'] ?? 0);
       } else {
         return const Tuple2([], 0);

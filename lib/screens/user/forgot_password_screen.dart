@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:kronk/bloc/authentication/authentication_bloc.dart';
 import 'package:kronk/bloc/authentication/authentication_event.dart';
 import 'package:kronk/bloc/authentication/authentication_state.dart';
@@ -65,14 +66,6 @@ class _RequestResetPasswordScreenState extends ConsumerState<ResetPasswordScreen
       loading: () => log('🚧 asyncConnectivity loading'),
     );
 
-    final dimensions = Dimensions.of(context);
-
-    final double margin1 = dimensions.margin1;
-    final double buttonHeight1 = dimensions.buttonHeight1;
-    final double iconSize2 = dimensions.iconSize2;
-    final double with2 = dimensions.with2;
-    final double radius1 = dimensions.radius1;
-    final double margin2 = dimensions.margin2;
     return BlocConsumer<AuthenticationBloc, AuthenticationState>(
       listener: (BuildContext context, AuthenticationState state) async {
         log('🚨 listener: $state');
@@ -85,7 +78,7 @@ class _RequestResetPasswordScreenState extends ConsumerState<ResetPasswordScreen
               behavior: SnackBarBehavior.floating,
               dismissDirection: DismissDirection.horizontal,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              margin: const EdgeInsets.only(bottom: 24, left: 16, right: 16),
+              margin: EdgeInsets.only(bottom: 24.dp, left: 16.dp, right: 16.dp),
             ),
           );
           await Future.delayed(const Duration(seconds: 4), () {});
@@ -99,7 +92,7 @@ class _RequestResetPasswordScreenState extends ConsumerState<ResetPasswordScreen
               behavior: SnackBarBehavior.floating,
               dismissDirection: DismissDirection.horizontal,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              margin: const EdgeInsets.only(bottom: 24, left: 16, right: 16),
+              margin: EdgeInsets.only(bottom: 24.dp, left: 16.dp, right: 16.dp),
             ),
           );
         }
@@ -111,13 +104,16 @@ class _RequestResetPasswordScreenState extends ConsumerState<ResetPasswordScreen
           backgroundColor: theme.primaryBackground,
           body: Center(
             child: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: margin2),
+              padding: EdgeInsets.symmetric(horizontal: 28.dp),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                spacing: margin1,
+                spacing: 12.dp,
                 children: [
                   /// Text
-                  Text('Last Step 😉', style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontSize: 24)),
+                  Text(
+                    'Last Step 😉',
+                    style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 24.dp, fontWeight: FontWeight.w600),
+                  ),
 
                   /// code input
                   Row(
@@ -125,8 +121,8 @@ class _RequestResetPasswordScreenState extends ConsumerState<ResetPasswordScreen
                     children: List.generate(
                       4,
                       (int index) => SizedBox(
-                        width: 60,
-                        height: 60,
+                        width: 60.dp,
+                        height: 60.dp,
                         child: TextField(
                           controller: _controllers.elementAt(index),
                           focusNode: _focusNodes.elementAt(index),
@@ -136,18 +132,18 @@ class _RequestResetPasswordScreenState extends ConsumerState<ResetPasswordScreen
                           textAlignVertical: TextAlignVertical.center,
                           keyboardType: TextInputType.number,
                           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                          style: Theme.of(context).textTheme.labelLarge?.copyWith(height: 2),
+                          style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 24.dp, fontWeight: FontWeight.w600),
                           decoration: InputDecoration(
                             counterText: '',
                             contentPadding: EdgeInsets.zero,
                             isDense: true,
                             enabledBorder: OutlineInputBorder(
                               borderSide: BorderSide(color: theme.secondaryText),
-                              borderRadius: BorderRadius.circular(radius1),
+                              borderRadius: BorderRadius.circular(12.dp),
                             ),
                             focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: theme.primaryText, width: 2),
-                              borderRadius: BorderRadius.circular(radius1),
+                              borderSide: BorderSide(color: theme.primaryText, width: 2.dp),
+                              borderRadius: BorderRadius.circular(12.dp),
                             ),
                           ),
                           onChanged: (String value) {
@@ -171,15 +167,14 @@ class _RequestResetPasswordScreenState extends ConsumerState<ResetPasswordScreen
                   /// Input
                   TextFormField(
                     controller: _passwordController,
-                    style: TextStyle(color: theme.primaryText, fontSize: 16, fontWeight: FontWeight.normal),
+                    style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 16.dp, fontWeight: FontWeight.w500),
                     cursorColor: theme.primaryText,
                     onChanged: (String value) => setState(() => _passwordError = value.trim().isValidPassword),
                     decoration: InputDecoration(
                       hintText: 'new password',
-                      hintStyle: TextStyle(color: theme.secondaryText, fontSize: 16, fontWeight: FontWeight.normal),
+                      hintStyle: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 16.dp, fontWeight: FontWeight.w500),
                       errorText: _passwordError,
-                      errorStyle: const TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.normal),
-                      constraints: BoxConstraints(maxHeight: buttonHeight1 + (_passwordError != null ? 20 : 0), minHeight: buttonHeight1 + (_passwordError != null ? 20 : 0)),
+                      errorStyle: GoogleFonts.quicksand(color: Colors.red, fontSize: 12.dp, fontWeight: FontWeight.w500),
                       enabledBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: theme.primaryText.withAlpha(128)),
                         borderRadius: BorderRadius.circular(12),
@@ -190,7 +185,7 @@ class _RequestResetPasswordScreenState extends ConsumerState<ResetPasswordScreen
                       ),
                       errorBorder: OutlineInputBorder(
                         borderSide: const BorderSide(color: Colors.redAccent),
-                        borderRadius: BorderRadius.circular(buttonHeight1 / 2),
+                        borderRadius: BorderRadius.circular(25.dp),
                       ),
                       focusedErrorBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: Colors.redAccent.withAlpha(128)),
@@ -208,12 +203,15 @@ class _RequestResetPasswordScreenState extends ConsumerState<ResetPasswordScreen
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: theme.primaryText,
-                      fixedSize: Size(with2, buttonHeight1),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius1)),
+                      fixedSize: Size(Sizes.screenWidth - 56.dp, 52.dp),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.dp)),
                     ),
                     child: state == AuthLoading()
-                        ? LoadingAnimationWidget.inkDrop(color: theme.primaryBackground, size: iconSize2)
-                        : Text('change password', style: Theme.of(context).textTheme.displaySmall?.copyWith(color: theme.primaryBackground)),
+                        ? LoadingAnimationWidget.inkDrop(color: theme.primaryBackground, size: 36.dp)
+                        : Text(
+                            'change password',
+                            style: GoogleFonts.quicksand(color: theme.primaryBackground, fontSize: 16.dp, fontWeight: FontWeight.w600),
+                          ),
                   ),
                 ],
               ),

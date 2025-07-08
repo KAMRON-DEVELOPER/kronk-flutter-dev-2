@@ -204,7 +204,10 @@ class AppRouter {
             routes: [
               GoRoute(
                 path: '/profile',
-                pageBuilder: (context, state) => SlidePageTransition(key: state.pageKey, child: const ProfileScreen()),
+                pageBuilder: (context, state) => SlidePageTransition(
+                  key: state.pageKey,
+                  child: ProfileScreen(targetUserId: state.extra as String?),
+                ),
                 routes: [
                   GoRoute(
                     path: 'edit',

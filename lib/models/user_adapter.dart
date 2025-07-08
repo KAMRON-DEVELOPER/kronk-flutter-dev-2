@@ -45,6 +45,7 @@ class UserAdapter extends TypeAdapter<UserModel> {
       followPolicy: FollowPolicy.values.byName(reader.readString()),
       followersCount: reader.readInt(),
       followingsCount: reader.readInt(),
+      feedsCount: reader.readInt(),
     );
   }
 
@@ -71,5 +72,6 @@ class UserAdapter extends TypeAdapter<UserModel> {
     writer.writeString(userModel.followPolicy.name);
     writer.writeInt(userModel.followersCount);
     writer.writeInt(userModel.followingsCount);
+    writer.writeInt(userModel.feedsCount);
   }
 }
