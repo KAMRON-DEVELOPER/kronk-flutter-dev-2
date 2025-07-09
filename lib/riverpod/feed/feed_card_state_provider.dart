@@ -2,10 +2,12 @@ import 'dart:async';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:kronk/constants/enums.dart';
 import 'package:kronk/models/feed_model.dart';
 import 'package:kronk/services/api_service/feed_service.dart';
 import 'package:kronk/utility/my_logger.dart';
+import 'package:mime/mime.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 final feedCardStateProvider = AutoDisposeNotifierProviderFamily<FeedCardStateNotifier, FeedModel, FeedModel>(() => FeedCardStateNotifier());
@@ -33,10 +35,8 @@ class FeedCardStateNotifier extends AutoDisposeFamilyNotifier<FeedModel, FeedMod
     myLogger.d('feed.body: ${feed.body}');
     myLogger.d('feed.author.name: ${feed.author.name}');
     myLogger.d('feed.author.username: ${feed.author.username}');
-    myLogger.d('feed.engagement.likes: ${feed.engagement.likes}');
-    myLogger.d('feed.engagement.bookmarks: ${feed.engagement.bookmarks}');
-    myLogger.d('feed.engagement.liked: ${feed.engagement.liked}');
-    myLogger.d('feed.engagement.bookmarked: ${feed.engagement.bookmarked}');
+    myLogger.d('feed.imageFile?.path: ${feed.imageFile?.path}');
+    myLogger.d('feed.imageUrl: ${feed.imageUrl}');
     state = feed;
   }
 
@@ -45,34 +45,105 @@ class FeedCardStateNotifier extends AutoDisposeFamilyNotifier<FeedModel, FeedMod
 
     myLogger.d('SAVE');
     myLogger.d('state.body: ${state.body}');
-    myLogger.d('state.state.author.name: ${state.author.name}');
-    myLogger.d('state.imageFiles.length: ${state.imageFiles?.length}');
+    myLogger.d('state.author.name: ${state.author.name}');
+    myLogger.d('state.imageFile.length: ${state.imageFile?.path}');
     myLogger.d('state.state.videoFile?.path: ${state.videoFile?.path}');
 
     try {
       final feed = state;
-      final hasImages = feed.imageFiles?.isNotEmpty ?? false;
+      final hasImage = feed.imageFile != null;
       final hasVideo = feed.videoFile != null;
 
       Map<String, dynamic> map = {
-        'body': feed.body,
+        if (feed.body != null) 'body': feed.body,
         if (feed.feedVisibility != null) 'feed_visibility': feed.feedVisibility?.name,
         if (feed.commentPolicy != null) 'commenting_policy': feed.commentPolicy?.name,
         if (feed.scheduledAt != null) 'scheduled_at': feed.scheduledAt,
       };
 
-      if (hasImages || hasVideo) {
-        if (hasVideo) {
-          map['video_file'] = await MultipartFile.fromFile(feed.videoFile!.path, filename: feed.videoFile!.path.split('/').last);
-        }
+      if (hasVideo) {
+        final String? mimeType = lookupMimeType(feed.videoFile!.path);
+        map['video_file'] = await MultipartFile.fromFile(
+          feed.videoFile!.path,
+          filename: feed.videoFile!.path.split('/').last,
+          contentType: mimeType != null ? MediaType.parse(mimeType) : null,
+        );
+      }
 
-        if (hasImages) {
-          map['image_files'] = await Future.wait(
-            feed.imageFiles!.map((image) async {
-              return await MultipartFile.fromFile(image.path, filename: image.path.split('/').last);
-            }),
-          );
-        }
+      if (hasImage) {
+        final String? mimeType = lookupMimeType(feed.videoFile!.path);
+        map['image_file'] = await MultipartFile.fromFile(
+          feed.videoFile!.path,
+          filename: feed.videoFile!.path.split('/').last,
+          contentType: mimeType != null ? MediaType.parse(mimeType) : null,
+        );
+      }
+
+      myLogger.d('map: $map');
+      Response jsonResponse = await service.fetchCreateFeed(formData: FormData.fromMap(map));
+      myLogger.d('jsonResponse.data: ${jsonResponse.data}, statusCode: ${jsonResponse.statusCode}');
+
+      final Map<String, dynamic> data = jsonResponse.data;
+
+      final createdFeed = state.copyWith(
+        id: data['id'],
+        createdAt: DateTime.fromMillisecondsSinceEpoch((data['created_at'] * 1000).toInt()),
+        updatedAt: DateTime.fromMillisecondsSinceEpoch((data['updated_at'] * 1000).toInt()),
+        body: data['body'],
+        author: AuthorModel.fromJson(data['author']),
+        feedVisibility: FeedVisibility.values.byName(data['feed_visibility']),
+        commentPolicy: CommentingPolicy.values.byName(data['comment_policy']),
+        feedMode: FeedMode.view,
+      );
+
+      state = createdFeed;
+    } catch (error) {
+      myLogger.e('error: $error');
+      rethrow;
+    }
+  }
+
+  Future<void> update() async {
+    final FeedService service = FeedService();
+
+    myLogger.d('UPDATE');
+    myLogger.d('state.body: ${state.body}');
+    myLogger.d('state.author.name: ${state.author.name}');
+    myLogger.d('state.imageFile.length: ${state.imageFile?.path}');
+    myLogger.d('state.state.videoFile?.path: ${state.videoFile?.path}');
+    myLogger.d('state.removeImage: ${state.removeImage}');
+    myLogger.d('state.removeVideo: ${state.removeVideo}');
+
+    try {
+      final feed = state;
+      final hasImage = feed.imageFile != null;
+      final hasVideo = feed.videoFile != null;
+
+      Map<String, dynamic> map = {
+        if (feed.body != null) 'body': feed.body,
+        if (feed.feedVisibility != null) 'feed_visibility': feed.feedVisibility?.name,
+        if (feed.commentPolicy != null) 'commenting_policy': feed.commentPolicy?.name,
+        if (feed.scheduledAt != null) 'scheduled_at': feed.scheduledAt,
+        if (feed.removeImage) 'remove_image': true,
+        if (feed.removeVideo) 'remove_video': true,
+      };
+
+      if (hasVideo) {
+        final String? mimeType = lookupMimeType(feed.videoFile!.path);
+        map['video_file'] = await MultipartFile.fromFile(
+          feed.videoFile!.path,
+          filename: feed.videoFile!.path.split('/').last,
+          contentType: mimeType != null ? MediaType.parse(mimeType) : null,
+        );
+      }
+
+      if (hasImage) {
+        final String? mimeType = lookupMimeType(feed.videoFile!.path);
+        map['image_file'] = await MultipartFile.fromFile(
+          feed.videoFile!.path,
+          filename: feed.videoFile!.path.split('/').last,
+          contentType: mimeType != null ? MediaType.parse(mimeType) : null,
+        );
       }
 
       myLogger.d('map: $map');
@@ -90,58 +161,11 @@ class FeedCardStateNotifier extends AutoDisposeFamilyNotifier<FeedModel, FeedMod
         feedVisibility: FeedVisibility.values.byName(data['feed_visibility']),
         commentPolicy: CommentingPolicy.values.byName(data['comment_policy']),
         feedMode: FeedMode.view,
+        removeImage: false,
+        removeVideo: false,
       );
 
       state = updatedFeed;
-    } catch (error) {
-      myLogger.e('error: $error');
-      rethrow;
-    }
-  }
-
-  Future<void> update({String? removeVideoTarget, List<String>? removeImageTargets}) async {
-    final FeedService service = FeedService();
-
-    myLogger.d('UPDATE');
-    myLogger.d('state.body: ${state.body}');
-    myLogger.d('state.imageFiles.length: ${state.imageFiles?.length}');
-    myLogger.d('state.state.videoFile?.path: ${state.videoFile?.path}');
-    myLogger.d('state.state.author.name: ${state.author.name}');
-
-    try {
-      final map = {'': 1};
-      final jsonResponse = await service.fetchUpdateFeed(feedId: state.id, formData: FormData.fromMap(map));
-      myLogger.d('jsonResponse, statusCode: $jsonResponse');
-
-      // if (jsonResponse.statusCode == 200 && removeVideoTarget != null) {
-      //   state = state.copyWith(videoUrl: null);
-      // } else if (jsonResponse.statusCode == 200 && removeImageTargets != null && removeImageTargets.isNotEmpty) {
-      //   state = state.copyWith(imageUrls: null);
-      // } else {
-      //   state = state.copyWith(feedModeEnum: FeedModeEnum.view);
-      // }
-      //
-      // final hasImages = state.imageFiles?.isNotEmpty;
-      // final hasVideo = state.videoFile != null;
-      //
-      // if (hasImages != null && !hasImages && !hasVideo) return;
-      //
-      // final Map<String, dynamic> mediaMap = {};
-      //
-      // if (hasVideo) {
-      //   mediaMap['video_file'] = await MultipartFile.fromFile(state.videoFile!.path, filename: state.videoFile!.path.split('/').last);
-      // }
-      //
-      // if (hasImages != null && hasImages && state.imageFiles != null) {
-      //   mediaMap['image_files'] = await Future.wait(
-      //     state.imageFiles.map((image) async {
-      //       return await MultipartFile.fromFile(image.path, filename: image.path.split('/').last);
-      //     }),
-      //   );
-      // }
-      //
-      // final Response _ = await service.fetchUpdateFeedMedia(feedId: state.id!, formData: FormData.fromMap(mediaMap));
-      // await ref.read(timelineNotifierProvider(TimelineType.following).notifier).refresh(timelineType: TimelineType.following);
     } catch (error) {
       myLogger.e('error: $error');
       rethrow;
@@ -153,7 +177,7 @@ class FeedCardStateNotifier extends AutoDisposeFamilyNotifier<FeedModel, FeedMod
 
     final FeedService feedService = FeedService();
 
-    final hasMedia = state.imageUrls.isNotEmpty || state.videoUrl != null;
+    final hasMedia = state.imageUrl != null || state.videoUrl != null;
     final isVisibleEnough = hasMedia ? info.visibleFraction > 0.25 : info.visibleFraction > 0;
 
     if (isVisibleEnough) {

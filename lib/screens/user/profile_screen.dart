@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -126,16 +127,15 @@ class ProfileCard extends ConsumerWidget {
               SizedBox(
                 height: bannerHeight,
                 width: double.infinity,
-                child: Image.network(
-                  '${constants.bucketEndpoint}/${user.bannerUrl}',
+                child: CachedNetworkImage(
+                  imageUrl: '${constants.bucketEndpoint}/${user.bannerUrl}',
                   width: double.infinity,
                   height: bannerHeight,
-                  cacheWidth: Sizes.screenWidth.cacheSize(context),
-                  cacheHeight: bannerHeight.cacheSize(context),
+                  memCacheWidth: Sizes.screenWidth.cacheSize(context),
+                  memCacheHeight: bannerHeight.cacheSize(context),
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(width: double.infinity, height: bannerHeight, color: theme.secondaryBackground),
-                  loadingBuilder: (context, child, loadingProgress) =>
-                      loadingProgress == null ? child : Container(width: double.infinity, height: bannerHeight, color: theme.secondaryBackground),
+                  placeholder: (context, url) => Container(width: double.infinity, height: bannerHeight, color: theme.secondaryBackground),
+                  errorWidget: (context, url, error) => Container(width: double.infinity, height: bannerHeight, color: theme.secondaryBackground),
                 ),
               ),
 
@@ -152,8 +152,8 @@ class ProfileCard extends ConsumerWidget {
                       GestureDetector(
                         onTap: () => context.go('/chats/chat', extra: user),
                         child: Container(
-                          width: 100.dp,
-                          height: 36.dp,
+                          width: 32.dp,
+                          height: 32.dp,
                           alignment: Alignment.center,
                           decoration: BoxDecoration(color: theme.secondaryBackground, borderRadius: BorderRadius.circular(16.dp)),
                           child: Icon(KronkIcon.messageCircleLeftOutline, size: 24.dp, color: theme.primaryText),
@@ -180,7 +180,7 @@ class ProfileCard extends ConsumerWidget {
                           spacing: 4.dp,
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            if (!isFollowingNull && !isFollowing) Icon(Icons.add_rounded, size: 24.dp, color: theme.primaryBackground),
+                            if (!isFollowingNull && !isFollowing) Icon(Icons.add_rounded, size: 20.dp, color: theme.primaryBackground),
                             Text(
                               isFollowingNull ? 'Edit Profile' : (isFollowing ? 'Following' : 'Follow'),
                               style: GoogleFonts.quicksand(
@@ -306,23 +306,21 @@ class ProfileCard extends ConsumerWidget {
               painter: AvatarPainter(borderColor: theme.primaryBackground, borderWidth: 8.dp),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(avatarRadius),
-                child: Image.network(
-                  '${constants.bucketEndpoint}/${user.avatarUrl}',
+                child: CachedNetworkImage(
+                  imageUrl: '${constants.bucketEndpoint}/${user.avatarUrl}',
                   width: avatarHeight,
                   height: avatarHeight,
-                  cacheWidth: avatarHeight.cacheSize(context),
-                  cacheHeight: avatarHeight.cacheSize(context),
+                  memCacheWidth: avatarHeight.cacheSize(context),
+                  memCacheHeight: avatarHeight.cacheSize(context),
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
+                  placeholder: (context, url) => Container(
                     width: avatarHeight,
                     decoration: BoxDecoration(color: theme.secondaryBackground, shape: BoxShape.circle),
                   ),
-                  loadingBuilder: (context, child, loadingProgress) => loadingProgress == null
-                      ? child
-                      : Container(
-                          width: avatarHeight,
-                          decoration: BoxDecoration(color: theme.secondaryBackground, shape: BoxShape.circle),
-                        ),
+                  errorWidget: (context, url, error) => Container(
+                    width: avatarHeight,
+                    decoration: BoxDecoration(color: theme.secondaryBackground, shape: BoxShape.circle),
+                  ),
                 ),
               ),
             ),

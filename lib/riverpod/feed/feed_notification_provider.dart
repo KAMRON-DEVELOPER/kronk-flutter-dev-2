@@ -9,7 +9,7 @@ import 'package:kronk/utility/storage.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-final scrollPositionProvider = StateProvider.autoDispose<double>((ref) => 0.0);
+final feedsScreenScrollPositionProvider = StateProvider.autoDispose<double>((ref) => 0.0);
 
 final feedNotificationNotifierProvider = AutoDisposeAsyncNotifierProvider<FeedNotificationNotifierNotifier, List<String>>(FeedNotificationNotifierNotifier.new);
 
@@ -45,6 +45,7 @@ class FeedNotificationNotifierNotifier extends AutoDisposeAsyncNotifier<List<Str
       _channel?.stream.listen(
         (event) {
           try {
+            myLogger.w('event: $event, type: ${event.runtimeType}');
             final decoded = jsonDecode(event as String);
             final avatarUrl = decoded['avatar_url'] as String?;
             if (avatarUrl != null) {

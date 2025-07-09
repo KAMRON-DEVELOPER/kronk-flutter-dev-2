@@ -137,7 +137,7 @@ class _TimelineTabState extends ConsumerState<TimelineTab> with AutomaticKeepAli
   bool get wantKeepAlive => true;
 
   void scrollListener() {
-    ref.read(scrollPositionProvider.notifier).state = _scrollController.position.pixels;
+    ref.read(feedsScreenScrollPositionProvider.notifier).state = _scrollController.position.pixels;
     if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent) {
       ref.read(timelineNotifierProvider(widget.timelineType).notifier).loadMore(timelineType: widget.timelineType);
     }
@@ -149,7 +149,7 @@ class _TimelineTabState extends ConsumerState<TimelineTab> with AutomaticKeepAli
     final theme = ref.watch(themeNotifierProvider);
     final AsyncValue<List<FeedModel>> feeds = ref.watch(timelineNotifierProvider(widget.timelineType));
 
-    ref.listen(feedNotificationNotifierProvider, (_, next) {
+    ref.listen(feedNotificationNotifierProvider, (previous, next) {
       next.whenOrNull(
         error: (error, stackTrace) {
           if (error is NoValidTokenException) {
@@ -173,15 +173,16 @@ class _TimelineTabState extends ConsumerState<TimelineTab> with AutomaticKeepAli
       );
     });
 
-    ref.listen(timelineNotifierProvider(widget.timelineType), (_, next) {
-      next.whenOrNull(
+    ref.listen(
+      timelineNotifierProvider(widget.timelineType),
+      (previous, next) => next.whenOrNull(
         error: (error, stackTrace) {
           if (error is DioException) {
             context.go('/auth');
           }
         },
-      );
-    });
+      ),
+    );
 
     return Stack(
       children: [
@@ -190,7 +191,10 @@ class _TimelineTabState extends ConsumerState<TimelineTab> with AutomaticKeepAli
           color: theme.primaryText,
           backgroundColor: theme.secondaryBackground,
           // onRefresh: () => ref.refresh(timelineNotifierProvider(widget.timelineType).future),
-          onRefresh: () => ref.read(timelineNotifierProvider(widget.timelineType).notifier).refresh(timelineType: widget.timelineType),
+          onRefresh: () {
+            ref.read(feedNotificationNotifierProvider.notifier).clearNotifications();
+            return ref.read(timelineNotifierProvider(widget.timelineType).notifier).refresh(timelineType: widget.timelineType);
+          },
           child: feeds.when(
             error: (error, stackTrace) {
               if (error is DioException) return Center(child: Text('${error.message}'));
@@ -221,6 +225,7 @@ class FeedListWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeNotifierProvider);
     final FeedScreenDisplayState displayState = ref.watch(feedsScreenStyleProvider);
     final bool isFloating = displayState.screenStyle == ScreenStyle.floating;
 
@@ -237,8 +242,14 @@ class FeedListWidget extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('No feeds yet. 🦄', style: Theme.of(context).textTheme.bodyLarge),
-                    Text('You can add the first!', style: Theme.of(context).textTheme.displaySmall),
+                    Text(
+                      'No feeds yet. 🦄',
+                      style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 32.dp, fontWeight: FontWeight.w600),
+                    ),
+                    Text(
+                      'You can add the first!',
+                      style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 32.dp, fontWeight: FontWeight.w600),
+                    ),
                   ],
                 ),
               ),

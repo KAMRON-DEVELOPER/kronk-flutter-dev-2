@@ -11,6 +11,8 @@ class AuthInitial extends AuthenticationState {}
 
 class AuthLoading extends AuthenticationState {}
 
+class VerifySuccess extends AuthenticationState {}
+
 class LoginSuccess extends AuthenticationState {}
 
 class ForgotPasswordSuccess extends AuthenticationState {}

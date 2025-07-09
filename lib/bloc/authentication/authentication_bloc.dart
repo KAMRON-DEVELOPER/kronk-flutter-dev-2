@@ -30,7 +30,7 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
       final Response response = await _authApiService.fetchRegister(data: event.registerData);
 
       if (response.statusCode! >= 400) {
-        emit(AuthFailure(failureMessage: response.data['details']));
+        emit(AuthFailure(failureMessage: response.data['details'] is List ? (response.data['details'] as List).join(', ') : response.data['details'].toString()));
         return;
       }
 
@@ -49,7 +49,7 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
       final Response response = await _authApiService.fetchVerify(code: event.code);
 
       if (response.statusCode! >= 400) {
-        emit(AuthFailure(failureMessage: response.data['details']));
+        emit(AuthFailure(failureMessage: response.data['details'] is List ? (response.data['details'] as List).join(', ') : response.data['details'].toString()));
         return;
       }
 
@@ -58,7 +58,7 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
       await _storage.setSettingsAllAsync({...response.data['tokens'], 'isDoneWelcome': true});
       await _storage.setUserAsync(user: UserModel.fromJson(response.data['user']));
 
-      emit(LoginSuccess());
+      emit(VerifySuccess());
     } catch (e) {
       emit(AuthFailure(failureMessage: e.toString()));
     }
@@ -73,7 +73,7 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
       myLogger.d('response.data: ${response.data}, type: ${response.data.runtimeType}');
 
       if ([400, 404].contains(response.statusCode)) {
-        emit(AuthFailure(failureMessage: response.data['details'] ?? 'server error'));
+        emit(AuthFailure(failureMessage: response.data['details'] is List ? (response.data['details'] as List).join(', ') : response.data['details'].toString()));
         return;
       }
 
@@ -95,7 +95,7 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
       final Response response = await _authApiService.fetchRequestForgotPassword(email: event.email);
 
       if (response.statusCode! >= 400) {
-        emit(AuthFailure(failureMessage: response.data['details']));
+        emit(AuthFailure(failureMessage: response.data['details'] is List ? (response.data['details'] as List).join(', ') : response.data['details'].toString()));
         return;
       }
 
@@ -114,7 +114,7 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
       final Response response = await _authApiService.fetchForgotPassword(data: event.forgotPasswordData);
 
       if (response.statusCode! >= 400) {
-        emit(AuthFailure(failureMessage: response.data['details']));
+        emit(AuthFailure(failureMessage: response.data['details'] is List ? (response.data['details'] as List).join(', ') : response.data['details'].toString()));
         return;
       }
 

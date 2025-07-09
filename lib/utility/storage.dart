@@ -18,8 +18,10 @@ class Storage {
 
   Storage() : navbarBox = Hive.box<NavbarModel>('navbarBox'), userBox = Hive.box<UserModel>('userBox'), settingsBox = Hive.box('settingsBox');
 
-  Future<void> initializeNavbar() async {
-    if (navbarBox.isNotEmpty) return;
+  Future<void> initializeNavbar({bool force = false}) async {
+    if (!force) {
+      if (navbarBox.isNotEmpty) return;
+    }
 
     final List<Tuple3<String, bool, bool>> services = [
       const Tuple3<String, bool, bool>('/feeds', false, false),
@@ -41,6 +43,7 @@ class Storage {
         .map((Tuple3<String, bool, bool> service) => NavbarModel(route: service.item1, isComingSoon: service.item2, isPlanned: service.item3))
         .toList();
 
+    if (force) await navbarBox.clear();
     await navbarBox.addAll(defaultServices);
   }
 
@@ -215,7 +218,7 @@ class Storage {
   Future<void> setThemeAsync({required Themes themeName}) async => await settingsBox.put('themeName', themeName.name);
 
   Future<void> logOut() async {
-    await navbarBox.clear();
+    await initializeNavbar(force: true);
     await userBox.clear();
     await settingsBox.clear();
   }

@@ -62,7 +62,7 @@ class _VerifyScreenState extends ConsumerState<VerifyScreen> {
       isOnline.when(
         data: (bool isOnline) {
           if (!isOnline) {
-            if (GoRouterState.of(context).path == '/welcome') {
+            if (GoRouterState.of(context).path == '/auth/verify') {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   backgroundColor: theme.secondaryBackground,
@@ -91,8 +91,8 @@ class _VerifyScreenState extends ConsumerState<VerifyScreen> {
     return BlocConsumer<AuthenticationBloc, AuthenticationState>(
       listener: (BuildContext context, AuthenticationState state) {
         if (state is AuthLoading) {
-        } else if (state is LoginSuccess) {
-          if (GoRouterState.of(context).path == '/auth/verify') {
+        } else if (state is VerifySuccess) {
+          if (GoRouterState.of(context).path == 'verify') {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 backgroundColor: theme.secondaryBackground,
@@ -109,7 +109,7 @@ class _VerifyScreenState extends ConsumerState<VerifyScreen> {
           }
           Timer(const Duration(seconds: 4), () => context.go('/settings'));
         } else if (state is AuthFailure) {
-          if (GoRouterState.of(context).path == '/auth/verify') {
+          if (GoRouterState.of(context).path == 'verify') {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 backgroundColor: theme.secondaryBackground,

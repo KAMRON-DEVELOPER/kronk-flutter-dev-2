@@ -83,8 +83,6 @@ class TimelineNotifier extends FamilyAsyncNotifier<List<FeedModel>, TimelineType
       author: AuthorModel(id: author.id, name: author.name, username: author.username, avatarUrl: author.avatarUrl),
       body: null,
       feedMode: FeedMode.create,
-      imageUrls: [],
-      imageFiles: [],
       engagement: const EngagementModel(),
     );
 
@@ -186,8 +184,6 @@ class CommentNotifier extends FamilyAsyncNotifier<List<FeedModel>, String?> {
       author: AuthorModel(id: author.id, name: author.name, username: author.username, avatarUrl: author.avatarUrl),
       body: null,
       feedMode: FeedMode.create,
-      imageUrls: [],
-      imageFiles: [],
       engagement: const EngagementModel(),
     );
 

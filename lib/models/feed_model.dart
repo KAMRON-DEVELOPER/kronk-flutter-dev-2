@@ -60,7 +60,7 @@ class FeedModel extends Equatable {
   final String? id;
   final String? body;
   final AuthorModel author;
-  final List<String> imageUrls;
+  final String? imageUrl;
   final String? videoUrl;
   final String? scheduledAt;
   final FeedVisibility? feedVisibility;
@@ -68,9 +68,11 @@ class FeedModel extends Equatable {
   final EngagementModel engagement;
   final String? quoteId;
   final String? parentId;
-  final List<File>? imageFiles;
+  final File? imageFile;
   final File? videoFile;
   final FeedMode feedMode;
+  final bool removeImage;
+  final bool removeVideo;
 
   const FeedModel({
     this.updatedAt,
@@ -78,7 +80,7 @@ class FeedModel extends Equatable {
     this.id,
     this.body,
     required this.author,
-    required this.imageUrls,
+    this.imageUrl,
     this.videoUrl,
     this.scheduledAt,
     this.feedVisibility,
@@ -86,9 +88,11 @@ class FeedModel extends Equatable {
     required this.engagement,
     this.quoteId,
     this.parentId,
-    this.feedMode = FeedMode.view,
-    this.imageFiles,
+    this.imageFile,
     this.videoFile,
+    this.feedMode = FeedMode.view,
+    this.removeImage = false,
+    this.removeVideo = false,
   });
 
   int? get repostsAndQuotes {
@@ -113,7 +117,7 @@ class FeedModel extends Equatable {
       body: json['body'],
       author: AuthorModel.fromJson(json['author']),
       videoUrl: json['video_url'],
-      imageUrls: List<String>.from(json['image_urls'] ?? []),
+      imageUrl: json['image_url'],
       scheduledAt: json['scheduled_at'],
       feedVisibility: FeedVisibility.values.byName(json['feed_visibility']),
       commentPolicy: CommentingPolicy.values.byName(json['comment_policy']),
@@ -144,16 +148,18 @@ class FeedModel extends Equatable {
     Object? body = _sentinel,
     AuthorModel? author,
     Object? videoUrl = _sentinel,
-    Object? imageUrls = _sentinel,
+    Object? imageUrl = _sentinel,
     Object? scheduledAt = _sentinel,
     Object? feedVisibility = _sentinel,
     Object? commentPolicy = _sentinel,
     Object? quoteId = _sentinel,
     Object? parentId = _sentinel,
     EngagementModel? engagement,
-    Object? feedMode = _sentinel,
-    Object? imageFiles = _sentinel,
+    Object? imageFile = _sentinel,
     Object? videoFile = _sentinel,
+    Object? feedMode = _sentinel,
+    Object? removeImage = _sentinel,
+    Object? removeVideo = _sentinel,
   }) {
     return FeedModel(
       id: id == _sentinel ? this.id : id as String?,
@@ -161,7 +167,7 @@ class FeedModel extends Equatable {
       createdAt: createdAt == _sentinel ? this.createdAt : createdAt as DateTime?,
       body: body == _sentinel ? this.body : body as String?,
       author: author ?? this.author,
-      imageUrls: imageUrls == _sentinel ? this.imageUrls : imageUrls as List<String>,
+      imageUrl: imageUrl == _sentinel ? this.imageUrl : imageUrl as String?,
       videoUrl: videoUrl == _sentinel ? this.videoUrl : videoUrl as String?,
       scheduledAt: scheduledAt == _sentinel ? this.scheduledAt : scheduledAt as String?,
       feedVisibility: feedVisibility == _sentinel ? this.feedVisibility : feedVisibility as FeedVisibility,
@@ -169,14 +175,16 @@ class FeedModel extends Equatable {
       quoteId: quoteId == _sentinel ? this.quoteId : quoteId as String?,
       parentId: parentId == _sentinel ? this.parentId : parentId as String?,
       engagement: engagement ?? this.engagement,
-      feedMode: feedMode == _sentinel ? this.feedMode : feedMode as FeedMode,
-      imageFiles: imageFiles == _sentinel ? this.imageFiles : imageFiles as List<File>,
+      imageFile: imageFile == _sentinel ? this.imageFile : imageFile as File?,
       videoFile: videoFile == _sentinel ? this.videoFile : videoFile as File?,
+      feedMode: feedMode == _sentinel ? this.feedMode : feedMode as FeedMode,
+      removeImage: removeImage == _sentinel ? this.removeImage : removeImage as bool,
+      removeVideo: removeVideo == _sentinel ? this.removeVideo : removeVideo as bool,
     );
   }
 
   @override
-  List<Object?> get props => [updatedAt, createdAt, id, author, body, imageUrls, videoUrl, scheduledAt, feedVisibility, commentPolicy, engagement, imageFiles, videoFile, feedMode];
+  List<Object?> get props => [updatedAt, createdAt, id, author, body, imageUrl, videoUrl, scheduledAt, feedVisibility, commentPolicy, engagement, imageFile, videoFile, feedMode];
 }
 
 class FeedSearchResultModel {

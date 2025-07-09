@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -148,14 +149,13 @@ class ChatAppBar extends ConsumerWidget implements PreferredSizeWidget {
                   /// Avatar
                   ClipRRect(
                     borderRadius: BorderRadius.circular(22.dp),
-                    child: Image.network(
-                      '${constants.bucketEndpoint}/${participant.avatarUrl}',
+                    child: CachedNetworkImage(
+                      imageUrl: '${constants.bucketEndpoint}/${participant.avatarUrl}',
                       fit: BoxFit.cover,
                       width: 44.dp,
-                      cacheWidth: 44.cacheSize(context),
-                      loadingBuilder: (context, child, loadingProgress) =>
-                          loadingProgress == null ? child : Icon(Icons.account_circle_rounded, size: 44.dp, color: theme.primaryText),
-                      errorBuilder: (context, error, stackTrace) => Icon(Icons.account_circle_rounded, size: 44.dp, color: theme.primaryText),
+                      memCacheWidth: 44.cacheSize(context),
+                      placeholder: (context, url) => Icon(Icons.account_circle_rounded, size: 44.dp, color: theme.primaryText),
+                      errorWidget: (context, url, error) => Icon(Icons.account_circle_rounded, size: 44.dp, color: theme.primaryText),
                     ),
                   ),
 

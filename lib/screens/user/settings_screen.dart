@@ -6,12 +6,13 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:kronk/constants/my_theme.dart';
 import 'package:kronk/models/navbar_model.dart';
 import 'package:kronk/models/statistics_model.dart';
+import 'package:kronk/models/user_model.dart';
 import 'package:kronk/riverpod/general/navbar_provider.dart';
 import 'package:kronk/riverpod/general/theme_provider.dart';
 import 'package:kronk/riverpod/settings/settings_statistics.dart';
+import 'package:kronk/services/api_service/user_service.dart';
 import 'package:kronk/utility/dimensions.dart';
 import 'package:kronk/utility/extensions.dart';
-import 'package:kronk/utility/my_logger.dart';
 import 'package:kronk/utility/storage.dart';
 import 'package:kronk/utility/url_launches.dart';
 import 'package:kronk/widgets/profile/custom_painters.dart';
@@ -401,22 +402,36 @@ class DisappointingSectionWidget extends ConsumerWidget {
 
             /// Delete account
             OutlinedButton(
-              onPressed: () {
-                if (GoRouterState.of(context).path == '/settings') {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      backgroundColor: theme.secondaryBackground,
-                      behavior: SnackBarBehavior.floating,
-                      dismissDirection: DismissDirection.horizontal,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.dp)),
-                      margin: EdgeInsets.only(left: 28.dp, right: 28.dp, bottom: Sizes.screenHeight - 96.dp),
-                      content: Text(
-                        "No Bro. you can't delete right now. later",
-                        style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 16.dp, height: 0),
+              onPressed: () async {
+                final Storage storage = Storage();
+                final UserService userService = UserService();
+                final UserModel? user = storage.getUser();
+                if (user == null) return;
+
+                try {
+                  final bool _ = await userService.fetchDeleteProfile();
+                } catch (error) {
+                  if (!context.mounted) return;
+                  if (GoRouterState.of(context).path == '/settings') {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        backgroundColor: theme.secondaryBackground,
+                        behavior: SnackBarBehavior.floating,
+                        dismissDirection: DismissDirection.horizontal,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.dp)),
+                        margin: EdgeInsets.only(left: 28.dp, right: 28.dp, bottom: Sizes.screenHeight - 96.dp),
+                        content: Text(
+                          error.toString(),
+                          style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 16.dp, height: 0),
+                        ),
                       ),
-                    ),
-                  );
+                    );
+                  }
                 }
+
+                await storage.logOut();
+                if (!context.mounted) return;
+                context.push('/welcome');
               },
               style: OutlinedButton.styleFrom(
                 fixedSize: Size(Sizes.screenWidth - 32.dp, 52.dp),
@@ -465,7 +480,6 @@ class BackButtonWidget extends ConsumerWidget {
 
     return IconButton(
       onPressed: () {
-        myLogger.i('isAnyServiceEnabled: $isAnyServiceEnabled');
         if (!isAnyServiceEnabled) {
           context.go('/welcome');
         } else {

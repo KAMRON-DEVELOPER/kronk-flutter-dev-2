@@ -2,15 +2,19 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:kronk/constants/enums.dart';
 import 'package:kronk/constants/my_theme.dart';
 import 'package:kronk/models/feed_model.dart';
 import 'package:kronk/riverpod/feed/feed_screen_style_provider.dart';
 import 'package:kronk/riverpod/feed/timeline_provider.dart';
 import 'package:kronk/riverpod/general/theme_provider.dart';
+import 'package:kronk/screens/feed/feeds_screen.dart';
 import 'package:kronk/utility/classes.dart';
+import 'package:kronk/utility/dimensions.dart';
 import 'package:kronk/utility/extensions.dart';
 import 'package:kronk/utility/my_logger.dart';
+import 'package:kronk/widgets/custom_appbar.dart';
 import 'package:kronk/widgets/feed/feed_card.dart';
 
 class FeedScreen extends ConsumerWidget {
@@ -25,32 +29,68 @@ class FeedScreen extends ConsumerWidget {
     final bool isFloating = displayState.screenStyle == ScreenStyle.floating;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Post'),
-        centerTitle: false,
+      appBar: CustomAppBar(
+        appBarHeight: 48.dp,
+        bottomHeight: 0,
+        bottomGap: 1,
+        actionsSpacing: 8.dp,
+        appBarPadding: EdgeInsets.only(left: 12.dp, right: 6.dp),
+        bottomPadding: EdgeInsets.only(left: 12.dp, right: 12.dp, bottom: 4.dp),
         leading: GestureDetector(
           onTap: () => context.pop(),
-          child: Icon(Icons.arrow_back_rounded, color: theme.primaryText),
+          child: Icon(Icons.arrow_back_rounded, color: theme.primaryText, size: 24),
         ),
-        actionsPadding: EdgeInsets.only(right: 28.dp),
+        title: Text(
+          'Comments',
+          style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 24.dp, fontWeight: FontWeight.w500),
+        ),
+        actions: [
+          GestureDetector(
+            onTap: () => showFeedScreenSettingsDialog(context),
+            child: Icon(Icons.more_vert_rounded, color: theme.primaryText, size: 24.dp),
+          ),
+        ],
       ),
-      body: RefreshIndicator(
-        color: theme.primaryText,
-        backgroundColor: theme.secondaryBackground,
-        onRefresh: () => ref.refresh(commentNotifierProvider(feed.id).notifier).refresh(parentId: feed.id),
-        child: CustomScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          slivers: [
-            /// Main Feed
-            SliverPadding(
-              padding: EdgeInsets.all(isFloating ? 12.dp : 0),
-              sliver: SliverToBoxAdapter(child: FeedCard(initialFeed: feed, isRefreshing: false)),
+      body: Stack(
+        children: [
+          /// Static background images
+          if (isFloating)
+            Positioned(
+              left: 0,
+              top: MediaQuery.of(context).padding.top - 52.dp,
+              right: 0,
+              bottom: 0,
+              child: Opacity(
+                opacity: 0.4,
+                child: Image.asset(
+                  displayState.backgroundImagePath,
+                  fit: BoxFit.cover,
+                  cacheHeight: (Sizes.screenHeight - MediaQuery.of(context).padding.top - 49.dp).cacheSize(context),
+                  cacheWidth: Sizes.screenWidth.cacheSize(context),
+                ),
+              ),
             ),
 
-            /// Comments Section
-            CommentWidget(parentId: feed.id),
-          ],
-        ),
+          /// Content
+          RefreshIndicator(
+            color: theme.primaryText,
+            backgroundColor: theme.secondaryBackground,
+            onRefresh: () => ref.refresh(commentNotifierProvider(feed.id).notifier).refresh(parentId: feed.id),
+            child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                /// Main Feed
+                SliverPadding(
+                  padding: EdgeInsets.all(isFloating ? 12.dp : 0),
+                  sliver: SliverToBoxAdapter(child: FeedCard(initialFeed: feed, isRefreshing: false)),
+                ),
+
+                /// Comments Section
+                CommentWidget(parentId: feed.id),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -94,6 +134,7 @@ class CommentListWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final MyTheme theme = ref.watch(themeNotifierProvider);
     final FeedScreenDisplayState displayState = ref.watch(feedsScreenStyleProvider);
     final bool isFloating = displayState.screenStyle == ScreenStyle.floating;
 
@@ -105,8 +146,19 @@ class CommentListWidget extends ConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('No comments yet. 📨', style: Theme.of(context).textTheme.bodyLarge),
-              Text('You can add the first!', style: Theme.of(context).textTheme.displaySmall),
+              Text(
+                'No comments yet. 📨',
+                style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 28.dp, fontWeight: FontWeight.bold),
+              ),
+              Text(
+                'You can add the first!',
+                style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 28.dp, fontWeight: FontWeight.bold),
+              ),
+              Icon(Icons.arrow_downward_rounded, color: theme.primaryText, size: 36),
+              Text(
+                'Later',
+                style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 28.dp, fontWeight: FontWeight.bold),
+              ),
             ],
           ),
         ),

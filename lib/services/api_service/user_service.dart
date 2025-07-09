@@ -150,13 +150,11 @@ class UserService {
     }
   }
 
-  Future<int?> fetchDeleteProfile() async {
+  Future<bool> fetchDeleteProfile() async {
     try {
       _dio.interceptors.add(AccessTokenInterceptor());
       Response response = await _dio.delete('/profile/delete');
-      myLogger.i('🚀 response.data in fetchDeleteProfile: ${response.data}  statusCode: ${response.statusCode}');
-
-      return response.statusCode;
+      return response.data['ok'] ?? false;
     } catch (e) {
       myLogger.w('error in fetchUserProfile: ${e.toString()}');
       rethrow;

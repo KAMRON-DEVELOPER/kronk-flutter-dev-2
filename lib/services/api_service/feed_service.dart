@@ -48,31 +48,11 @@ class FeedService {
     }
   }
 
-  Future<Response> fetchUpdateFeedMedia({required FormData formData, required String feedId}) async {
-    try {
-      Response response = await _dio.patch(
-        '/update/media',
-        queryParameters: {'feed_id': feedId},
-        data: formData,
-        onSendProgress: (int sent, int total) {
-          myLogger.w('$sent $total');
-        },
-      );
-      myLogger.i('🚀 response.data in fetchCreateFeedMedia: ${response.data}  statusCode: ${response.statusCode}');
-      if (response.statusCode != 200) throw Exception('${response.data['details']}');
-      return response;
-    } catch (error) {
-      myLogger.w('🌋 catch in fetchCreateFeedMedia: ${error.toString()}');
-      rethrow;
-    }
-  }
-
-  Future<bool> fetchUpdateFeed({required String? feedId, required FormData formData}) async {
+  Future<Response> fetchUpdateFeed({required String? feedId, required FormData formData}) async {
     try {
       Response response = await _dio.patch('/update', data: formData, queryParameters: {'feed_id': feedId});
       myLogger.i('🚀 response.data in fetchUpdateFeed: ${response.data}  statusCode: ${response.statusCode}');
-      if (response.statusCode == 200) return true;
-      throw Exception(response.data['details']);
+      return response;
     } catch (error) {
       myLogger.w('🌋 catch in fetchUpdateFeed: ${error.toString()}');
       rethrow;

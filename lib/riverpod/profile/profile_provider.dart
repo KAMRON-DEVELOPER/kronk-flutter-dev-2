@@ -135,11 +135,11 @@ class ProfileNotifier extends AutoDisposeFamilyAsyncNotifier<UserModel, String?>
     }
   }
 
-  Future<int?> deleteAccount() async {
-    final int? statusCode = await _userService.fetchDeleteProfile();
-    log('🔨 statusCode: $statusCode');
+  Future<void> deleteAccount() async {
+    final bool ok = await _userService.fetchDeleteProfile();
+    myLogger.d('🔨 ok: $ok');
 
-    if (statusCode == 204) {
+    if (ok) {
       final GoogleSignIn googleSignIn = GoogleSignIn.instance;
       final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
       User? firebaseUser = firebaseAuth.currentUser;
@@ -157,9 +157,7 @@ class ProfileNotifier extends AutoDisposeFamilyAsyncNotifier<UserModel, String?>
       }
 
       await firebaseUser?.delete();
-      return statusCode;
     }
-    return null;
   }
 
   Future<void> logoutUser() async {

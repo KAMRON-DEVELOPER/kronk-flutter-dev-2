@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:defer_pointer/defer_pointer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -120,16 +121,15 @@ class EditProfileImages extends ConsumerWidget {
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) => Container(width: screenWidth, height: bannerHeight, color: theme.secondaryBackground),
                     )
-                  : Image.network(
-                      '${constants.bucketEndpoint}/${user.bannerUrl}',
+                  : CachedNetworkImage(
+                      imageUrl: '${constants.bucketEndpoint}/${user.bannerUrl}',
                       width: screenWidth,
                       height: bannerHeight,
-                      cacheWidth: screenWidth.cacheSize(context),
-                      cacheHeight: bannerHeight.cacheSize(context),
+                      memCacheWidth: screenWidth.cacheSize(context),
+                      memCacheHeight: bannerHeight.cacheSize(context),
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(width: screenWidth, height: bannerHeight, color: theme.secondaryBackground),
-                      loadingBuilder: (context, child, loadingProgress) =>
-                          loadingProgress == null ? child : Container(width: screenWidth, height: bannerHeight, color: theme.secondaryBackground),
+                      placeholder: (context, url) => Container(width: screenWidth, height: bannerHeight, color: theme.secondaryBackground),
+                      errorWidget: (context, url, error) => Container(width: screenWidth, height: bannerHeight, color: theme.secondaryBackground),
                     ),
             ),
           ),
@@ -166,25 +166,23 @@ class EditProfileImages extends ConsumerWidget {
                               decoration: BoxDecoration(color: theme.secondaryBackground, shape: BoxShape.circle),
                             ),
                           )
-                        : Image.network(
-                            '${constants.bucketEndpoint}/${user.avatarUrl}',
+                        : CachedNetworkImage(
+                            imageUrl: '${constants.bucketEndpoint}/${user.avatarUrl}',
                             width: avatarHeight,
                             height: avatarHeight,
-                            cacheWidth: avatarHeight.cacheSize(context),
-                            cacheHeight: avatarHeight.cacheSize(context),
+                            memCacheWidth: avatarHeight.cacheSize(context),
+                            memCacheHeight: avatarHeight.cacheSize(context),
                             fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => Container(
+                            placeholder: (context, url) => Container(
                               height: avatarHeight,
                               width: avatarHeight,
                               decoration: BoxDecoration(color: theme.secondaryBackground, shape: BoxShape.circle),
                             ),
-                            loadingBuilder: (context, child, loadingProgress) => loadingProgress == null
-                                ? child
-                                : Container(
-                                    height: avatarHeight,
-                                    width: avatarHeight,
-                                    decoration: BoxDecoration(color: theme.secondaryBackground, shape: BoxShape.circle),
-                                  ),
+                            errorWidget: (context, url, error) => Container(
+                              height: avatarHeight,
+                              width: avatarHeight,
+                              decoration: BoxDecoration(color: theme.secondaryBackground, shape: BoxShape.circle),
+                            ),
                           ),
                   ),
                 ),
