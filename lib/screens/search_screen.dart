@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kronk/constants/enums.dart';
 import 'package:kronk/constants/kronk_icon.dart';
+import 'package:kronk/models/chat_model.dart';
 import 'package:kronk/models/feed_model.dart';
 import 'package:kronk/models/user_model.dart';
 import 'package:kronk/riverpod/chat/chats_screen_style_provider.dart';
@@ -411,140 +412,147 @@ class ProfileSearchCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(themeNotifierProvider);
 
-    return Card(
-      color: theme.primaryBackground,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.dp)),
-      elevation: 2,
-      child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 8.dp, horizontal: 12.dp),
-        child: Column(
-          spacing: 12.dp,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            /// Avatar, name, username, followers, followings, feeds
-            Row(
-              spacing: 12.dp,
-              children: [
-                /// Avatar
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(28.dp),
-                  child: Image.network(
-                    '${constants.bucketEndpoint}/${user.avatarUrl}',
-                    fit: BoxFit.cover,
-                    width: 56.dp,
-                    cacheWidth: 56.cacheSize(context),
-                    loadingBuilder: (context, child, loadingProgress) =>
-                        loadingProgress == null ? child : Icon(Icons.account_circle_rounded, size: 56.dp, color: theme.primaryText),
-                    errorBuilder: (context, error, stackTrace) => Icon(Icons.account_circle_rounded, size: 56.dp, color: theme.primaryText),
-                  ),
-                ),
-
-                /// Name, username, followers, followings, feeds
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    /// Name
-                    Text(
-                      user.name,
-                      style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 12.dp, fontWeight: FontWeight.w500),
-                    ),
-
-                    /// Username
-                    Text(
-                      '@${user.username}',
-                      style: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 10.dp, fontWeight: FontWeight.w500),
-                    ),
-
-                    /// Followers & followings
-                    Row(
-                      spacing: 12.dp,
-                      children: [
-                        Row(
-                          spacing: 4.dp,
-                          children: [
-                            Text(
-                              '${user.followersCount}',
-                              style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 10.dp, fontWeight: FontWeight.w500),
-                            ),
-                            Text(
-                              'followers',
-                              style: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 10.dp, fontWeight: FontWeight.w500),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          spacing: 4.dp,
-                          children: [
-                            Text(
-                              '${user.followingsCount}',
-                              style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 10.dp, fontWeight: FontWeight.w500),
-                            ),
-                            Text(
-                              'followings',
-                              style: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 10.dp, fontWeight: FontWeight.w500),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          spacing: 4.dp,
-                          children: [
-                            Text(
-                              '0',
-                              style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 10.dp, fontWeight: FontWeight.w500),
-                            ),
-                            Text(
-                              'feeds',
-                              style: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 10.dp, fontWeight: FontWeight.w500),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
-            ),
-
-            /// Follow & chat buttons
-            if (user.isFollowing != null)
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => context.push('/profile/${user.id}'),
+      child: Card(
+        color: theme.primaryBackground,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.dp)),
+        elevation: 2,
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 8.dp, horizontal: 12.dp),
+          child: Column(
+            spacing: 12.dp,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              /// Avatar, name, username, followers, followings, feeds
               Row(
                 spacing: 12.dp,
                 children: [
-                  /// Chat
-                  GestureDetector(
-                    onTap: () => context.go('/chats/chat', extra: user),
-                    child: Container(
-                      alignment: Alignment.center,
-                      padding: EdgeInsets.all(6.dp),
-                      decoration: BoxDecoration(color: theme.secondaryBackground, borderRadius: BorderRadius.circular(18.dp)),
-                      child: Icon(KronkIcon.messageCircleLeftOutline, size: 24.dp, color: theme.primaryText),
+                  /// Avatar
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(28.dp),
+                    child: Image.network(
+                      '${constants.bucketEndpoint}/${user.avatarUrl}',
+                      fit: BoxFit.cover,
+                      width: 56.dp,
+                      cacheWidth: 56.cacheSize(context),
+                      loadingBuilder: (context, child, loadingProgress) =>
+                          loadingProgress == null ? child : Icon(Icons.account_circle_rounded, size: 56.dp, color: theme.primaryText),
+                      errorBuilder: (context, error, stackTrace) => Icon(Icons.account_circle_rounded, size: 56.dp, color: theme.primaryText),
                     ),
                   ),
 
-                  /// Follow & unfollow
-                  GestureDetector(
-                    onTap: () => ref.read(userSearchNotifierProvider.notifier).toggleFollow(userId: user.id),
-                    child: Container(
-                      padding: EdgeInsets.symmetric(vertical: 4.dp, horizontal: 12.dp),
-                      decoration: BoxDecoration(color: user.isFollowing! ? theme.secondaryBackground : theme.primaryText, borderRadius: BorderRadius.circular(18.dp)),
-                      child: Row(
-                        spacing: 2.dp,
+                  /// Name, username, followers, followings, feeds
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      /// Name
+                      Text(
+                        user.name,
+                        style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 12.dp, fontWeight: FontWeight.w500),
+                      ),
+
+                      /// Username
+                      Text(
+                        '@${user.username}',
+                        style: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 10.dp, fontWeight: FontWeight.w500),
+                      ),
+
+                      /// Followers & followings
+                      Row(
+                        spacing: 12.dp,
                         children: [
-                          if (!user.isFollowing!) Icon(Icons.add_rounded, size: 22.dp, color: theme.primaryBackground),
-                          Text(
-                            user.isFollowing! ? 'Following' : 'Follow',
-                            style: GoogleFonts.quicksand(color: user.isFollowing! ? theme.primaryText : theme.primaryBackground, fontSize: 18.dp, fontWeight: FontWeight.w600),
+                          Row(
+                            spacing: 4.dp,
+                            children: [
+                              Text(
+                                '${user.followersCount}',
+                                style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 10.dp, fontWeight: FontWeight.w500),
+                              ),
+                              Text(
+                                'followers',
+                                style: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 10.dp, fontWeight: FontWeight.w500),
+                              ),
+                            ],
                           ),
-                          if (!user.isFollowing!) SizedBox(width: 4.dp),
+                          Row(
+                            spacing: 4.dp,
+                            children: [
+                              Text(
+                                '${user.followingsCount}',
+                                style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 10.dp, fontWeight: FontWeight.w500),
+                              ),
+                              Text(
+                                'followings',
+                                style: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 10.dp, fontWeight: FontWeight.w500),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            spacing: 4.dp,
+                            children: [
+                              Text(
+                                '0',
+                                style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 10.dp, fontWeight: FontWeight.w500),
+                              ),
+                              Text(
+                                'feeds',
+                                style: GoogleFonts.quicksand(color: theme.secondaryText, fontSize: 10.dp, fontWeight: FontWeight.w500),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
-                    ),
+                    ],
                   ),
                 ],
               ),
-          ],
+
+              /// Follow & chat buttons
+              if (user.isFollowing != null)
+                Row(
+                  spacing: 12.dp,
+                  children: [
+                    /// Chat
+                    GestureDetector(
+                      onTap: () => context.go(
+                        '/chats/chat',
+                        extra: ParticipantModel(id: user.id, name: user.name, username: user.username),
+                      ),
+                      child: Container(
+                        alignment: Alignment.center,
+                        padding: EdgeInsets.all(6.dp),
+                        decoration: BoxDecoration(color: theme.secondaryBackground, borderRadius: BorderRadius.circular(18.dp)),
+                        child: Icon(KronkIcon.messageCircleLeftOutline, size: 24.dp, color: theme.primaryText),
+                      ),
+                    ),
+
+                    /// Follow & unfollow
+                    GestureDetector(
+                      onTap: () => ref.read(userSearchNotifierProvider.notifier).toggleFollow(userId: user.id),
+                      child: Container(
+                        padding: EdgeInsets.symmetric(vertical: 4.dp, horizontal: 12.dp),
+                        decoration: BoxDecoration(color: user.isFollowing! ? theme.secondaryBackground : theme.primaryText, borderRadius: BorderRadius.circular(18.dp)),
+                        child: Row(
+                          spacing: 2.dp,
+                          children: [
+                            if (!user.isFollowing!) Icon(Icons.add_rounded, size: 22.dp, color: theme.primaryBackground),
+                            Text(
+                              user.isFollowing! ? 'Following' : 'Follow',
+                              style: GoogleFonts.quicksand(color: user.isFollowing! ? theme.primaryText : theme.primaryBackground, fontSize: 18.dp, fontWeight: FontWeight.w600),
+                            ),
+                            if (!user.isFollowing!) SizedBox(width: 4.dp),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+            ],
+          ),
         ),
       ),
     );

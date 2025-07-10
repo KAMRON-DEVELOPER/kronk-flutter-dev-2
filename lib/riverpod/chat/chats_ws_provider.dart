@@ -14,19 +14,22 @@ final chatsWSNotifierProvider = AutoDisposeAsyncNotifierProvider<ChatsWSNotifier
 
 class ChatsWSNotifierNotifier extends AutoDisposeAsyncNotifier<String> {
   IOWebSocketChannel? _channel;
-  final Storage _storage = Storage();
+  late Storage _storage;
   Timer? _reconnectTimer;
   Timer? _heartbeatTimer;
   Timer? _inactivityTimer;
   int _reconnectAttempts = 0;
   final int _maxReconnectAttempts = 5;
   DateTime? _lastActivityTime;
-  static const _heartbeatInterval = Duration(seconds: 25);
-  static const _inactivityTimeout = Duration(seconds: 60);
+  static const _heartbeatInterval = Duration(seconds: 3600);
+  static const _inactivityTimeout = Duration(seconds: 3601);
 
   @override
   Future<String> build() async {
+    _storage = Storage();
+
     ref.onDispose(() async {
+      myLogger.f('onDispose in chatsWSNotifierProvider');
       await _disposeResources();
     });
 
@@ -69,7 +72,8 @@ class ChatsWSNotifierNotifier extends AutoDisposeAsyncNotifier<String> {
 
       final String type = decoded['type'];
       if (type == ChatEvent.heartbeatAck.name.toSnakeCase()) return;
-      if (type == 'heartbeat') _sendHeartbeat(); // Respond immediately
+      if (type == 'heartbeat') _sendHeartbeat();
+      myLogger.d('decoded: $decoded');
     } catch (error) {
       myLogger.d('Error handling message: $error');
     } finally {

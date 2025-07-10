@@ -2,22 +2,22 @@ import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kronk/models/chat_model.dart';
+import 'package:kronk/models/chat_message_model.dart';
 import 'package:kronk/services/api_service/chat_service.dart';
 import 'package:kronk/utility/my_logger.dart';
 import 'package:kronk/utility/storage.dart';
 
-final chatsNotifierProvider = AsyncNotifierProvider<ChatsNotifier, List<ChatModel>>(ChatsNotifier.new);
+final chatMessagesProvider = AutoDisposeAsyncNotifierProvider<ChatMessagesNotifier, List<ChatMessageModel>>(ChatMessagesNotifier.new);
 
-class ChatsNotifier extends AsyncNotifier<List<ChatModel>> {
+class ChatMessagesNotifier extends AutoDisposeAsyncNotifier<List<ChatMessageModel>> {
   late ChatService _chatService;
   late Connectivity _connectivity;
   late Storage _storage;
   int _start = 0;
-  int _end = 10;
+  int _end = 20;
 
   @override
-  Future<List<ChatModel>> build() async {
+  Future<List<ChatMessageModel>> build() async {
     _chatService = ChatService();
     _connectivity = Connectivity();
     _storage = Storage();
@@ -27,26 +27,26 @@ class ChatsNotifier extends AsyncNotifier<List<ChatModel>> {
     try {
       final bool isOnlineAndAuthenticated = await _isOnlineAndAuthenticated();
       if (!isOnlineAndAuthenticated) return [];
-      return await _getChats();
+      return await _getMessages();
     } catch (error) {
       state = AsyncValue.error(error, StackTrace.current);
       return [];
     }
   }
 
-  Future<List<ChatModel>> _getChats() async {
+  Future<List<ChatMessageModel>> _getMessages() async {
     try {
-      final List<ChatModel> chats = await _chatService.getChats();
-      return chats;
+      final List<ChatMessageModel> messages = await _chatService.getMessages();
+      return messages;
     } catch (error) {
       state = AsyncValue.error(error, StackTrace.current);
       return [];
     }
   }
 
-  Future<List<ChatModel>> refresh() async {
+  Future<List<ChatMessageModel>> refresh() async {
     state = const AsyncValue.loading();
-    final Future<List<ChatModel>> chats = _getChats();
+    final Future<List<ChatMessageModel>> chats = _getMessages();
     state = await AsyncValue.guard(() => chats);
     return chats;
   }
@@ -63,10 +63,10 @@ class ChatsNotifier extends AsyncNotifier<List<ChatModel>> {
 
   Future<void> loadMore() async {
     _start = _end + 1;
-    _end = _start + 10;
+    _end = _start + 20;
 
-    final newFeeds = await _chatService.getChats(start: _start, end: _end);
+    final newMessages = await _chatService.getMessages(start: _start, end: _end);
 
-    state = state.whenData((existing) => [...existing, ...newFeeds]);
+    state = state.whenData((existing) => [...existing, ...newMessages]);
   }
 }

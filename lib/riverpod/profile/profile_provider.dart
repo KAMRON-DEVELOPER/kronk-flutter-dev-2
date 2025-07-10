@@ -28,6 +28,8 @@ class ProfileNotifier extends AutoDisposeFamilyAsyncNotifier<UserModel, String?>
     _storage = Storage();
     _userService = UserService();
 
+    ref.onDispose(() => myLogger.f('onDispose in profileNotifierProvider'));
+
     try {
       return await _fetchProfile(targetUserId: targetUserId);
     } catch (error) {

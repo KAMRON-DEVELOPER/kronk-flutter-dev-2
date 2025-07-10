@@ -6,7 +6,6 @@ import 'package:kronk/riverpod/general/theme_provider.dart';
 import 'package:kronk/utility/constants.dart';
 import 'package:kronk/utility/dimensions.dart';
 import 'package:kronk/utility/extensions.dart';
-import 'package:kronk/utility/my_logger.dart';
 
 class FeedNotificationWidget extends ConsumerWidget {
   final ScrollController scrollController;
@@ -23,7 +22,6 @@ class FeedNotificationWidget extends ConsumerWidget {
       loading: () => const SizedBox.shrink(),
       error: (error, stackTrace) => const SizedBox.shrink(),
       data: (avatarUrls) {
-        myLogger.w('data: (avatarUrls) -> $avatarUrls');
         if (avatarUrls.isEmpty) return const SizedBox.shrink();
 
         final avatarSize = 32.dp;

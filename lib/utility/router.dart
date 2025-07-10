@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kronk/bloc/authentication/authentication_bloc.dart';
 import 'package:kronk/constants/enums.dart';
+import 'package:kronk/models/chat_model.dart';
 import 'package:kronk/models/feed_model.dart';
-import 'package:kronk/models/user_model.dart';
 import 'package:kronk/screens/chat/chat_screen.dart';
 import 'package:kronk/screens/chat/chats_screen.dart';
 import 'package:kronk/screens/education/education_screen.dart';
@@ -134,7 +134,7 @@ class AppRouter {
                   GoRoute(
                     path: 'chat',
                     pageBuilder: (context, state) => SlidePageTransition(
-                      child: ChatScreen(key: state.pageKey, participant: state.extra as UserModel),
+                      child: ChatScreen(key: state.pageKey, participant: state.extra as ParticipantModel),
                     ),
                   ),
                 ],
@@ -204,11 +204,15 @@ class AppRouter {
             routes: [
               GoRoute(
                 path: '/profile',
-                pageBuilder: (context, state) => SlidePageTransition(
-                  key: state.pageKey,
-                  child: ProfileScreen(targetUserId: state.extra as String?),
-                ),
+                pageBuilder: (context, state) => SlidePageTransition(key: state.pageKey, child: const ProfileScreen()),
                 routes: [
+                  GoRoute(
+                    path: ':targetUserId',
+                    pageBuilder: (context, state) => SlidePageTransition(
+                      key: state.pageKey,
+                      child: ProfileScreen(targetUserId: state.pathParameters['targetUserId']),
+                    ),
+                  ),
                   GoRoute(
                     path: 'edit',
                     pageBuilder: (context, state) => SlidePageTransition(key: state.pageKey, child: const EditProfileScreen()),

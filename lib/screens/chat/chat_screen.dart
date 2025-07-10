@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kronk/constants/enums.dart';
-import 'package:kronk/models/user_model.dart';
+import 'package:kronk/models/chat_model.dart';
 import 'package:kronk/riverpod/chat/chats_screen_style_provider.dart';
 import 'package:kronk/riverpod/general/theme_provider.dart';
 import 'package:kronk/screens/chat/chats_screen.dart';
@@ -14,7 +14,7 @@ import 'package:kronk/utility/dimensions.dart';
 import 'package:kronk/utility/extensions.dart';
 
 class ChatScreen extends ConsumerWidget {
-  final UserModel participant;
+  final ParticipantModel participant;
 
   const ChatScreen({super.key, required this.participant});
 
@@ -64,18 +64,37 @@ class ChatScreen extends ConsumerWidget {
   }
 }
 
-class ChatInputWidget extends ConsumerWidget {
+class ChatInputWidget extends ConsumerStatefulWidget {
   const ChatInputWidget({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ChatInputWidget> createState() => _ChatInputWidgetState();
+}
+
+class _ChatInputWidgetState extends ConsumerState<ChatInputWidget> {
+  late TextEditingController messageController;
+
+  @override
+  void initState() {
+    super.initState();
+    messageController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    messageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = ref.watch(themeNotifierProvider);
     return SafeArea(
       top: false,
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16.dp, vertical: 6.dp),
         decoration: BoxDecoration(
-          color: theme.secondaryBackground,
+          color: theme.primaryBackground,
           border: BoxBorder.all(color: theme.secondaryBackground, width: 0.5.dp),
         ),
         child: Row(
@@ -96,8 +115,15 @@ class ChatInputWidget extends ConsumerWidget {
               ),
             ),
 
-            Icon(Icons.attach_file_rounded, size: 26.dp),
-            Icon(Icons.mic_rounded, size: 26.dp),
+            if (messageController.text.isNotEmpty)
+              IconButton(
+                onPressed: () {},
+                icon: Icon(Icons.send_rounded, size: 26.dp),
+              )
+            else ...[
+              Icon(Icons.attach_file_rounded, size: 26.dp),
+              Icon(Icons.mic_rounded, size: 26.dp),
+            ],
           ],
         ),
       ),
@@ -106,7 +132,7 @@ class ChatInputWidget extends ConsumerWidget {
 }
 
 class ChatAppBar extends ConsumerWidget implements PreferredSizeWidget {
-  final UserModel participant;
+  final ParticipantModel participant;
 
   const ChatAppBar({required this.participant, super.key});
 
@@ -119,7 +145,7 @@ class ChatAppBar extends ConsumerWidget implements PreferredSizeWidget {
     return SafeArea(
       child: Container(
         height: 56.dp,
-        padding: EdgeInsets.only(left: 18.dp, right: 12.dp),
+        padding: EdgeInsets.only(left: 12.dp, right: 12.dp),
         decoration: BoxDecoration(
           color: theme.primaryBackground,
           border: Border(
@@ -168,10 +194,16 @@ class ChatAppBar extends ConsumerWidget implements PreferredSizeWidget {
                         participant.name,
                         style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 16.dp, fontWeight: FontWeight.w500, height: 0),
                       ),
-                      Text(
-                        'Online',
-                        style: GoogleFonts.quicksand(color: 'a' == 'a' ? Colors.deepOrangeAccent : theme.secondaryText, fontSize: 12.dp, fontWeight: FontWeight.w500, height: 0),
-                      ),
+                      if (participant.isOnline != null)
+                        Text(
+                          participant.isOnline! ? 'Online' : 'Offline',
+                          style: GoogleFonts.quicksand(
+                            color: participant.isOnline! ? Colors.deepOrangeAccent : theme.secondaryText,
+                            fontSize: 12.dp,
+                            fontWeight: FontWeight.w500,
+                            height: 0,
+                          ),
+                        ),
                     ],
                   ),
                 ],

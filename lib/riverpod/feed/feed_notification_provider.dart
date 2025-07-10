@@ -24,6 +24,7 @@ class FeedNotificationNotifierNotifier extends AutoDisposeAsyncNotifier<List<Str
   @override
   Future<List<String>> build() async {
     ref.onDispose(() {
+      myLogger.f('onDispose in feedNotificationNotifierProvider');
       _channel?.sink.close();
       _reconnectTimer?.cancel();
     });

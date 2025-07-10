@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:kronk/models/chat_tile_model.dart';
+import 'package:kronk/models/chat_message_model.dart';
+import 'package:kronk/models/chat_model.dart';
 import 'package:kronk/utility/constants.dart';
 import 'package:kronk/utility/interceptors.dart';
 import 'package:kronk/utility/my_logger.dart';
@@ -13,18 +14,50 @@ class ChatService {
 
   ChatService() : _dio = Dio(getChatBaseOptions())..interceptors.add(AccessTokenInterceptor());
 
-  Future<List<ChatTileModel>> fetchChatTiles({int start = 0, int end = 10}) async {
+  Future<List<ChatModel>> getChats({int start = 0, int end = 20}) async {
     try {
-      Response response = await _dio.get('/tiles');
-      myLogger.i('🚀 response.data in fetchChatTiles: ${response.data}  statusCode: ${response.statusCode}');
-      final data = response.data['chat_tiles'];
-      if (data is List) {
-        return data.map((json) => ChatTileModel.fromJson(json)).toList();
-      } else {
-        return [];
-      }
+      Response response = await _dio.get('');
+      myLogger.i('🚀 response.data in getChats: ${response.data}  statusCode: ${response.statusCode}');
+      final data = response.data['chats'];
+      if (data is List) return data.map((json) => ChatModel.fromJson(json)).toList();
+      return [];
     } catch (error) {
-      myLogger.w('catch in fetchChatTiles: ${error.toString()}');
+      myLogger.w('catch in getChats: ${error.toString()}');
+      rethrow;
+    }
+  }
+
+  Future<bool> deleteChat({required String chatId}) async {
+    try {
+      Response response = await _dio.post('/delete', queryParameters: {'chat_id': chatId});
+      myLogger.i('🚀 response.data in deleteChat: ${response.data}  statusCode: ${response.statusCode}');
+      return response.data['ok'] ?? false;
+    } catch (error) {
+      myLogger.w('catch in deleteChat: ${error.toString()}');
+      rethrow;
+    }
+  }
+
+  Future<List<ChatMessageModel>> getMessages({int start = 0, int end = 20}) async {
+    try {
+      Response response = await _dio.get('/messages');
+      myLogger.i('🚀 response.data in getChats: ${response.data}  statusCode: ${response.statusCode}');
+      final data = response.data['messages'];
+      if (data is List) return data.map((json) => ChatMessageModel.fromJson(json)).toList();
+      return [];
+    } catch (error) {
+      myLogger.w('catch in getChats: ${error.toString()}');
+      rethrow;
+    }
+  }
+
+  Future<bool> deleteMessage({required List<String> messageIds}) async {
+    try {
+      Response response = await _dio.post('/messages/delete', queryParameters: {'message_ids': messageIds});
+      myLogger.i('🚀 response.data in deleteMessage: ${response.data}  statusCode: ${response.statusCode}');
+      return response.data['ok'] ?? false;
+    } catch (error) {
+      myLogger.w('catch in deleteMessage: ${error.toString()}');
       rethrow;
     }
   }

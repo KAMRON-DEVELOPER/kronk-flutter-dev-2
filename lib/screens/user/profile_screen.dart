@@ -93,7 +93,7 @@ class _ProfileHeaderWidgetState extends ConsumerState<ProfileHeaderWidget> {
   Widget build(BuildContext context) {
     final AsyncValue<UserModel> asyncUser = ref.watch(profileNotifierProvider(widget.targetUserId));
     return asyncUser.when(
-      data: (UserModel user) => ProfileCard(user: user),
+      data: (UserModel user) => ProfileCard(user: user, targetUserId: widget.targetUserId),
       loading: () => cachedUser != null ? ProfileCard(user: cachedUser!) : const Center(child: CircularProgressIndicator()),
       error: (Object error, StackTrace _) => Center(
         child: Text('Error: $error', style: const TextStyle(color: Colors.redAccent)),
@@ -105,8 +105,9 @@ class _ProfileHeaderWidgetState extends ConsumerState<ProfileHeaderWidget> {
 /// ProfileCard
 class ProfileCard extends ConsumerWidget {
   final UserModel user;
+  final String? targetUserId;
 
-  const ProfileCard({super.key, required this.user});
+  const ProfileCard({super.key, required this.user, this.targetUserId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -325,6 +326,22 @@ class ProfileCard extends ConsumerWidget {
               ),
             ),
           ),
+
+          /// Back button
+          if (targetUserId != null)
+            Positioned(
+              left: 12.dp,
+              top: MediaQuery.paddingOf(context).top + 8.dp,
+              child: GestureDetector(
+                onTap: () => context.pop(),
+                child: Container(
+                  width: 40.dp,
+                  padding: EdgeInsets.all(2.dp),
+                  decoration: BoxDecoration(color: theme.primaryBackground, shape: BoxShape.circle),
+                  child: const FittedBox(child: Icon(Icons.arrow_back_rounded)),
+                ),
+              ),
+            ),
         ],
       ),
     );

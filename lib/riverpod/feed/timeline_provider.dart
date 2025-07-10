@@ -27,6 +27,8 @@ class TimelineNotifier extends FamilyAsyncNotifier<List<FeedModel>, TimelineType
     _realEnd = 10;
     _isLoadingMore = false;
 
+    ref.onDispose(() => myLogger.f('onDispose in timelineNotifierProvider'));
+
     try {
       final bool isOnlineAndAuthenticated = await _isOnlineAndAuthenticated();
       if (!isOnlineAndAuthenticated) {
@@ -127,6 +129,9 @@ class CommentNotifier extends FamilyAsyncNotifier<List<FeedModel>, String?> {
   Future<List<FeedModel>> build(String? parentId) async {
     _end = 9;
     _realEnd = 10;
+
+    ref.onDispose(() => myLogger.f('onDispose in commentNotifierProvider'));
+
     try {
       final bool isOnlineAndAuthenticated = await _isOnlineAndAuthenticated();
       if (!isOnlineAndAuthenticated) {
