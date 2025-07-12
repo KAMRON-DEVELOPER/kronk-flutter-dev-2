@@ -9,7 +9,7 @@ class VideoOverlayController extends AutoDisposeFamilyNotifier<VideoOverlayState
   Timer? _timer;
 
   @override
-  VideoOverlayState build(String? feedId) {
+  VideoOverlayState build(String? initialChat) {
     ref.onDispose(() => _timer?.cancel());
 
     return VideoOverlayState();

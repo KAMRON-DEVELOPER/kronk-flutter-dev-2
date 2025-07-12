@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kronk/constants/enums.dart';
 import 'package:kronk/constants/kronk_icon.dart';
+import 'package:kronk/models/chat_model.dart';
 import 'package:kronk/models/feed_model.dart';
 import 'package:kronk/models/user_model.dart';
 import 'package:kronk/riverpod/feed/feed_screen_style_provider.dart';
@@ -151,7 +152,12 @@ class ProfileCard extends ConsumerWidget {
                     /// Message
                     if (!isFollowingNull)
                       GestureDetector(
-                        onTap: () => context.go('/chats/chat', extra: user),
+                        onTap: () => context.push(
+                          '/chats/chat',
+                          extra: ChatModel(
+                            participant: ParticipantModel(id: user.id, name: user.name, username: user.username),
+                          ),
+                        ),
                         child: Container(
                           width: 32.dp,
                           height: 32.dp,

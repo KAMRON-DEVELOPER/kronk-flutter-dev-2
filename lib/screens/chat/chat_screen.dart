@@ -4,28 +4,38 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kronk/constants/enums.dart';
+import 'package:kronk/models/chat_message_model.dart';
 import 'package:kronk/models/chat_model.dart';
+import 'package:kronk/riverpod/chat/chat_messages_provider.dart';
+import 'package:kronk/riverpod/chat/chat_state_provider.dart';
+import 'package:kronk/riverpod/chat/chats_provider.dart';
 import 'package:kronk/riverpod/chat/chats_screen_style_provider.dart';
+import 'package:kronk/riverpod/chat/chats_ws_provider.dart';
 import 'package:kronk/riverpod/general/theme_provider.dart';
 import 'package:kronk/screens/chat/chats_screen.dart';
 import 'package:kronk/utility/classes.dart';
 import 'package:kronk/utility/constants.dart';
 import 'package:kronk/utility/dimensions.dart';
 import 'package:kronk/utility/extensions.dart';
+import 'package:kronk/utility/my_logger.dart';
+
+final messageInputProvider = StateProvider<String>((ref) => '');
 
 class ChatScreen extends ConsumerWidget {
-  final ParticipantModel participant;
+  final ChatModel initialChat;
 
-  const ChatScreen({super.key, required this.participant});
+  const ChatScreen({super.key, required this.initialChat});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final chat = ref.watch(chatStateProvider(initialChat));
+    final notifier = ref.watch(chatStateProvider(initialChat).notifier);
     final ChatsScreenDisplayState displayState = ref.watch(chatsScreenStyleProvider);
     final bool isFloating = displayState.screenStyle == ScreenStyle.floating;
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      appBar: ChatAppBar(participant: participant),
+      appBar: ChatAppBar(chat: chat),
       body: Stack(
         children: [
           /// Static background images
@@ -51,11 +61,11 @@ class ChatScreen extends ConsumerWidget {
             children: [
               /// messages
               Expanded(
-                child: ListView(padding: EdgeInsets.all(12.dp), children: []),
+                child: chat.id != null ? ChatMessagesWidget(chat: chat, notifier: notifier) : const InitialMessageWidget(),
               ),
 
               /// input bar
-              const ChatInputWidget(),
+              ChatInputWidget(chat: chat, notifier: notifier),
             ],
           ),
         ],
@@ -64,8 +74,56 @@ class ChatScreen extends ConsumerWidget {
   }
 }
 
+class ChatMessagesWidget extends ConsumerWidget {
+  final ChatModel chat;
+  final ChatStateStateNotifier notifier;
+
+  const ChatMessagesWidget({super.key, required this.chat, required this.notifier});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeNotifierProvider);
+    final messages = ref.watch(chatMessagesProvider(chat.id!));
+    return messages.when(
+      data: (List<ChatMessageModel> messages) => ListView.separated(
+        padding: EdgeInsets.all(12.dp),
+        itemBuilder: (context, index) => MessageBubble(message: messages.elementAt(index)),
+        separatorBuilder: (context, index) => SizedBox(height: 12.dp),
+        itemCount: messages.length,
+      ),
+      error: (error, stackTrace) => Text(
+        error.toString(),
+        style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 16, fontWeight: FontWeight.w600),
+      ),
+      loading: () => SizedBox(
+        width: 64.dp,
+        height: 64.dp,
+        child: const FittedBox(child: CircularProgressIndicator()),
+      ),
+    );
+  }
+}
+
+class MessageBubble extends ConsumerWidget {
+  final ChatMessageModel message;
+
+  const MessageBubble({super.key, required this.message});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // final theme = ref.watch(themeNotifierProvider);
+    return Text(
+      message.message,
+      style: GoogleFonts.quicksand(fontSize: 16.dp, fontWeight: FontWeight.w600),
+    );
+  }
+}
+
 class ChatInputWidget extends ConsumerStatefulWidget {
-  const ChatInputWidget({super.key});
+  final ChatModel chat;
+  final ChatStateStateNotifier notifier;
+
+  const ChatInputWidget({super.key, required this.chat, required this.notifier});
 
   @override
   ConsumerState<ChatInputWidget> createState() => _ChatInputWidgetState();
@@ -89,13 +147,16 @@ class _ChatInputWidgetState extends ConsumerState<ChatInputWidget> {
   @override
   Widget build(BuildContext context) {
     final theme = ref.watch(themeNotifierProvider);
+    final String messageInput = ref.watch(messageInputProvider);
     return SafeArea(
       top: false,
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16.dp, vertical: 6.dp),
         decoration: BoxDecoration(
           color: theme.primaryBackground,
-          border: BoxBorder.all(color: theme.secondaryBackground, width: 0.5.dp),
+          border: Border(
+            top: BorderSide(color: theme.secondaryBackground, width: 0.5.dp),
+          ),
         ),
         child: Row(
           spacing: 16.dp,
@@ -103,6 +164,11 @@ class _ChatInputWidgetState extends ConsumerState<ChatInputWidget> {
             Icon(Icons.emoji_emotions_rounded, size: 26.dp),
             Expanded(
               child: TextField(
+                controller: messageController,
+                onChanged: (value) {
+                  ref.read(messageInputProvider.notifier).state = value;
+                  ref.read(chatsWSNotifierProvider.notifier).handleTyping(chatId: widget.chat.id!, text: value);
+                },
                 style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 18.dp, fontWeight: FontWeight.w600),
                 cursorColor: theme.primaryText,
                 decoration: InputDecoration(
@@ -115,10 +181,42 @@ class _ChatInputWidgetState extends ConsumerState<ChatInputWidget> {
               ),
             ),
 
-            if (messageController.text.isNotEmpty)
-              IconButton(
-                onPressed: () {},
-                icon: Icon(Icons.send_rounded, size: 26.dp),
+            if (messageInput.isNotEmpty)
+              GestureDetector(
+                onTap: () async {
+                  try {
+                    if (widget.chat.id == null) {
+                      final ChatModel chat = await ref.read(chatsNotifierProvider.notifier).createChatMessage(message: messageInput);
+                      myLogger.w('1 chat.id: ${chat.id}, chat.participant.name: ${chat.participant.name}, chat.lastMessage: ${chat.lastMessage}');
+                      widget.notifier.updateField(chat: chat);
+                      await ref.read(chatMessagesProvider(chat.id!).notifier).addMessage(message: chat.lastMessage!);
+                    } else {
+                      ref.read(chatsWSNotifierProvider.notifier).sendMessage(chatId: widget.chat.id!, message: messageInput);
+                      await ref.read(chatMessagesProvider(widget.chat.id!).notifier).addMessage(message: widget.chat.lastMessage!);
+                    }
+
+                    messageController.clear();
+                    ref.read(messageInputProvider.notifier).state = '';
+                  } catch (error) {
+                    if (!context.mounted) return;
+                    if (GoRouterState.of(context).path == 'chat') {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          backgroundColor: theme.secondaryBackground,
+                          behavior: SnackBarBehavior.floating,
+                          dismissDirection: DismissDirection.horizontal,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.dp)),
+                          margin: EdgeInsets.only(left: 28.dp, right: 28.dp, bottom: Sizes.screenHeight - 96.dp),
+                          content: Text(
+                            error.toString(),
+                            style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 16.dp, height: 0),
+                          ),
+                        ),
+                      );
+                    }
+                  }
+                },
+                child: Icon(Icons.send_rounded, size: 26.dp),
               )
             else ...[
               Icon(Icons.attach_file_rounded, size: 26.dp),
@@ -132,9 +230,9 @@ class _ChatInputWidgetState extends ConsumerState<ChatInputWidget> {
 }
 
 class ChatAppBar extends ConsumerWidget implements PreferredSizeWidget {
-  final ParticipantModel participant;
+  final ChatModel chat;
 
-  const ChatAppBar({required this.participant, super.key});
+  const ChatAppBar({required this.chat, super.key});
 
   @override
   Size get preferredSize => Size(double.infinity, 56.5.dp);
@@ -176,7 +274,7 @@ class ChatAppBar extends ConsumerWidget implements PreferredSizeWidget {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(22.dp),
                     child: CachedNetworkImage(
-                      imageUrl: '${constants.bucketEndpoint}/${participant.avatarUrl}',
+                      imageUrl: '${constants.bucketEndpoint}/${chat.participant.avatarUrl}',
                       fit: BoxFit.cover,
                       width: 44.dp,
                       memCacheWidth: 44.cacheSize(context),
@@ -191,14 +289,14 @@ class ChatAppBar extends ConsumerWidget implements PreferredSizeWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        participant.name,
+                        chat.participant.name,
                         style: GoogleFonts.quicksand(color: theme.primaryText, fontSize: 16.dp, fontWeight: FontWeight.w500, height: 0),
                       ),
-                      if (participant.isOnline != null)
+                      if (chat.participant.isOnline != null)
                         Text(
-                          participant.isOnline! ? 'Online' : 'Offline',
+                          chat.participant.isOnline! ? 'Online' : 'Offline',
                           style: GoogleFonts.quicksand(
-                            color: participant.isOnline! ? Colors.deepOrangeAccent : theme.secondaryText,
+                            color: chat.participant.isOnline! ? Colors.deepOrangeAccent : theme.secondaryText,
                             fontSize: 12.dp,
                             fontWeight: FontWeight.w500,
                             height: 0,
@@ -218,6 +316,21 @@ class ChatAppBar extends ConsumerWidget implements PreferredSizeWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class InitialMessageWidget extends ConsumerWidget {
+  const InitialMessageWidget({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // final theme = ref.watch(themeNotifierProvider);
+    return Center(
+      child: Text(
+        'Send Message 💬',
+        style: GoogleFonts.quicksand(fontSize: 24.dp, fontWeight: FontWeight.w600),
       ),
     );
   }

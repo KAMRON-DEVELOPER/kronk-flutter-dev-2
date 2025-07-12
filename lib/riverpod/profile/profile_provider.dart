@@ -155,7 +155,7 @@ class ProfileNotifier extends AutoDisposeFamilyAsyncNotifier<UserModel, String?>
         await firebaseUser?.reauthenticateWithCredential(authCredential);
       } catch (e) {
         log('💀 Error during user deletion: $e');
-        return null;
+        return;
       }
 
       await firebaseUser?.delete();

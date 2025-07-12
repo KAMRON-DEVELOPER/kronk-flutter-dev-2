@@ -25,12 +25,36 @@ class ChatsScreen extends ConsumerWidget {
     final ChatsScreenDisplayState displayState = ref.watch(chatsScreenStyleProvider);
     final bool isFloating = displayState.screenStyle == ScreenStyle.floating;
 
-    final AsyncValue<String> chats = ref.watch(chatsWSNotifierProvider);
+    final AsyncValue<Map<String, dynamic>> chats = ref.watch(chatsWSNotifierProvider);
 
     chats.when(
       data: (data) {
-        // TODO change state from there
         myLogger.w('data: $data type: ${data.runtimeType}');
+        final ChatEvent event = data['type'] ?? ChatEvent.wrongType;
+        switch (event) {
+          case ChatEvent.typingStart:
+            throw UnimplementedError();
+          case ChatEvent.typingStop:
+            throw UnimplementedError();
+          case ChatEvent.goesOnline:
+            throw UnimplementedError();
+          case ChatEvent.goesOffline:
+            throw UnimplementedError();
+          case ChatEvent.enterChat:
+            throw UnimplementedError();
+          case ChatEvent.exitChat:
+            throw UnimplementedError();
+          case ChatEvent.createdChat:
+            throw UnimplementedError();
+          case ChatEvent.sentMessage:
+            throw UnimplementedError();
+          case ChatEvent.heartbeatAck:
+            throw UnimplementedError();
+          case ChatEvent.heartbeat:
+            throw UnimplementedError();
+          case ChatEvent.wrongType:
+            throw UnimplementedError();
+        }
       },
       error: (error, stackTrace) {
         myLogger.d('data: $error type: ${error.runtimeType}');

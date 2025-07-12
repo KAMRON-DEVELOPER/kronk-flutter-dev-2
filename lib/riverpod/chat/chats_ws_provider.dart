@@ -10,9 +10,9 @@ import 'package:kronk/utility/my_logger.dart';
 import 'package:kronk/utility/storage.dart';
 import 'package:web_socket_channel/io.dart';
 
-final chatsWSNotifierProvider = AutoDisposeAsyncNotifierProvider<ChatsWSNotifierNotifier, String>(ChatsWSNotifierNotifier.new);
+final chatsWSNotifierProvider = AutoDisposeAsyncNotifierProvider<ChatsWSNotifierNotifier, Map<String, dynamic>>(ChatsWSNotifierNotifier.new);
 
-class ChatsWSNotifierNotifier extends AutoDisposeAsyncNotifier<String> {
+class ChatsWSNotifierNotifier extends AutoDisposeAsyncNotifier<Map<String, dynamic>> {
   IOWebSocketChannel? _channel;
   late Storage _storage;
   Timer? _reconnectTimer;
@@ -23,9 +23,12 @@ class ChatsWSNotifierNotifier extends AutoDisposeAsyncNotifier<String> {
   DateTime? _lastActivityTime;
   static const _heartbeatInterval = Duration(seconds: 3600);
   static const _inactivityTimeout = Duration(seconds: 3601);
+  final Map<String, Timer?> _typingTimers = {};
+  final Duration _typingTimeout = const Duration(seconds: 5);
+  final Set<String> _activeTypers = {};
 
   @override
-  Future<String> build() async {
+  Future<Map<String, dynamic>> build() async {
     _storage = Storage();
 
     ref.onDispose(() async {
@@ -35,7 +38,7 @@ class ChatsWSNotifierNotifier extends AutoDisposeAsyncNotifier<String> {
 
     _connectWebSocket();
 
-    return '';
+    return {};
   }
 
   Future<void> _disposeResources() async {
@@ -43,6 +46,9 @@ class ChatsWSNotifierNotifier extends AutoDisposeAsyncNotifier<String> {
     _reconnectTimer?.cancel();
     _heartbeatTimer?.cancel();
     _inactivityTimer?.cancel();
+    for (final timer in _typingTimers.values) {
+      timer?.cancel();
+    }
   }
 
   Future<void> _connectWebSocket() async {
@@ -68,12 +74,16 @@ class ChatsWSNotifierNotifier extends AutoDisposeAsyncNotifier<String> {
       // Update last activity time
       _lastActivityTime = DateTime.now();
 
+      myLogger.w('event in _handleIncomingMessage: $event, type: ${event.runtimeType}');
+
       final decoded = jsonDecode(event);
 
-      final String type = decoded['type'];
+      final type = decoded['type'];
       if (type == ChatEvent.heartbeatAck.name.toSnakeCase()) return;
-      if (type == 'heartbeat') _sendHeartbeat();
+      if (type == ChatEvent.heartbeat.name) _sendHeartbeat();
       myLogger.d('decoded: $decoded');
+
+      state = AsyncData(decoded);
     } catch (error) {
       myLogger.d('Error handling message: $error');
     } finally {
@@ -89,30 +99,73 @@ class ChatsWSNotifierNotifier extends AutoDisposeAsyncNotifier<String> {
     });
   }
 
+  /// *********************************** Message handlers ***********************************
+
   void _sendHeartbeat() {
     try {
-      _channel?.sink.add(jsonEncode({'type': 'heartbeat'}));
+      _channel?.sink.add(jsonEncode({'type': ChatEvent.heartbeat.name}));
     } catch (e) {
       myLogger.e('Error sending heartbeat: $e');
       _scheduleReconnect();
     }
   }
 
-  void _startInactivityTimer() {
-    _inactivityTimer?.cancel();
-    _inactivityTimer = Timer(_inactivityTimeout, () {
-      final now = DateTime.now();
-      if (_lastActivityTime != null && now.difference(_lastActivityTime!) > _inactivityTimeout) {
-        myLogger.d('Inactivity timeout, reconnecting');
-        _scheduleReconnect();
-      }
-    });
+  void sendMessage({required String chatId, required String message}) {
+    try {
+      _channel?.sink.add(jsonEncode({'type': ChatEvent.sentMessage.name.toSnakeCase(), 'chat_id': chatId, 'message': message}));
+    } catch (e) {
+      myLogger.e('Error while sending message: $e');
+      _scheduleReconnect();
+    }
   }
 
-  void _resetInactivityTimer() {
-    _inactivityTimer?.cancel();
-    _startInactivityTimer();
+  void handleTyping({required String chatId, required String text}) {
+    final isTyping = _activeTypers.contains(chatId);
+
+    if (text.isNotEmpty && !isTyping) {
+      _sendTypingStart(chatId: chatId);
+      _activeTypers.add(chatId);
+    }
+
+    // Cancel old timer if exists
+    _typingTimers[chatId]?.cancel();
+
+    if (text.isNotEmpty) {
+      // Restart debounce timer
+      _typingTimers[chatId] = Timer(_typingTimeout, () {
+        _sendTypingStop(chatId: chatId);
+        _activeTypers.remove(chatId);
+        _typingTimers.remove(chatId);
+      });
+    } else {
+      // User cleared input: stop typing immediately
+      if (isTyping) {
+        _sendTypingStop(chatId: chatId);
+        _activeTypers.remove(chatId);
+        _typingTimers.remove(chatId)?.cancel();
+      }
+    }
   }
+
+  void _sendTypingStart({required String chatId}) {
+    try {
+      _channel?.sink.add(jsonEncode({'type': ChatEvent.typingStart.name.toSnakeCase(), 'chat_id': chatId}));
+    } catch (e) {
+      myLogger.e('Error while sending typing start event: $e');
+      _scheduleReconnect();
+    }
+  }
+
+  void _sendTypingStop({required String chatId}) {
+    try {
+      _channel?.sink.add(jsonEncode({'type': ChatEvent.typingStop.name.toSnakeCase(), 'chat_id': chatId}));
+    } catch (e) {
+      myLogger.e('Error while sending typing stop event: $e');
+      _scheduleReconnect();
+    }
+  }
+
+  /// *********************************** timer & handlers ***********************************
 
   void _handleWebSocketError(dynamic error) {
     myLogger.d('WebSocket error: $error');
@@ -141,5 +194,21 @@ class ChatsWSNotifierNotifier extends AutoDisposeAsyncNotifier<String> {
     _reconnectTimer = Timer(delay, () {
       _connectWebSocket();
     });
+  }
+
+  void _startInactivityTimer() {
+    _inactivityTimer?.cancel();
+    _inactivityTimer = Timer(_inactivityTimeout, () {
+      final now = DateTime.now();
+      if (_lastActivityTime != null && now.difference(_lastActivityTime!) > _inactivityTimeout) {
+        myLogger.d('Inactivity timeout, reconnecting');
+        _scheduleReconnect();
+      }
+    });
+  }
+
+  void _resetInactivityTimer() {
+    _inactivityTimer?.cancel();
+    _startInactivityTimer();
   }
 }

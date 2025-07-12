@@ -520,7 +520,9 @@ class ProfileSearchCard extends ConsumerWidget {
                     GestureDetector(
                       onTap: () => context.go(
                         '/chats/chat',
-                        extra: ParticipantModel(id: user.id, name: user.name, username: user.username),
+                        extra: ChatModel(
+                          participant: ParticipantModel(id: user.id, name: user.name, username: user.username),
+                        ),
                       ),
                       child: Container(
                         alignment: Alignment.center,

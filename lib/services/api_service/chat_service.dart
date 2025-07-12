@@ -14,13 +14,11 @@ class ChatService {
 
   ChatService() : _dio = Dio(getChatBaseOptions())..interceptors.add(AccessTokenInterceptor());
 
-  Future<List<ChatModel>> getChats({int start = 0, int end = 20}) async {
+  Future<ChatModel> createChatMessage({required String message}) async {
     try {
-      Response response = await _dio.get('');
-      myLogger.i('🚀 response.data in getChats: ${response.data}  statusCode: ${response.statusCode}');
-      final data = response.data['chats'];
-      if (data is List) return data.map((json) => ChatModel.fromJson(json)).toList();
-      return [];
+      Response response = await _dio.get('/messages/create');
+      myLogger.i('🚀 response.data in createChatMessage: ${response.data}  statusCode: ${response.statusCode}');
+      return ChatModel.fromJson(response.data);
     } catch (error) {
       myLogger.w('catch in getChats: ${error.toString()}');
       rethrow;
@@ -38,9 +36,22 @@ class ChatService {
     }
   }
 
-  Future<List<ChatMessageModel>> getMessages({int start = 0, int end = 20}) async {
+  Future<List<ChatModel>> getChats({int start = 0, int end = 20}) async {
     try {
-      Response response = await _dio.get('/messages');
+      Response response = await _dio.get('');
+      myLogger.i('🚀 response.data in getChats: ${response.data}  statusCode: ${response.statusCode}');
+      final data = response.data['chats'];
+      if (data is List) return data.map((json) => ChatModel.fromJson(json)).toList();
+      return [];
+    } catch (error) {
+      myLogger.w('catch in getChats: ${error.toString()}');
+      rethrow;
+    }
+  }
+
+  Future<List<ChatMessageModel>> getMessages({required String chatId, int start = 0, int end = 20}) async {
+    try {
+      Response response = await _dio.get('/messages', queryParameters: {'chat_id': chatId});
       myLogger.i('🚀 response.data in getChats: ${response.data}  statusCode: ${response.statusCode}');
       final data = response.data['messages'];
       if (data is List) return data.map((json) => ChatMessageModel.fromJson(json)).toList();

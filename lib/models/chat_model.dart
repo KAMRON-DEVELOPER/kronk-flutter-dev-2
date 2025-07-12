@@ -1,3 +1,5 @@
+import 'package:kronk/models/chat_message_model.dart';
+
 class ParticipantModel {
   final String id;
   final String name;
@@ -25,23 +27,23 @@ class ParticipantModel {
 }
 
 class ChatModel {
-  final String id;
+  final String? id;
   final ParticipantModel participant;
-  final DateTime lastActivityAt;
-  final String lastMessage;
+  final DateTime? lastActivityAt;
+  final ChatMessageModel? lastMessage;
 
-  ChatModel({required this.id, required this.participant, required this.lastActivityAt, required this.lastMessage});
+  ChatModel({this.id, required this.participant, this.lastActivityAt, this.lastMessage});
 
   factory ChatModel.fromJson(Map<String, dynamic> json) {
     return ChatModel(
       id: json['id'],
       participant: ParticipantModel.fromJson(json['participant']),
+      lastMessage: ChatMessageModel.fromJson(json['last_message']),
       lastActivityAt: DateTime.fromMillisecondsSinceEpoch(json['last_activity_at'] * 1000),
-      lastMessage: json['last_message'],
     );
   }
 
-  ChatModel copyWith({String? id, ParticipantModel? participant, DateTime? lastActivityAt, String? lastMessage, bool? lastMessageSeen, int? unreadCount}) {
+  ChatModel copyWith({String? id, ParticipantModel? participant, DateTime? lastActivityAt, ChatMessageModel? lastMessage}) {
     return ChatModel(
       id: id ?? this.id,
       participant: participant ?? this.participant,

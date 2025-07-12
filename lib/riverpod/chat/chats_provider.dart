@@ -44,6 +44,17 @@ class ChatsNotifier extends AsyncNotifier<List<ChatModel>> {
     }
   }
 
+  Future<ChatModel> createChatMessage({required String message}) async {
+    try {
+      final ChatModel chat = await _chatService.createChatMessage(message: message);
+      state = state.whenData((List<ChatModel> values) => [...values, chat]);
+      return chat;
+    } catch (error) {
+      state = AsyncValue.error(error, StackTrace.current);
+      rethrow;
+    }
+  }
+
   Future<List<ChatModel>> refresh() async {
     state = const AsyncValue.loading();
     final Future<List<ChatModel>> chats = _getChats();

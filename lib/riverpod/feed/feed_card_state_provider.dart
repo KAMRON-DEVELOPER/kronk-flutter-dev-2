@@ -16,7 +16,7 @@ class FeedCardStateNotifier extends AutoDisposeFamilyNotifier<FeedModel, FeedMod
   Timer? _viewTimer;
 
   @override
-  FeedModel build(FeedModel initialFeed) {
+  FeedModel build(FeedModel initialChat) {
     ref.onDispose(() {
       myLogger.t('onDispose is working...');
       if (_viewTimer != null && _viewTimer!.isActive) _viewTimer?.cancel();
@@ -27,7 +27,7 @@ class FeedCardStateNotifier extends AutoDisposeFamilyNotifier<FeedModel, FeedMod
       if (_viewTimer != null && _viewTimer!.isActive) _viewTimer?.cancel();
     });
 
-    return initialFeed;
+    return initialChat;
   }
 
   void updateField({required FeedModel feed}) {
